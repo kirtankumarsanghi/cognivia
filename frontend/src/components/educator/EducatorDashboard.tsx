@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function EducatorDashboard() {
   const api = useApi();
+  const { switchRole } = useAuth();
+  const navigate = useNavigate();
   const [pulse, setPulse] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,11 +31,12 @@ export default function EducatorDashboard() {
   const criticalConcepts = pulse.filter(p => p.status === 'Critical');
 
   return (
-    <div className="flex flex-col w-full px-8 pb-12 gap-y-stack-lg max-w-container-max mx-auto overflow-y-auto">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm pt-stack-xl relative">
+    <div className="page-shell">
+      <button onClick={() => { switchRole('student'); navigate('/dashboard'); }} className="back-link"><span className="material-symbols-outlined text-[18px]">arrow_back</span>Back to student view</button>
+      <header className="page-heading">
         <div className="flex flex-col">
           <span className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">Class Analytics</span>
-          <h1 className="font-headline-xl text-headline-xl text-on-background m-0 flex items-center gap-3">
+          <h1 className="font-headline-xl text-3xl leading-tight sm:text-headline-xl text-on-background m-0 flex items-center gap-3">
             <span className="material-symbols-outlined text-[32px] text-primary">analytics</span>
             Educator Insights
           </h1>

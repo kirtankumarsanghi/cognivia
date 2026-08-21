@@ -47,12 +47,12 @@ export default function Dashboard() {
   const needsAttention = revisionPlan.length;
 
   return (
-    <div className="flex flex-col w-full px-8 pb-12 gap-y-stack-lg max-w-container-max mx-auto overflow-y-auto">
+    <div className="page-shell">
       {/* Header Section */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm pt-stack-xl relative">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm relative">
         <div className="flex flex-col">
           <span className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">Student Dashboard</span>
-          <h1 className="font-headline-xl text-headline-xl text-on-background m-0">Welcome back, <br/>{user?.name.split(' ')[0]}</h1>
+          <h1 className="font-headline-xl text-3xl leading-tight sm:text-headline-xl text-on-background m-0">Welcome back, <br/>{user?.name.split(' ')[0]}</h1>
         </div>
         <div className="flex items-center gap-stack-sm bg-surface-container-high px-6 py-3 rounded-xl border border-outline-variant/20 shadow-md">
           <span className="material-symbols-outlined text-primary text-[28px]">workspace_premium</span>

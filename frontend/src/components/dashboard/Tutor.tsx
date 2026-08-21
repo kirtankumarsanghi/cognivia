@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 
 export default function Tutor() {
@@ -58,9 +58,10 @@ export default function Tutor() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-container-max mx-auto space-y-8 flex flex-col h-full w-full">
-      <header className="flex flex-col pt-stack-xl">
-        <h1 className="font-headline-xl text-headline-xl text-on-background m-0 flex items-center gap-3">
+    <div className="page-shell min-h-[calc(100vh-4rem)]">
+      <Link to="/dashboard" className="back-link"><span className="material-symbols-outlined text-[18px]">arrow_back</span>Back to dashboard</Link>
+      <header className="page-heading">
+        <h1 className="font-headline-xl text-3xl leading-tight sm:text-headline-xl text-on-background m-0 flex items-center gap-3">
           <span className="material-symbols-outlined text-[32px] text-primary">psychology</span>
           Cogniva AI Tutor
         </h1>

@@ -1,5 +1,6 @@
 import { useAuth } from '../../hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 export default function Login() {
   const { login, user } = useAuth();
@@ -16,8 +17,12 @@ export default function Login() {
 
       <div className="w-full max-w-md bg-surface-container rounded-2xl border border-outline-variant/20 p-10 shadow-2xl relative z-10">
         
-        <div className="text-center mb-10 flex flex-col items-center">
-          <span className="material-symbols-outlined text-[48px] text-primary mb-4">psychology</span>
+        <div className="text-center mb-10 flex flex-col items-center relative">
+          <Link to="/" className="absolute left-0 top-0 text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 text-sm">
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Link>
+          <span className="material-symbols-outlined text-[48px] text-primary mb-4 mt-6">psychology</span>
           <h1 className="font-headline-xl text-headline-xl text-on-background mb-2">Cogniva</h1>
           <p className="font-body-md text-body-md text-on-surface-variant">Turn Confusion Into Clarity</p>
         </div>

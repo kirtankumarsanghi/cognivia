@@ -48,15 +48,15 @@ export default function CourseView() {
   if (!course) return <div className="p-8 text-error">Course not found.</div>;
 
   return (
-    <div className="flex flex-col w-full px-8 pb-12 gap-y-stack-lg max-w-container-max mx-auto overflow-y-auto">
-      <button onClick={() => navigate('/dashboard')} className="self-start mt-8 flex items-center gap-2 text-on-surface-variant hover:text-on-surface transition-colors font-label-md uppercase tracking-widest">
-        <span className="material-symbols-outlined text-[18px]">arrow_back</span> Back to Dashboard
+    <div className="page-shell">
+      <button onClick={() => navigate('/courses')} className="back-link">
+        <span className="material-symbols-outlined text-[18px]">arrow_back</span> Back to courses
       </button>
 
       <header className="flex flex-col pt-stack-sm relative">
         <div className="flex flex-col">
           <span className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">{course.code}</span>
-          <h1 className="font-headline-xl text-headline-xl text-on-background m-0 flex items-center gap-3">
+          <h1 className="font-headline-xl text-3xl leading-tight sm:text-headline-xl text-on-background m-0 flex items-center gap-3">
             {course.name}
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant mt-2 max-w-3xl">{course.description}</p>
@@ -88,7 +88,7 @@ export default function CourseView() {
                   
                   <div className="flex-shrink-0 bg-surface rounded-xl p-4 border border-outline-variant/10 shadow-sm">
                     <div className="font-label-sm text-label-sm text-outline text-center mb-3 uppercase tracking-widest">How clear are you?</div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <button 
                         onClick={() => handleSignal(concept.id, 'Confused')}
                         className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-error-container/10 hover:bg-error-container/20 text-error border border-error-container/20 rounded-lg transition-colors font-label-md uppercase tracking-widest"

@@ -1,102 +1,45 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
+const studentLinks = [
+  ['/dashboard', 'dashboard', 'Student Home'],
+  ['/courses', 'menu_book', 'My Courses'],
+  ['/tutor', 'psychology', 'AI Tutor'],
+  ['/revision', 'event_repeat', 'Revision Plan'],
+] as const;
+
 export default function StudentLayout() {
-  const { user, logout } = useAuth();
-  const location = useLocation();
+  const { user, logout, switchRole } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const itemClass = ({ isActive }: { isActive: boolean }) => `nav-item ${isActive ? 'nav-item-active' : ''}`;
+  const close = () => setMenuOpen(false);
 
-  const isActive = (path: string) => location.pathname === path;
-
-  return (
-    <div className="min-h-screen bg-background text-on-background flex">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col border-r border-outline-variant/10 shadow-2xl hidden md:flex">
-        <div className="h-20 flex items-center px-8 gap-stack-md">
-          <img alt="Cogniva Logo" className="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHI0LZ8UW9ECct8w2k-2DqU8NDfeG3N2NFCkvA1EauW0dOIP_JofbfLrcnbwI95878MlbvRqTkp5jw8kAvn6VLGiJFFri6zCiDmLRdOW-OyFZ2EDZTHg8_YvqZAxoQFPKFFPW5E4JwX3FZqiUPDvkR1G8DLcXTF0n1C9dBlR7W_Ay0mWq1Up_CMV9fBwe2uzJ0R_5VtzoAeNayMb1cbCczg7Pt_4QlTsd5UgGASMsJ3L_Tg0UI_aEn"/>
-          <span className="font-headline-md text-headline-md text-primary tracking-tight">Cogniva</span>
-        </div>
-        
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto pt-stack-md">
-          <div className="px-4 mb-stack-sm text-label-sm font-label-sm text-outline uppercase tracking-widest opacity-60">Main Dashboard</div>
-          <Link 
-            to="/dashboard" 
-            className={`flex items-center gap-stack-md px-4 py-3 rounded-lg transition-all ${isActive('/dashboard') ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}
-          >
-            <span className="material-symbols-outlined">dashboard</span>
-            <span className="font-body-md">Student Home</span>
-          </Link>
-          
-          <Link 
-            to="/dashboard" // Using /dashboard since we don't have a /courses list view yet
-            className={`flex items-center gap-stack-md px-4 py-3 rounded-lg transition-all ${isActive('/courses') ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}
-          >
-            <span className="material-symbols-outlined">menu_book</span>
-            <span className="font-body-md">My Courses</span>
-          </Link>
-          
-          <Link 
-            to="/tutor" 
-            className={`flex items-center gap-stack-md px-4 py-3 rounded-lg transition-all ${isActive('/tutor') ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}
-          >
-            <span className="material-symbols-outlined">psychology</span>
-            <span className="font-body-md">AI Tutor</span>
-          </Link>
-          
-          <Link 
-            to="/revision" 
-            className={`flex items-center gap-stack-md px-4 py-3 rounded-lg transition-all ${isActive('/revision') ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}
-          >
-            <span className="material-symbols-outlined">event_repeat</span>
-            <span className="font-body-md">Revision Plan</span>
-          </Link>
-          
-          <div className="px-4 mt-stack-lg mb-stack-sm text-label-sm font-label-sm text-outline uppercase tracking-widest opacity-60">Educator Tools</div>
-          
-          <Link 
-            to="/educator" 
-            className={`flex items-center gap-stack-md px-4 py-3 rounded-lg transition-all text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface`}
-          >
-            <span className="material-symbols-outlined">analytics</span>
-            <span className="font-body-md">Educator Insights</span>
-          </Link>
-        </nav>
-        
-        <div className="p-6 border-t border-outline-variant/10 flex flex-col gap-4">
-          <button onClick={logout} className="w-full flex items-center justify-center gap-2 bg-surface-container-high text-on-surface-variant py-3 px-4 rounded-xl font-label-md hover:bg-surface-bright transition-all">
-            <span className="material-symbols-outlined text-[18px]">logout</span>Sign Out
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content Wrapper */}
-      <div className="pl-0 md:pl-72 w-full flex flex-col min-h-screen relative">
-        <header className="sticky md:fixed top-0 md:left-72 right-0 h-20 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10 z-40 flex items-center justify-between px-4 md:px-8">
-          <div className="flex items-center gap-12">
-            <nav className="flex gap-8">
-              <span className="transition-colors text-primary font-bold">Student View</span>
-            </nav>
-          </div>
-          <div className="flex items-center gap-6">
-            <button className="text-on-surface-variant hover:text-on-surface">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <div className="h-8 w-[1px] bg-outline-variant/30 hidden md:block"></div>
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
-                <div className="text-body-sm font-bold text-on-surface">{user?.name}</div>
-                <div className="text-label-sm text-outline">Pro Scholar</div>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <span className="material-symbols-outlined text-on-primary text-[20px]">person</span>
-              </div>
-            </div>
-          </div>
-        </header>
-        
-        <main className="relative pt-20 bg-background flex-1 flex flex-col overflow-hidden">
-          <Outlet />
-        </main>
+  return <div className="app-frame">
+    {menuOpen && <button aria-label="Close navigation" className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={close} />}
+    <aside className={`app-sidebar ${menuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+      <Link to="/dashboard" onClick={close} className="brand"><span className="brand-mark">◉</span><span>Cogniva</span></Link>
+      <nav className="flex-1 px-3 py-5 overflow-y-auto">
+        <p className="nav-label">Main dashboard</p>
+        {studentLinks.map(([to, icon, label]) => <NavLink end={to === '/dashboard'} key={to} to={to} onClick={close} className={itemClass}><span className="material-symbols-outlined">{icon}</span>{label}</NavLink>)}
+        <p className="nav-label mt-7">Educator tools</p>
+        <button className="nav-item w-full text-left" onClick={() => { switchRole('educator'); navigate('/educator'); close(); }}><span className="material-symbols-outlined">analytics</span>Educator Insights</button>
+      </nav>
+      <div className="p-4 border-t border-outline-variant/10 space-y-2">
+        <Link to="/tutor" onClick={close} className="confused-button"><span className="material-symbols-outlined text-[18px]">emergency</span>I’m Confused</Link>
+        <button onClick={logout} className="nav-item w-full"><span className="material-symbols-outlined">logout</span>Sign out</button>
       </div>
-    </div>
-  );
+    </aside>
+    <section className="app-content">
+      <header className="app-topbar">
+        <button aria-label="Open navigation" className="icon-button md:hidden" onClick={() => setMenuOpen(true)}><span className="material-symbols-outlined">menu</span></button>
+        <Link to="/dashboard" className="md:hidden brand text-lg"><span className="brand-mark">◉</span>Cogniva</Link>
+        <nav className="hidden md:flex gap-2"><button className="view-button view-button-active">Student View</button><button onClick={() => { switchRole('educator'); navigate('/educator'); }} className="view-button">Educator View</button></nav>
+        <div className="ml-auto flex items-center gap-3"><button aria-label="Notifications" className="icon-button"><span className="material-symbols-outlined">notifications</span></button><div className="hidden sm:block text-right"><p className="text-sm font-bold text-on-surface">{user?.name}</p><p className="text-label-sm text-outline">Pro Scholar</p></div><div className="avatar"><span className="material-symbols-outlined">person</span></div></div>
+      </header>
+      <main className="app-main"><Outlet /></main>
+      <nav className="mobile-nav md:hidden">{studentLinks.map(([to, icon, label]) => <NavLink end={to === '/dashboard'} key={to} to={to} className={({ isActive }: { isActive: boolean }) => `mobile-nav-item ${isActive ? 'text-primary' : ''}`}><span className="material-symbols-outlined">{icon}</span><span>{label.split(' ')[0]}</span></NavLink>)}</nav>
+    </section>
+  </div>;
 }

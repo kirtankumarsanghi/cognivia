@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './components/landing/LandingPage';
 import Login from './components/landing/Login';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -10,7 +10,6 @@ import CourseView from './components/dashboard/CourseView';
 import Tutor from './components/dashboard/Tutor';
 import Revision from './components/dashboard/Revision';
 import Courses from './components/dashboard/Courses';
-
 import EducatorDashboard from './components/educator/EducatorDashboard';
 
 function App() {
@@ -39,6 +38,9 @@ function App() {
               <Route path="/educator" element={<EducatorDashboard />} />
             </Route>
           </Route>
+
+          {/* Catch-all: redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </AuthProvider>

@@ -24,11 +24,12 @@ export default function Revision() {
   if (loading) return <div className="p-8 animate-pulse text-on-surface-variant">Loading revision plan...</div>;
 
   return (
-    <div className="flex flex-col w-full px-8 pb-12 gap-y-stack-lg max-w-container-max mx-auto overflow-y-auto">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm pt-stack-xl relative">
+    <div className="page-shell">
+      <Link to="/dashboard" className="back-link"><span className="material-symbols-outlined text-[18px]">arrow_back</span>Back to dashboard</Link>
+      <header className="page-heading">
         <div className="flex flex-col">
           <span className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">Revision Plan</span>
-          <h1 className="font-headline-xl text-headline-xl text-on-background m-0 flex items-center gap-3">
+          <h1 className="font-headline-xl text-3xl leading-tight sm:text-headline-xl text-on-background m-0 flex items-center gap-3">
             <span className="material-symbols-outlined text-[32px] text-primary">event_repeat</span>
             Targeted Learning
           </h1>

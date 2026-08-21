@@ -13,6 +13,7 @@ export default function Courses() {
 
   return (
     <div className="page-shell">
+      <Link to="/dashboard" className="back-link"><span className="material-symbols-outlined text-[18px]">arrow_back</span>Back to dashboard</Link>
       <header className="page-heading">
         <span className="eyebrow">Learning library</span>
         <h1>My Courses</h1>
