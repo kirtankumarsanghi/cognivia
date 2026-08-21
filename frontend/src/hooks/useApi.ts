@@ -1,4 +1,4 @@
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from './useAuth';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 

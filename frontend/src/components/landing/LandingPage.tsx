@@ -9,7 +9,7 @@ import Footer from './Footer';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
       <ProblemSection />
