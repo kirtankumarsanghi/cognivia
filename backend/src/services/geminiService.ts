@@ -116,4 +116,40 @@ export const geminiService = {
        return 'Unable to generate recommendation at this time.';
     }
   }
+  async generateMiniLesson(conceptName: string): Promise<any> {
+    if (!isAiAvailable || !model) {
+      return {
+        reExplanation: "Demo Re-Explanation: Let's try looking at this from a different angle. Imagine a completely different scenario where the core principle still applies.",
+        workedExample: "Demo Example: Step 1: Do X. Step 2: Do Y. Result: Z.",
+        commonMistake: "Demo Mistake: Watch out for assuming A is B without checking C."
+      };
+    }
+
+    try {
+      const prompt = `
+        You are an expert curriculum designer. An educator requested a mini-lesson for the concept "${conceptName}" because students are highly confused by it.
+        
+        Generate a structured 3-point mini-lesson containing:
+        1. "reExplanation": A fresh angle/re-explanation of the concept (2-3 sentences).
+        2. "workedExample": A concrete, worked-out example.
+        3. "commonMistake": A specific callout of a common mistake/gotcha.
+        
+        Respond with a JSON object exactly like this:
+        {
+          "reExplanation": "...",
+          "workedExample": "...",
+          "commonMistake": "..."
+        }
+        Return ONLY valid JSON. No markdown formatting around it.
+      `;
+      
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      const jsonStr = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
+      return JSON.parse(jsonStr);
+    } catch (error) {
+      console.error('Gemini API Error:', error);
+      throw new Error('Failed to generate mini-lesson');
+    }
+  }
 };

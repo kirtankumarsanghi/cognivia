@@ -34,28 +34,31 @@ export default function FinalCTA() {
 
         <motion.h2 
           variants={fadeUp} custom={1} initial="hidden" animate={isInView ? 'visible' : 'hidden'}
-          className="section-title mt-5"
+          className="section-title mt-5 text-[clamp(48px,8vw,80px)] font-bold tracking-tight"
         >
           Ready to Transform{' '}
-          <span className="text-gradient-gold">Your Learning?</span>
+          <span className="text-gradient-red block sm:inline mt-2 sm:mt-0">Your Learning?</span>
         </motion.h2>
 
         <motion.p 
           variants={fadeUp} custom={2} initial="hidden" animate={isInView ? 'visible' : 'hidden'}
-          className="section-subtitle mt-5 max-w-xl mx-auto"
+          className="section-subtitle mt-8 max-w-2xl mx-auto text-lg sm:text-xl text-on-surface-variant"
         >
-          Join thousands of students and educators using Cogniva to close the lecture gap.
+          Join thousands of students and educators using Cogniva to close the lecture gap and truly master complex topics.
         </motion.p>
         
         <motion.div 
           variants={fadeUp} custom={3} initial="hidden" animate={isInView ? 'visible' : 'hidden'}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
+          className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-12"
         >
-          <Link to="/login" className="w-full sm:w-auto px-8 py-4 rounded-full bg-primary text-on-primary font-headline-md text-base font-semibold hover:shadow-[0_0_40px_rgba(255,186,32,0.3)] hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 group">
-            Get Started Free
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          <Link to="/login" className="w-full sm:w-auto px-10 py-5 rounded-full bg-primary text-white font-headline-md text-lg font-bold hover:shadow-[0_0_50px_rgba(232,64,64,0.4)] hover:scale-[1.05] transition-all duration-300 flex items-center justify-center gap-3 group relative overflow-hidden">
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+            <span className="relative z-10 flex items-center gap-2">
+              Get Started Free
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform" />
+            </span>
           </Link>
-          <Link to="/login" className="w-full sm:w-auto px-8 py-4 rounded-full border border-white/10 text-on-surface font-headline-md text-base hover:bg-white/5 hover:border-white/20 transition-all duration-300">
+          <Link to="/login" className="w-full sm:w-auto px-10 py-5 rounded-full border-2 border-white/10 text-on-surface font-headline-md text-lg hover:bg-white/5 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 text-center">
             Schedule a Demo
           </Link>
         </motion.div>

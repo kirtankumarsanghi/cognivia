@@ -4,35 +4,57 @@ import { useApi } from '../../hooks/useApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { staggerContainer, fadeUpChild } from '../../utils/animation';
 import Loading from '../ui/Loading';
+import ConceptGraph from '../concepts/ConceptGraph';
+import Toast, { useToast } from '../ui/Toast';
 
 export default function CourseView() {
   const { id } = useParams();
   const api = useApi();
   const navigate = useNavigate();
+  const { toast, showToast, hideToast } = useToast();
   
   const [course, setCourse] = useState<any>(null);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [selectedConcept, setSelectedConcept] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'lessons' | 'graph'>('lessons');
   const [loading, setLoading] = useState(true);
   const [conceptDetails, setConceptDetails] = useState<any>(null);
   const [loadingConcept, setLoadingConcept] = useState(false);
+  const [pulseData, setPulseData] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchPulse() {
+      try {
+        const data = await api.get('/confusion/pulse');
+        setPulseData(data || []);
+      } catch (err) {
+        console.error('Failed to fetch pulse data', err);
+      }
+    }
+    fetchPulse();
+    const intervalId = setInterval(fetchPulse, 15000);
+    return () => clearInterval(intervalId);
+  }, [api]);
 
   useEffect(() => {
     async function loadCourse() {
       try {
+        setError(null);
         const courseData = await api.get(`/courses/${id}`);
         setCourse(courseData);
         if (courseData.lessons && courseData.lessons.length > 0) {
           setSelectedLesson(courseData.lessons[0]);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to load course', err);
+        setError(err.message || 'Failed to load course data');
       } finally {
         setLoading(false);
       }
     }
     loadCourse();
-  }, [id]);
+  }, [id, api]);
 
   const loadConceptDetails = async (conceptId: string) => {
     setLoadingConcept(true);
@@ -59,9 +81,13 @@ export default function CourseView() {
         signal: 'Clear'
       });
       // Reload concept details to show updated mastery
-      loadConceptDetails(selectedConcept.id);
+      await loadConceptDetails(selectedConcept.id);
+      
+      // Show success feedback
+      showToast('Great! Your mastery has been updated.', 'success');
     } catch (err) {
       console.error('Failed to mark concept as clear', err);
+      showToast('Failed to update mastery. Please try again.', 'error');
     }
   };
 
@@ -72,13 +98,47 @@ export default function CourseView() {
         concept_id: selectedConcept.id,
         signal: 'Confused'
       });
-      alert('Added to your revision plan!');
+      showToast('Added to your revision plan!', 'success');
     } catch (err) {
       console.error('Failed to add to revision', err);
+      showToast('Failed to add to revision plan. Please try again.', 'error');
     }
   };
 
   if (loading) return <Loading variant="course" />;
+  
+  if (error) {
+    return (
+      <div className="page-shell">
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-surface-container rounded-2xl p-8 max-w-md w-full text-center border border-error/20"
+          >
+            <span className="material-symbols-outlined text-error text-[48px] mb-4">error</span>
+            <h2 className="font-headline-md text-headline-md text-on-surface mb-2">Failed to Load Course</h2>
+            <p className="font-body-md text-on-surface-variant mb-6">{error}</p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => navigate('/courses')}
+                className="bg-surface-container-high text-on-surface px-6 py-3 rounded-xl font-label-md uppercase tracking-widest hover:bg-surface-bright transition-colors"
+              >
+                Back to Courses
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-primary text-on-primary px-6 py-3 rounded-xl font-label-md uppercase tracking-widest hover:opacity-90 transition-opacity"
+              >
+                Try Again
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+  
   if (!course) return <div className="page-shell">Course not found</div>;
 
   const calculateProgress = () => {
@@ -137,7 +197,15 @@ export default function CourseView() {
         {/* Lessons Sidebar */}
         <div className="lg:col-span-4 space-y-4">
           <div className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
-            <h2 className="font-headline-md text-headline-md text-on-surface mb-4">Lessons</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-headline-md text-headline-md text-on-surface">Lessons</h2>
+              <button 
+                onClick={() => setViewMode(viewMode === 'graph' ? 'lessons' : 'graph')}
+                className="text-sm font-label-sm uppercase tracking-wider text-primary hover:opacity-80 transition-opacity"
+              >
+                {viewMode === 'graph' ? 'List View' : 'Map View'}
+              </button>
+            </div>
             <div className="space-y-2">
               {course.lessons?.map((lesson: any, index: number) => (
                 <button
@@ -179,7 +247,11 @@ export default function CourseView() {
 
         {/* Main Content Area */}
         <div className="lg:col-span-8">
-          {selectedLesson && !selectedConcept && (
+          {viewMode === 'graph' ? (
+            <ConceptGraph />
+          ) : (
+            <>
+              {selectedLesson && !selectedConcept && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -225,9 +297,20 @@ export default function CourseView() {
                     <h4 className="font-headline-sm text-headline-sm text-on-surface mb-2 group-hover:text-primary transition-colors">
                       {concept.name}
                     </h4>
-                    <p className="font-body-sm text-on-surface-variant line-clamp-2">
+                    <p className="font-body-sm text-on-surface-variant line-clamp-2 mb-3">
                       {concept.description || 'Click to learn more about this concept.'}
                     </p>
+                    {pulseData.find(p => p.concept_id === concept.id && p.confusion_percentage > 20) && (
+                      <div className="flex items-center gap-2 mt-2 text-error">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-error"></span>
+                        </span>
+                        <span className="text-xs font-medium">
+                          {pulseData.find(p => p.concept_id === concept.id).confusion_percentage}% of your class also flagged this
+                        </span>
+                      </div>
+                    )}
                   </motion.button>
                 ))}
               </motion.div>
@@ -388,8 +471,18 @@ export default function CourseView() {
               </motion.div>
             </AnimatePresence>
           )}
+            </>
+          )}
         </div>
       </div>
+      
+      {/* Toast Notifications */}
+      <Toast 
+        message={toast.message}
+        type={toast.type}
+        isOpen={toast.isOpen}
+        onClose={hideToast}
+      />
     </div>
   );
 }

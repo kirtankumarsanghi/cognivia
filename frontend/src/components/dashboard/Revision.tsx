@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { staggerContainer, fadeUpChild } from '../../utils/animation';
 import Loading from '../ui/Loading';
+import Toast, { useToast } from '../ui/Toast';
 
 interface PracticeQuestion {
   id: string;
@@ -16,6 +17,7 @@ interface PracticeQuestion {
 
 export default function Revision() {
   const api = useApi();
+  const { toast, showToast, hideToast } = useToast();
   const [revisionPlan, setRevisionPlan] = useState<any[]>([]);
   const [completedToday, setCompletedToday] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,13 +29,16 @@ export default function Revision() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [practiceResults, setPracticeResults] = useState<{correct: number; total: number}>({correct: 0, total: 0});
   const [showResults, setShowResults] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
+      setError(null);
       const revisionData = await api.get('/revision/plan');
-      setRevisionPlan(revisionData);
-    } catch (err) {
+      setRevisionPlan(revisionData || []);
+    } catch (err: any) {
       console.error('Failed to load revision data', err);
+      setError(err.message || 'Failed to load revision plan');
     } finally {
       setLoading(false);
     }
@@ -48,12 +53,19 @@ export default function Revision() {
     setPracticeMode(true);
     try {
       const questions = await api.get(`/practice?concept_id=${concept.concept_id}`);
-      setPracticeQuestions(questions);
-      setCurrentQuestionIndex(0);
-      setPracticeResults({correct: 0, total: 0});
-      setShowResults(false);
-    } catch (err) {
+      if (questions && questions.length > 0) {
+        setPracticeQuestions(questions);
+        setCurrentQuestionIndex(0);
+        setPracticeResults({correct: 0, total: 0});
+        setShowResults(false);
+      } else {
+        showToast('No practice questions available for this concept yet.', 'info');
+        setPracticeMode(false);
+      }
+    } catch (err: any) {
       console.error('Failed to load practice questions', err);
+      showToast('Failed to load practice questions. Please try again.', 'error');
+      setPracticeMode(false);
     }
   };
 
@@ -353,116 +365,264 @@ export default function Revision() {
   }
 
   return (
-    <div className="page-shell">
-      <Link to="/dashboard" className="back-link">
-        <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+    <div className="page-shell min-h-screen" style={{background: 'linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%)'}}>
+      <Link to="/dashboard" className="back-link group">
+        <span className="material-symbols-outlined text-[18px] group-hover:scale-110 transition-transform">arrow_back</span>
         Back to dashboard
       </Link>
       
-      <header className="page-heading">
+      <header className="page-heading mb-8">
         <div className="flex flex-col">
-          <span className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">Revision Plan</span>
-          <h1 className="font-headline-xl text-3xl leading-tight sm:text-headline-xl text-on-background m-0 flex items-center gap-3">
-            <span className="material-symbols-outlined text-[32px] text-primary">event_repeat</span>
+          <motion.span 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[16px] animate-pulse">auto_awesome</span>
+            Revision Plan
+          </motion.span>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="font-headline-xl text-4xl leading-tight sm:text-5xl text-on-background m-0 flex items-center gap-4"
+          >
+            <div className="relative">
+              <span className="material-symbols-outlined text-[42px] text-primary drop-shadow-[0_0_20px_rgba(232,64,64,0.5)]">event_repeat</span>
+              <div className="absolute inset-0 bg-primary blur-xl opacity-30 rounded-full"></div>
+            </div>
             Targeted Learning
-          </h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant mt-2">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="font-body-lg text-body-lg text-on-surface-variant mt-3 max-w-2xl"
+          >
             AI-driven revision queue based on your confusion signals and test performance.
-          </p>
+          </motion.p>
         </div>
       </header>
 
-      <section className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
-        <div className="flex items-center justify-between mb-stack-md border-b border-outline-variant/10 pb-4">
-          <h2 className="font-headline-lg text-headline-lg text-on-surface">Your Queue</h2>
-          <span className="font-label-md text-label-md text-on-primary bg-primary px-3 py-1.5 rounded-full uppercase tracking-widest">
-            {revisionPlan.length} Topics
-          </span>
-        </div>
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="relative rounded-3xl p-8 shadow-2xl border border-outline-variant/20 overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, rgba(17,18,21,0.95) 0%, rgba(10,10,10,0.98) 100%)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 20px 60px -12px rgba(0,0,0,0.8), 0 0 40px rgba(232,64,64,0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
+        }}
+      >
+        {/* Decorative gradient orbs */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#3DD68C]/10 rounded-full blur-3xl pointer-events-none"></div>
         
-        <motion.div 
-          variants={staggerContainer(0.05)} 
-          initial="hidden" 
-          animate="visible" 
-          className="flex flex-col gap-y-4 pt-4"
-        >
-          {revisionPlan.map((plan) => (
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-8 pb-6 border-b border-outline-variant/20">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-xl border border-primary/20">
+                <span className="material-symbols-outlined text-primary text-[28px]">queue</span>
+              </div>
+              <div>
+                <h2 className="font-headline-lg text-2xl text-on-surface font-semibold">Your Queue</h2>
+                <p className="font-body-sm text-on-surface-variant">Prioritized by AI for maximum impact</p>
+              </div>
+            </div>
             <motion.div 
-              variants={fadeUpChild} 
-              key={plan.id} 
-              className="group flex flex-col md:flex-row md:items-center justify-between p-6 bg-surface rounded-xl hover:bg-surface-bright transition-colors border border-outline-variant/10 hover:border-primary/50 relative overflow-hidden"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 200, delay: 0.4 }}
+              className="relative"
             >
-              <div className="absolute top-0 left-0 bottom-0 w-1 bg-primary scale-y-0 group-hover:scale-y-100 transition-transform origin-top"></div>
-              
-              <div className="flex items-center gap-6">
-                <div className="w-12 h-12 rounded-full bg-surface-bright flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
-                  <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[24px]">
-                    menu_book
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-headline-md text-headline-md text-on-surface font-medium mb-1">
-                    {plan.concepts.name}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <span className={`font-label-sm text-label-sm uppercase tracking-widest px-2 py-0.5 rounded-full ${
-                      plan.priority === 'High' 
-                        ? 'bg-[rgba(232,64,64,0.15)] text-error border border-error/20' 
-                        : plan.priority === 'Medium'
-                        ? 'bg-[rgba(232,166,52,0.15)] text-[#E8A634] border border-[#E8A634]/20'
-                        : 'bg-surface-bright text-on-surface-variant'
-                    }`}>
-                      {plan.priority} Priority
+              <div className="absolute inset-0 bg-primary blur-xl opacity-40 rounded-full animate-pulse"></div>
+              <span className="relative font-label-lg text-lg text-on-primary bg-gradient-to-br from-primary to-error px-5 py-2.5 rounded-full uppercase tracking-widest font-bold shadow-lg flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px]">pending_actions</span>
+                {revisionPlan.length} Topics
+              </span>
+            </motion.div>
+          </div>
+          
+          <motion.div 
+            variants={staggerContainer(0.08)} 
+            initial="hidden" 
+            animate="visible" 
+            className="flex flex-col gap-y-5"
+          >
+            {revisionPlan.map((plan, index) => (
+              <motion.div 
+                variants={fadeUpChild} 
+                key={plan.id} 
+                className="group relative flex flex-col md:flex-row md:items-center justify-between p-6 rounded-2xl transition-all duration-500 overflow-hidden"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(20,20,25,0.6) 0%, rgba(10,10,12,0.8) 100%)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+                }}
+                whileHover={{
+                  scale: 1.02,
+                  boxShadow: '0 8px 40px rgba(232,64,64,0.15), 0 0 20px rgba(232,64,64,0.1)',
+                  border: '1px solid rgba(232,64,64,0.3)'
+                }}
+              >
+                {/* Animated left accent bar */}
+                <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-primary via-error to-primary scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-top shadow-[0_0_20px_rgba(232,64,64,0.6)]"></div>
+                
+                {/* Priority indicator glow */}
+                {plan.priority === 'High' && (
+                  <div className="absolute top-2 right-2 w-3 h-3 bg-error rounded-full animate-pulse shadow-[0_0_15px_rgba(232,64,64,0.8)]"></div>
+                )}
+                
+                <div className="flex items-center gap-6 flex-1">
+                  {/* Icon with animated background */}
+                  <div className="relative">
+                    <motion.div 
+                      className="w-16 h-16 rounded-2xl bg-gradient-to-br from-surface-bright to-surface-container flex items-center justify-center group-hover:from-primary/20 group-hover:to-error/20 transition-all duration-500 shrink-0 border border-outline-variant/20 group-hover:border-primary/40"
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors duration-500 text-[32px]">
+                        menu_book
+                      </span>
+                    </motion.div>
+                    {/* Rank badge */}
+                    <div className="absolute -top-2 -right-2 w-7 h-7 bg-gradient-to-br from-primary to-error rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg border-2 border-bg-card">
+                      {index + 1}
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col gap-2 flex-1">
+                    <span className="font-headline-md text-xl text-on-surface font-semibold group-hover:text-primary transition-colors duration-300">
+                      {plan.concepts.name}
                     </span>
-                    <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px]">schedule</span> 
-                      {plan.minutes} min
-                    </span>
+                    <div className="flex items-center gap-4 flex-wrap">
+                      {/* Priority badge */}
+                      <motion.span 
+                        whileHover={{ scale: 1.1 }}
+                        className={`font-label-sm text-xs uppercase tracking-widest px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 ${
+                          plan.priority === 'High' 
+                            ? 'bg-gradient-to-r from-error/20 to-error/10 text-error border border-error/30 shadow-[0_0_15px_rgba(232,64,64,0.3)]' 
+                            : plan.priority === 'Medium'
+                            ? 'bg-gradient-to-r from-[#E8A634]/20 to-[#E8A634]/10 text-[#E8A634] border border-[#E8A634]/30'
+                            : 'bg-surface-bright text-on-surface-variant border border-outline-variant/30'
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-[14px]">
+                          {plan.priority === 'High' ? 'priority_high' : plan.priority === 'Medium' ? 'trending_up' : 'trending_flat'}
+                        </span>
+                        {plan.priority} Priority
+                      </motion.span>
+                      
+                      {/* Duration badge */}
+                      <span className="font-body-sm text-sm text-on-surface-variant flex items-center gap-2 px-3 py-1.5 bg-surface-container rounded-lg border border-outline-variant/20">
+                        <span className="material-symbols-outlined text-[18px] text-primary">schedule</span> 
+                        <span className="font-semibold">{plan.minutes}</span> min
+                      </span>
+                      
+                      {/* Progress indicator */}
+                      <span className="font-body-sm text-sm text-on-surface-variant flex items-center gap-2 px-3 py-1.5 bg-surface-container rounded-lg border border-outline-variant/20">
+                        <span className="material-symbols-outlined text-[18px] text-[#3DD68C]">target</span> 
+                        Revision #{index + 1}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="mt-4 md:mt-0 flex items-center justify-end md:justify-start gap-3 pl-[72px] md:pl-0">
-                <button
-                  onClick={() => startPractice(plan)}
-                  className="bg-surface-container-high hover:bg-[#3DD68C] text-on-surface hover:text-white px-5 py-3 rounded-xl font-label-md tracking-widest uppercase transition-colors flex items-center gap-2 border border-outline-variant/10 hover:border-[#3DD68C]"
+                
+                <div className="mt-5 md:mt-0 flex items-center justify-end md:justify-start gap-3 pl-0 md:pl-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => startPractice(plan)}
+                    className="relative bg-gradient-to-r from-[#3DD68C] to-[#34c759] hover:from-[#45e096] hover:to-[#3DD68C] text-white px-6 py-3.5 rounded-xl font-label-md tracking-widest uppercase transition-all duration-300 flex items-center gap-2 border border-[#3DD68C]/40 shadow-lg hover:shadow-[0_0_30px_rgba(61,214,140,0.4)] overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                    <span className="relative font-semibold">Practice</span>
+                    <span className="material-symbols-outlined text-[20px] relative">quiz</span>
+                  </motion.button>
+                  
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link 
+                      to={`/tutor?concept=${plan.concept_id}`} 
+                      className="relative bg-gradient-to-r from-primary to-error hover:from-error hover:to-primary text-on-primary px-6 py-3.5 rounded-xl font-label-md tracking-widest uppercase transition-all duration-300 flex items-center gap-2 border border-primary/40 shadow-lg hover:shadow-[0_0_30px_rgba(232,64,64,0.4)] overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                      <span className="relative font-semibold">AI Tutor</span>
+                      <span className="material-symbols-outlined text-[20px] relative">psychology</span>
+                    </Link>
+                  </motion.div>
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 360 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleCompleteRevision(plan.id)}
+                    className="bg-surface-container-high hover:bg-[#3DD68C]/20 text-on-surface hover:text-[#3DD68C] p-3.5 rounded-xl transition-all duration-300 border border-outline-variant/20 hover:border-[#3DD68C]/50 shadow-md hover:shadow-[0_0_20px_rgba(61,214,140,0.2)]"
+                    title="Mark as complete"
+                  >
+                    <span className="material-symbols-outlined text-[24px]">check_circle</span>
+                  </motion.button>
+                </div>
+              </motion.div>
+            ))}
+            
+            {revisionPlan.length === 0 && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="p-16 text-center flex flex-col items-center rounded-2xl"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(61,214,140,0.05) 0%, rgba(52,199,89,0.05) 100%)',
+                  border: '1px solid rgba(61,214,140,0.2)'
+                }}
+              >
+                <motion.div
+                  animate={{ 
+                    rotate: [0, 10, -10, 10, 0],
+                    scale: [1, 1.1, 1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 3
+                  }}
                 >
-                  Practice
-                  <span className="material-symbols-outlined text-[18px]">quiz</span>
-                </button>
-                <Link 
-                  to={`/tutor?concept=${plan.concept_id}`} 
-                  className="bg-surface-container-high hover:bg-primary text-on-surface hover:text-on-primary px-5 py-3 rounded-xl font-label-md tracking-widest uppercase transition-colors flex items-center gap-2 border border-outline-variant/10 hover:border-primary"
+                  <span className="material-symbols-outlined text-[80px] text-[#3DD68C] mb-6 drop-shadow-[0_0_30px_rgba(61,214,140,0.5)]">
+                    celebration
+                  </span>
+                </motion.div>
+                <h3 className="font-headline-lg text-3xl text-on-surface mb-3 font-bold">
+                  You're All Caught Up!
+                </h3>
+                <p className="font-body-md text-lg text-on-surface-variant max-w-md">
+                  Your revision queue is empty. Keep up the great work in your courses.
+                </p>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mt-6 flex gap-3"
                 >
-                  AI Tutor
-                  <span className="material-symbols-outlined text-[18px]">psychology</span>
-                </Link>
-                <button
-                  onClick={() => handleCompleteRevision(plan.id)}
-                  className="bg-surface-container-high hover:bg-surface-bright text-on-surface px-5 py-3 rounded-xl transition-colors border border-outline-variant/10"
-                  title="Mark as complete"
-                >
-                  <span className="material-symbols-outlined text-[20px]">check_circle</span>
-                </button>
-              </div>
-            </motion.div>
-          ))}
-          
-          {revisionPlan.length === 0 && (
-            <div className="p-12 text-center flex flex-col items-center">
-              <span className="material-symbols-outlined text-[64px] text-outline mb-4 opacity-20">
-                celebration
-              </span>
-              <span className="font-headline-lg text-headline-lg text-on-surface mb-2">
-                You're All Caught Up!
-              </span>
-              <span className="font-body-md text-body-md text-on-surface-variant">
-                Your revision queue is empty. Keep up the great work in your courses.
-              </span>
-            </div>
-          )}
-        </motion.div>
-      </section>
+                  <Link 
+                    to="/dashboard"
+                    className="bg-gradient-to-r from-primary to-error text-white px-6 py-3 rounded-xl font-label-md uppercase tracking-widest hover:shadow-[0_0_30px_rgba(232,64,64,0.4)] transition-all duration-300 flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">home</span>
+                    Back to Dashboard
+                  </Link>
+                  <Link 
+                    to="/courses"
+                    className="bg-surface-container-high text-on-surface px-6 py-3 rounded-xl font-label-md uppercase tracking-widest hover:bg-surface-bright transition-all duration-300 border border-outline-variant/20 flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">school</span>
+                    Explore Courses
+                  </Link>
+                </motion.div>
+              </motion.div>
+            )}
+          </motion.div>
+        </div>
+      </motion.section>
     </div>
   );
 }

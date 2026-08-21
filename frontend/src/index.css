@@ -42,7 +42,7 @@
     font-family: var(--font-body);
   }
   button, a { -webkit-tap-highlight-color: transparent; }
-  ::selection { background: rgba(232,166,52,0.3); color: #fff; }
+  ::selection { background: rgba(232,64,64,0.3); color: #fff; }
   main > :first-child { margin-top: 0 !important; }
   main > :last-child { margin-bottom: 0 !important; }
 }
@@ -108,8 +108,8 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--accent);
-    border: 1px solid rgba(232,166,52,0.2);
-    background: rgba(232,166,52,0.06);
+    border: 1px solid rgba(232,64,64,0.2);
+    background: rgba(232,64,64,0.06);
   }
   .section-title {
     font-family: var(--font-body);
@@ -145,8 +145,8 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--accent);
-    border: 1px solid rgba(232,166,52,0.2);
-    background: rgba(232,166,52,0.06);
+    border: 1px solid rgba(232,64,64,0.2);
+    background: rgba(232,64,64,0.06);
   }
   .land-card {
     position: relative;
@@ -178,7 +178,7 @@
     transition: border-color 0.3s ease;
   }
   .step-card:hover {
-    border-color: rgba(232,166,52,0.25);
+    border-color: rgba(232,64,64,0.25);
   }
   .step-number {
     display: inline-flex;
@@ -234,8 +234,8 @@
     text-decoration: none;
   }
   .btn-primary:hover {
-    background: #f0b44a;
-    box-shadow: 0 0 32px rgba(232,166,52,0.2);
+    background: #ff5e5e;
+    box-shadow: 0 0 32px rgba(232,64,64,0.2);
   }
   .btn-ghost {
     display: inline-flex;
@@ -270,7 +270,7 @@
   }
   .glow-line {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(232,166,52,0.15), transparent);
+    background: linear-gradient(90deg, transparent, rgba(232,64,64,0.15), transparent);
   }
 }
 

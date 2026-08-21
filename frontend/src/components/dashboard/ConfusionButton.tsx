@@ -34,8 +34,14 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
 
     setSubmitting(true);
     try {
+      const selectedCourseData = courses.find(c => c.id === selectedCourse);
+      const selectedLessonData = selectedCourseData?.lessons?.find((l: any) => l.id === selectedLesson);
+      const selectedConceptData = selectedLessonData?.concepts?.find((c: any) => c.id === selectedConcept);
+
       await api.post('/confusion/signal', {
+        courseId: selectedCourse,
         concept_id: selectedConcept,
+        concept: selectedConceptData?.name || 'Unknown Concept',
         signal,
         note
       });
@@ -65,7 +71,7 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
       {/* Fixed Button */}
       <motion.button
         onClick={handleOpen}
-        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 bg-error text-on-error px-6 py-4 rounded-full shadow-2xl hover:scale-105 transition-transform font-label-md uppercase tracking-widest"
+        className="fixed bottom-8 right-[100px] z-50 flex items-center gap-2 bg-error text-on-error px-6 py-4 rounded-full shadow-2xl hover:scale-105 transition-transform font-label-md uppercase tracking-widest"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.5, type: 'spring', stiffness: 260, damping: 20 }}

@@ -669,6 +669,96 @@ router.get('/api/analytics/educator', requireAuth, async (req, res) => {
   }
 });
 
+// ========== EDUCATOR ANALYTICS - STUDENT PERFORMANCE ==========
+router.get('/api/analytics/educator/students', requireAuth, async (req, res) => {
+  try {
+    // Get all students
+    const { data: students } = await supabaseAdmin
+      .from('profiles')
+      .select('id, name, email')
+      .eq('role', 'student');
+
+    if (!students || students.length === 0) {
+      return res.json([]);
+    }
+
+    const studentPerformance = await Promise.all(
+      students.map(async (student) => {
+        // Get mastery scores
+        const { data: masteryData } = await supabaseAdmin
+          .from('mastery_scores')
+          .select('score')
+          .eq('student_id', student.id);
+
+        const scores = masteryData?.map(m => m.score) || [];
+        const avg_mastery = scores.length > 0 
+          ? scores.reduce((a, b) => a + b, 0) / scores.length 
+          : 0;
+
+        // Get practice accuracy
+        const { data: practiceData } = await supabaseAdmin
+          .from('practice_attempts')
+          .select('correct')
+          .eq('student_id', student.id);
+
+        const totalPractice = practiceData?.length || 0;
+        const correctPractice = practiceData?.filter(p => p.correct).length || 0;
+        const practice_accuracy = totalPractice > 0 
+          ? (correctPractice / totalPractice) * 100 
+          : 0;
+
+        // Get confusion count (recent week)
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const { count: confusionCount } = await supabaseAdmin
+          .from('confusion_signals')
+          .select('*', { count: 'exact', head: true })
+          .eq('student_id', student.id)
+          .eq('signal', 'Confused')
+          .gte('created_at', weekAgo.toISOString());
+
+        // Get last activity
+        const { data: lastSession } = await supabaseAdmin
+          .from('learning_sessions')
+          .select('created_at')
+          .eq('student_id', student.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        // Determine status
+        let status: 'excellent' | 'good' | 'needs_attention' | 'at_risk';
+        if (avg_mastery >= 80 && practice_accuracy >= 80 && (confusionCount || 0) < 3) {
+          status = 'excellent';
+        } else if (avg_mastery >= 60 && practice_accuracy >= 60) {
+          status = 'good';
+        } else if (avg_mastery >= 40 || (confusionCount || 0) > 5) {
+          status = 'needs_attention';
+        } else {
+          status = 'at_risk';
+        }
+
+        return {
+          student_id: student.id,
+          student_name: student.name,
+          avg_mastery: Math.round(avg_mastery),
+          practice_accuracy: Math.round(practice_accuracy),
+          confusion_count: confusionCount || 0,
+          last_active: lastSession?.created_at || new Date().toISOString(),
+          status
+        };
+      })
+    );
+
+    // Sort by status priority (at_risk first, then needs_attention, etc.)
+    const statusPriority = { at_risk: 0, needs_attention: 1, good: 2, excellent: 3 };
+    studentPerformance.sort((a, b) => statusPriority[a.status] - statusPriority[b.status]);
+
+    res.json(studentPerformance);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ========== NOTIFICATIONS ==========
 router.get('/api/notifications', requireAuth, async (req, res) => {
   const userId = (req as any).user.id;

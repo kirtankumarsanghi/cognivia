@@ -14,6 +14,11 @@ import Tutor from './components/dashboard/Tutor';
 import Revision from './components/dashboard/Revision';
 import Courses from './components/dashboard/Courses';
 import EducatorDashboard from './components/educator/EducatorDashboard';
+import Achievements from './components/dashboard/Achievements';
+import StudyGroups from './components/dashboard/StudyGroups';
+import KnowledgeGraphView from './components/dashboard/KnowledgeGraphView';
+import ClassRoster from './components/educator/ClassRoster';
+import CurriculumBuilder from './components/educator/CurriculumBuilder';
 import CustomCursor from './components/CustomCursor';
 
 function RouteTransition({ children }: { children: ReactNode }) {
@@ -37,6 +42,9 @@ function AnimatedRoutes() {
             <Route path="/course/:id" element={<RouteTransition><CourseView /></RouteTransition>} />
             <Route path="/tutor" element={<RouteTransition><Tutor /></RouteTransition>} />
             <Route path="/revision" element={<RouteTransition><Revision /></RouteTransition>} />
+            <Route path="/study-groups" element={<RouteTransition><StudyGroups /></RouteTransition>} />
+            <Route path="/knowledge-graph" element={<RouteTransition><KnowledgeGraphView /></RouteTransition>} />
+            <Route path="/achievements" element={<RouteTransition><Achievements /></RouteTransition>} />
           </Route>
         </Route>
 
@@ -44,6 +52,8 @@ function AnimatedRoutes() {
         <Route element={<ProtectedRoute allowedRole="educator" />}>
           <Route element={<EducatorLayout />}>
             <Route path="/educator" element={<RouteTransition><EducatorDashboard /></RouteTransition>} />
+            <Route path="/educator/roster" element={<RouteTransition><ClassRoster /></RouteTransition>} />
+            <Route path="/educator/curriculum" element={<RouteTransition><CurriculumBuilder /></RouteTransition>} />
           </Route>
         </Route>
 

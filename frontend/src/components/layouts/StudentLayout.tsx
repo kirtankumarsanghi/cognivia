@@ -9,6 +9,9 @@ const studentLinks = [
   ['/courses', 'menu_book', 'My Courses'],
   ['/tutor', 'psychology', 'AI Tutor'],
   ['/revision', 'event_repeat', 'Revision Plan'],
+  ['/study-groups', 'group', 'Peer Study Hub'],
+  ['/knowledge-graph', 'hub', 'Knowledge Graph'],
+  ['/achievements', 'emoji_events', 'Achievements'],
 ] as const;
 
 export default function StudentLayout() {

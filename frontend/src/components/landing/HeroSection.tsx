@@ -2,17 +2,78 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
-/* ─── Animated Concentric Rings ─── */
+/* ─── Enhanced Animated Concentric Rings with More Features ─── */
 function AbstractCore() {
   return (
-    <div className="relative w-full h-[800px] flex items-center justify-center pointer-events-none" style={{ perspective: 1200 }}>
+    <div className="relative w-full h-[1000px] flex items-center justify-center pointer-events-none" style={{ perspective: 1400 }}>
+      {/* Outer Pulsing Glow */}
+      <motion.div
+        className="absolute rounded-full"
+        style={{ 
+          width: 700, 
+          height: 700,
+          background: 'radial-gradient(circle, rgba(232,64,64,0.2) 0%, transparent 70%)',
+          filter: 'blur(40px)'
+        }}
+        animate={{ 
+          scale: [1, 1.1, 1],
+          opacity: [0.3, 0.6, 0.3]
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      />
+      
       {/* Outer Dim Circle */}
       <motion.div
-        className="absolute rounded-full border border-[rgba(232,64,64,0.15)]"
-        style={{ width: 500, height: 500 }}
-        animate={{ scale: [1, 1.02, 1], opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute rounded-full border-2 border-[rgba(232,64,64,0.15)]"
+        style={{ width: 600, height: 600 }}
+        animate={{ 
+          scale: [1, 1.02, 1], 
+          opacity: [0.5, 1, 0.5],
+          rotate: [0, 360]
+        }}
+        transition={{ 
+          scale: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+          opacity: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+          rotate: { duration: 40, repeat: Infinity, ease: "linear" }
+        }}
       />
+
+      {/* Middle Rotating Ring */}
+      <motion.div
+        className="absolute rounded-full border-2 border-[rgba(232,100,100,0.25)]"
+        style={{ width: 480, height: 480 }}
+        animate={{ 
+          rotate: [0, -360],
+          scale: [1, 1.05, 1]
+        }}
+        transition={{ 
+          rotate: { duration: 30, repeat: Infinity, ease: "linear" },
+          scale: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+        }}
+      >
+        {/* Orbiting particles on middle ring */}
+        {[0, 120, 240].map((angle, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-3 h-3 bg-red-400 rounded-full"
+            style={{
+              top: '50%',
+              left: '50%',
+              boxShadow: '0 0 20px 4px rgba(232,64,64,0.6)',
+              transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-240px)`
+            }}
+            animate={{
+              opacity: [0.5, 1, 0.5],
+              scale: [0.8, 1.2, 0.8]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: i * 0.3
+            }}
+          />
+        ))}
+      </motion.div>
       
       {/* Tilted Orbital Ring */}
       <div 
@@ -21,36 +82,118 @@ function AbstractCore() {
       >
         <div 
           className="rounded-full border-[3px] border-[#e84040]"
-          style={{ width: 380, height: 380, boxShadow: '0 0 30px rgba(232,64,64,0.4), inset 0 0 30px rgba(232,64,64,0.4)' }}
+          style={{ 
+            width: 420, 
+            height: 420, 
+            boxShadow: '0 0 40px rgba(232,64,64,0.5), inset 0 0 40px rgba(232,64,64,0.5)' 
+          }}
         />
-        {/* Orbiting Satellite Dot */}
+        {/* Orbiting Satellite Dots */}
         <motion.div
           className="absolute w-full h-full"
           animate={{ rotateZ: 360 }}
           transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
         >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full" style={{ boxShadow: '0 0 20px 8px #e84040' }} />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full" 
+            style={{ boxShadow: '0 0 25px 10px #e84040' }} 
+          />
+        </motion.div>
+        <motion.div
+          className="absolute w-full h-full"
+          animate={{ rotateZ: -360 }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        >
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-4 h-4 bg-red-300 rounded-full" 
+            style={{ boxShadow: '0 0 20px 8px #ff6b6b' }} 
+          />
         </motion.div>
       </div>
 
-      {/* Central Orb */}
+      {/* Inner Geometric Ring */}
+      <motion.div
+        className="absolute"
+        style={{ width: 300, height: 300 }}
+        animate={{ rotate: [0, 360] }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      >
+        <svg width="100%" height="100%" viewBox="0 0 300 300">
+          <motion.circle
+            cx="150"
+            cy="150"
+            r="145"
+            fill="none"
+            stroke="rgba(232,64,64,0.3)"
+            strokeWidth="2"
+            strokeDasharray="20 10"
+            animate={{ 
+              strokeDashoffset: [0, -100],
+              opacity: [0.3, 0.8, 0.3]
+            }}
+            transition={{ 
+              strokeDashoffset: { duration: 3, repeat: Infinity, ease: "linear" },
+              opacity: { duration: 4, repeat: Infinity }
+            }}
+          />
+        </svg>
+      </motion.div>
+
+      {/* Central Orb with Enhanced Effects */}
       <motion.div
         className="absolute z-10 rounded-full"
         style={{
-          width: 190, height: 190,
+          width: 220, 
+          height: 220,
           background: 'radial-gradient(circle at 30% 30%, #ff8a8a 0%, #e84040 40%, #8a1010 100%)',
-          boxShadow: '0 0 80px 20px rgba(232,64,64,0.4), inset -15px -15px 30px rgba(0,0,0,0.6)'
+          boxShadow: '0 0 100px 30px rgba(232,64,64,0.5), inset -20px -20px 40px rgba(0,0,0,0.7)'
         }}
         animate={{
-          scale: [1, 1.05, 1],
+          scale: [1, 1.08, 1],
           boxShadow: [
-            '0 0 80px 20px rgba(232,64,64,0.4), inset -15px -15px 30px rgba(0,0,0,0.6)',
-            '0 0 120px 40px rgba(232,64,64,0.6), inset -15px -15px 30px rgba(0,0,0,0.6)',
-            '0 0 80px 20px rgba(232,64,64,0.4), inset -15px -15px 30px rgba(0,0,0,0.6)'
+            '0 0 100px 30px rgba(232,64,64,0.5), inset -20px -20px 40px rgba(0,0,0,0.7)',
+            '0 0 140px 50px rgba(232,64,64,0.8), inset -20px -20px 40px rgba(0,0,0,0.7)',
+            '0 0 100px 30px rgba(232,64,64,0.5), inset -20px -20px 40px rgba(0,0,0,0.7)'
           ]
         }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      />
+      >
+        {/* Surface detail */}
+        <motion.div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: 'radial-gradient(circle at 40% 40%, rgba(255,255,255,0.3) 0%, transparent 50%)',
+          }}
+          animate={{
+            opacity: [0.3, 0.6, 0.3]
+          }}
+          transition={{ duration: 3, repeat: Infinity }}
+        />
+      </motion.div>
+
+      {/* Energy lines emanating from center */}
+      {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => (
+        <motion.div
+          key={angle}
+          className="absolute"
+          style={{
+            width: 2,
+            height: 100,
+            background: `linear-gradient(to top, rgba(232,64,64,0.6), transparent)`,
+            transformOrigin: 'bottom center',
+            bottom: '50%',
+            left: '50%',
+            transform: `translateX(-50%) rotate(${angle}deg)`,
+          }}
+          animate={{
+            height: [100, 150, 100],
+            opacity: [0.3, 0.7, 0.3]
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            delay: i * 0.2
+          }}
+        />
+      ))}
     </div>
   );
 }
@@ -118,8 +261,8 @@ export default function HeroSection() {
             </motion.p>
           </div>
 
-          {/* Abstract Center/Right Graphic */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] pointer-events-none opacity-80 mix-blend-screen lg:opacity-100 lg:-translate-x-1/4">
+          {/* Abstract Center/Right Graphic - Enhanced Size and Position */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1000px] pointer-events-none opacity-90 mix-blend-screen lg:opacity-100 lg:left-[60%] lg:-translate-x-1/2 xl:left-[65%] scale-110 lg:scale-125">
             <AbstractCore />
           </div>
 

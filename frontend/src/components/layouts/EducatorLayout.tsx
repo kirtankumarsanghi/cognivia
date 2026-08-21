@@ -60,6 +60,36 @@ export default function EducatorLayout() {
           )}
           <span className="material-symbols-outlined">analytics</span>Class Analytics
         </NavLink>
+        <NavLink
+          to="/educator/roster"
+          onClick={close}
+          className={`nav-item relative ${location.pathname === '/educator/roster' ? 'nav-item-active' : ''}`}
+        >
+          {location.pathname === '/educator/roster' && (
+            <motion.div
+              layoutId="activeNavPillEducator"
+              className="absolute inset-0 rounded-lg"
+              style={{ background: 'var(--accent-dim)', zIndex: -1 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+            />
+          )}
+          <span className="material-symbols-outlined">group</span>Class Roster
+        </NavLink>
+        <NavLink
+          to="/educator/curriculum"
+          onClick={close}
+          className={`nav-item relative ${location.pathname === '/educator/curriculum' ? 'nav-item-active' : ''}`}
+        >
+          {location.pathname === '/educator/curriculum' && (
+            <motion.div
+              layoutId="activeNavPillEducator"
+              className="absolute inset-0 rounded-lg"
+              style={{ background: 'var(--accent-dim)', zIndex: -1 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+            />
+          )}
+          <span className="material-symbols-outlined">auto_stories</span>Curriculum Builder
+        </NavLink>
         <p className="nav-label mt-7">Student tools</p>
         <button className="nav-item w-full text-left" onClick={() => { switchRole('student'); navigate('/dashboard'); close(); }}><span className="material-symbols-outlined">dashboard</span>Student View</button>
       </nav>

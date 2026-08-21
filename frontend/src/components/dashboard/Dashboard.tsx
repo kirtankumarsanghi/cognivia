@@ -1,11 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fadeUp, staggerContainer, fadeUpChild, premiumEase } from '../../utils/animation';
 import Loading from '../ui/Loading';
 import ConfusionButton from './ConfusionButton';
+import ConceptGraph from '../concepts/ConceptGraph';
+import ProgressTracker from './ProgressTracker';
+import AIStudyAssistant from './AIStudyAssistant';
+import { useMemo } from 'react';
+
+const AnimatedNumber = ({ value, duration = 1 }: { value: number; duration?: number }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  
+  useEffect(() => {
+    let startTime: number;
+    let animationFrameId: number;
+
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
+      setDisplayValue(Math.floor(progress * value));
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+    
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [value, duration]);
+
+  return <>{displayValue}</>;
+};
 
 export default function Dashboard() {
   const api = useApi();
@@ -16,54 +44,95 @@ export default function Dashboard() {
   const [pulse, setPulse] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const loadData = async () => {
+  // Compute a real flat list of concepts from the courses to power the knowledge graph
+  const graphConcepts = useMemo(() => {
+    return courses.flatMap(course => 
+      (course.lessons || []).flatMap((lesson: any) => 
+        (lesson.concepts || []).map((concept: any, index: number, arr: any[]) => ({
+          ...concept,
+          // Link to the previous concept in the lesson for a logical learning path
+          prerequisites: index > 0 ? [{ id: arr[index - 1].id }] : []
+        }))
+      )
+    );
+  }, [courses]);
+
+  const loadData = useCallback(async (showRefreshing = false) => {
     try {
+      if (showRefreshing) setRefreshing(true);
+      
       const [analyticsData, coursesData, pulseData, notifData] = await Promise.all([
         api.get('/analytics/student'),
         api.get('/courses'),
         api.get('/confusion/pulse'),
         api.get('/notifications'),
       ]);
+      
       setAnalytics(analyticsData);
       setCourses(coursesData);
       setPulse(pulseData);
       setNotifications(notifData);
-    } catch (err) {
+      setError(null);
+    } catch (err: any) {
       console.error('Failed to load dashboard data', err);
+      setError(err.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, [api]);
 
   useEffect(() => {
     loadData();
-  }, []);
+    
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      loadData(false);
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [loadData]);
 
   if (loading) return <Loading variant="dashboard" />;
+  
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface p-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-surface-container rounded-2xl p-8 max-w-md w-full text-center border border-error/20"
+        >
+          <span className="material-symbols-outlined text-error text-[48px] mb-4">error</span>
+          <h2 className="font-headline-md text-headline-md text-on-surface mb-2">Connection Error</h2>
+          <p className="font-body-md text-on-surface-variant mb-6">{error}</p>
+          <button
+            onClick={() => {
+              setLoading(true);
+              setError(null);
+              loadData();
+            }}
+            className="bg-primary text-on-primary px-6 py-3 rounded-xl font-label-md uppercase tracking-widest hover:opacity-90 transition-opacity"
+          >
+            Try Again
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+  
   if (!analytics) return <div>Error loading dashboard</div>;
-
-  const AnimatedNumber = ({ value, duration = 1 }: { value: number; duration?: number }) => {
-    const [displayValue, setDisplayValue] = useState(0);
-    
-    useEffect(() => {
-      let startTime: number;
-      const animate = (currentTime: number) => {
-        if (!startTime) startTime = currentTime;
-        const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
-        setDisplayValue(Math.floor(progress * value));
-        if (progress < 1) requestAnimationFrame(animate);
-      };
-      requestAnimationFrame(animate);
-    }, [value, duration]);
-
-    return <>{displayValue}</>;
-  };
 
   return (
     <div className="page-shell">
       {/* Confusion Button - Fixed Position */}
       <ConfusionButton onSignalCreated={loadData} />
+
+      {/* AI Study Assistant - Floating */}
+      <AIStudyAssistant />
 
       {/* Header Section */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm relative">
@@ -73,11 +142,35 @@ export default function Dashboard() {
             Welcome back, <br/>{user?.name.split(' ')[0]}
           </h1>
         </motion.div>
-        <motion.div variants={fadeUp(0.1)} initial="hidden" animate="visible" className="flex items-center gap-stack-sm bg-surface-container-high px-6 py-3 rounded-xl border border-outline-variant/20 shadow-md">
-          <span className="material-symbols-outlined text-primary text-[28px]">workspace_premium</span>
-          <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-widest">Current Rank</span>
-            <span className="font-body-md text-body-md text-on-surface-variant font-medium">{analytics.rank}</span>
+        
+        <motion.div variants={fadeUp(0.1)} initial="hidden" animate="visible" className="flex items-center gap-4">
+          {/* Refresh Button */}
+          <motion.button
+            onClick={() => loadData(true)}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-container hover:bg-surface-container-high rounded-xl border border-outline-variant/20 transition-all disabled:opacity-50"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <motion.span
+              className="material-symbols-outlined text-on-surface-variant text-[20px]"
+              animate={{ rotate: refreshing ? 360 : 0 }}
+              transition={{ duration: 1, repeat: refreshing ? Infinity : 0, ease: 'linear' }}
+            >
+              refresh
+            </motion.span>
+            <span className="font-label-sm text-on-surface-variant">
+              {refreshing ? 'Updating...' : 'Refresh'}
+            </span>
+          </motion.button>
+          
+          {/* Rank Badge */}
+          <div className="flex items-center gap-stack-sm bg-surface-container-high px-6 py-3 rounded-xl border border-outline-variant/20 shadow-md">
+            <span className="material-symbols-outlined text-primary text-[28px]">workspace_premium</span>
+            <div className="flex flex-col">
+              <span className="font-label-sm text-label-sm text-outline uppercase tracking-widest">Current Rank</span>
+              <span className="font-body-md text-body-md text-on-surface-variant font-medium">{analytics.rank}</span>
+            </div>
           </div>
         </motion.div>
         
@@ -207,11 +300,11 @@ export default function Dashboard() {
                         await api.post(`/revision/${plan.id}/complete`, {});
                         loadData();
                       }}
-                      className="px-4 py-2 bg-surface-container rounded-lg hover:bg-primary/10 transition-colors font-label-sm"
+                      className="px-4 py-2 bg-surface-container rounded-lg hover:bg-primary/20 hover:text-primary text-on-surface transition-colors font-label-sm border border-outline-variant/10 hover:border-primary/30"
                     >
                       Complete
                     </button>
-                    <Link to={`/tutor?concept=${plan.concept_id}`} className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors">
+                    <Link to={`/tutor?concept=${plan.concept_id}`} className="w-8 h-8 rounded-full bg-surface-container border border-outline-variant/10 flex items-center justify-center text-on-surface hover:text-primary hover:bg-primary/20 hover:border-primary/30 transition-colors">
                       <span className="material-symbols-outlined text-[20px]">play_arrow</span>
                     </Link>
                   </div>
@@ -262,28 +355,14 @@ export default function Dashboard() {
               </div>
             </section>
 
-            {/* Weekly Progress */}
-            <section className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
-              <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-md">Weekly Progress</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col p-4 bg-surface rounded-xl">
-                  <span className="font-headline-md text-headline-md text-on-surface">{analytics.weeklySessionCount}</span>
-                  <span className="font-label-sm text-label-sm text-outline uppercase mt-1">Sessions</span>
-                </div>
-                <div className="flex flex-col p-4 bg-surface rounded-xl">
-                  <span className="font-headline-md text-headline-md text-on-surface">{analytics.practiceAccuracy}%</span>
-                  <span className="font-label-sm text-label-sm text-outline uppercase mt-1">Practice Accuracy</span>
-                </div>
-                <div className="flex flex-col p-4 bg-surface rounded-xl">
-                  <span className="font-headline-md text-headline-md text-on-surface">{analytics.masteredCount}</span>
-                  <span className="font-label-sm text-label-sm text-outline uppercase mt-1">Concepts Improved</span>
-                </div>
-                <div className="flex flex-col p-4 bg-surface rounded-xl">
-                  <span className="font-headline-md text-headline-md text-on-surface">{analytics.streak}</span>
-                  <span className="font-label-sm text-label-sm text-outline uppercase mt-1">Day Streak</span>
-                </div>
-              </div>
-            </section>
+            {/* Enhanced Progress Tracker */}
+            <ProgressTracker 
+              weeklySessionCount={analytics.weeklySessionCount}
+              practiceAccuracy={analytics.practiceAccuracy}
+              masteredCount={analytics.masteredCount}
+              streak={analytics.streak}
+              weeklyChange={analytics.weeklyChange}
+            />
           </motion.div>
 
           {/* Notifications */}
@@ -312,6 +391,13 @@ export default function Dashboard() {
               </div>
             </motion.section>
           )}
+
+          {/* Concept Knowledge Graph */}
+          <motion.section variants={fadeUp(0.6)} initial="hidden" animate="visible" className="lg:col-span-12">
+            <div className="h-[700px]">
+              <ConceptGraph concepts={graphConcepts.length > 0 ? graphConcepts : undefined} />
+            </div>
+          </motion.section>
         </div>
       </div>
     </div>

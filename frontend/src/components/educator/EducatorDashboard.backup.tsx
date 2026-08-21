@@ -8,9 +8,6 @@ import Loading from '../ui/Loading';
 export default function EducatorDashboard() {
   const api = useApi();
   const [analytics, setAnalytics] = useState<any>(null);
-  const [pulse, setPulse] = useState<any[]>([]);
-  const [courses, setCourses] = useState<any[]>([]);
-  const [selectedCourseId, setSelectedCourseId] = useState<string>('cse2101');
   const [loading, setLoading] = useState(true);
   const [hoursAgo, setHoursAgo] = useState<number>(24);
   const [miniLesson, setMiniLesson] = useState<any>(null);
@@ -24,14 +21,8 @@ export default function EducatorDashboard() {
   const loadData = async (hours: number) => {
     try {
       const sinceDate = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
-      const [analyticsData, pulseData, coursesData] = await Promise.all([
-        api.get(`/analytics/educator?since=${sinceDate}&courseId=${selectedCourseId}`),
-        api.get(`/confusion/pulse?courseId=${selectedCourseId}`),
-        api.get('/courses')
-      ]);
+      const analyticsData = await api.get(`/analytics/educator?since=${sinceDate}`);
       setAnalytics(analyticsData);
-      setPulse(pulseData);
-      setCourses(coursesData);
     } catch (err) {
       console.error('Failed to load educator analytics', err);
     } finally {
@@ -47,7 +38,7 @@ export default function EducatorDashboard() {
     intervalRef.current = setInterval(() => loadData(hoursAgo), 15000);
     
     return () => clearInterval(intervalRef.current);
-  }, [hoursAgo, selectedCourseId]); // Re-fetch when course or timeframe changes
+  }, [hoursAgo]); // Removed api to prevent infinite re-renders
 
   const handleGenerateLesson = async () => {
     if (!analytics?.mostConfusing) return;
@@ -120,22 +111,6 @@ export default function EducatorDashboard() {
           <p className="font-body-lg text-on-surface-variant mt-2">
             Real-time insights into student understanding and performance.
           </p>
-        </motion.div>
-        
-        {/* Course Selector */}
-        <motion.div variants={fadeUp(0.1)} initial="hidden" animate="visible" className="flex items-center gap-3 bg-surface-container border border-outline-variant/20 rounded-xl p-2 px-4 shadow-sm">
-          <span className="material-symbols-outlined text-primary text-[20px]">school</span>
-          <select 
-            value={selectedCourseId}
-            onChange={(e) => setSelectedCourseId(e.target.value)}
-            className="bg-transparent border-none outline-none font-label-md text-on-surface cursor-pointer py-2 pr-4 custom-select appearance-none focus:ring-0"
-            style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
-          >
-            {courses.map((c: any) => (
-              <option key={c.id} value={c.id} className="bg-surface text-on-surface">{c.code} - {c.name}</option>
-            ))}
-          </select>
-          <span className="material-symbols-outlined text-outline text-[18px] pointer-events-none">expand_more</span>
         </motion.div>
       </header>
 
@@ -305,43 +280,6 @@ export default function EducatorDashboard() {
 
         {/* Right Column: AI Insights & Actions */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Live Student Doubts */}
-          <motion.div
-            variants={fadeUp(0.1)}
-            initial="hidden"
-            animate="visible"
-            className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10 relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-2 h-2 rounded-full bg-error animate-ping mt-6 mr-6"></div>
-            <h3 className="font-label-md text-outline uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">sensors</span> Live Student Doubts
-            </h3>
-            <div className="space-y-3">
-              {pulse && pulse.length > 0 ? (
-                pulse.slice(0, 3).map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-surface rounded-xl border border-outline-variant/10">
-                    <div>
-                      <h4 className="font-headline-sm text-on-surface">{item.student_name}</h4>
-                      <p className="font-body-sm text-outline">Struggling with: {item.name}</p>
-                    </div>
-                    <div className="flex flex-col items-end">
-                      <span className={`font-label-sm uppercase px-2 py-1 rounded-full text-[10px] ${
-                        item.status === 'HIGH' ? 'bg-error/10 text-error' :
-                        item.status === 'MEDIUM' ? 'bg-[#E8A634]/10 text-[#E8A634]' :
-                        'bg-[#3DD68C]/10 text-[#3DD68C]'
-                      }`}>
-                        {item.status === 'HIGH' ? 'LOST' : item.status === 'MEDIUM' ? 'CONFUSED' : 'UNCLEAR'}
-                      </span>
-                      <span className="text-[10px] text-outline mt-1">{item.time}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="font-body-sm text-outline">No recent doubts reported.</p>
-              )}
-            </div>
-          </motion.div>
-
           {/* AI Recommendation */}
           {analytics.aiRecommendation && (
             <motion.div
