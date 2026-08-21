@@ -904,4 +904,64 @@ router.get('/api/search', requireAuth, async (req, res) => {
   }
 });
 
+// ========== STUDY GROUPS ==========
+router.get('/api/study-groups/matches', requireAuth, async (req, res) => {
+  const userId = (req as any).user.id;
+  try {
+    const { data: otherStudents } = await supabaseAdmin
+      .from('profiles')
+      .select('id, name')
+      .eq('role', 'student')
+      .neq('id', userId)
+      .limit(4);
+
+    if (!otherStudents) return res.json([]);
+
+    const matches = await Promise.all(otherStudents.map(async (student) => {
+      const { data: bestMastery } = await supabaseAdmin
+        .from('mastery_scores')
+        .select('score, concept:concepts(name)')
+        .eq('student_id', student.id)
+        .order('score', { ascending: false })
+        .limit(1)
+        .single();
+
+      return {
+        id: student.id,
+        name: student.name,
+        strength: bestMastery?.concept?.name || 'General Programming',
+        match: Math.floor(Math.random() * 20) + 80 // 80-99% match
+      };
+    }));
+
+    res.json(matches.sort((a, b) => b.match - a.match));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/api/study-groups/sessions', requireAuth, async (req, res) => {
+  try {
+    const sessions = [
+      {
+        id: '1',
+        title: 'Algorithms Prep',
+        topic: 'Graph Traversal and BFS/DFS implementation details.',
+        participants: 4,
+        isLive: true
+      },
+      {
+        id: '2',
+        title: 'System Design Basics',
+        topic: 'Discussing CAP theorem and database sharding strategies.',
+        participants: 3,
+        isLive: true
+      }
+    ];
+    res.json(sessions);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

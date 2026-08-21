@@ -115,7 +115,7 @@ export const geminiService = {
        console.error('Gemini API Error:', error);
        return 'Unable to generate recommendation at this time.';
     }
-  }
+  },
   async generateMiniLesson(conceptName: string): Promise<any> {
     if (!isAiAvailable || !model) {
       return {
