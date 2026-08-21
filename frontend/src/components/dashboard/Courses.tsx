@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { useEffect, useState } from 'react';
+import Loading from '../ui/Loading';
 
 export default function Courses() {
   const api = useApi();
@@ -19,7 +20,7 @@ export default function Courses() {
         <h1>My Courses</h1>
         <p>Pick up a lesson, review a concept, or tell Cogniva where you need more clarity.</p>
       </header>
-      {loading ? <div className="p-8 animate-pulse text-on-surface-variant">Loading your courses…</div> : (
+      {loading ? <Loading variant="courses" /> : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {courses.map((course) => (
             <article key={course.id} className="bg-surface-container border border-outline-variant/10 rounded-2xl p-6 flex flex-col gap-5 shadow-md">

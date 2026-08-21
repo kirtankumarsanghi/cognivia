@@ -12,12 +12,12 @@ export const geminiService = {
     if (!isAiAvailable || !model) {
       // Return Fallback Demo Mode Response
       return {
-        explanation: 'Demo Mode: Binary search works by repeatedly dividing in half the portion of the list that could contain the item, until you''ve narrowed down the possible locations to just one.',
-        whyItWorks: 'It works because in a sorted array, checking the middle element tells you exactly which half of the array your target must be in.',
-        example: 'Like looking up a word in a dictionary. You don''t read page by page; you open the middle, see if your word is earlier or later, and repeat.',
-        commonMistake: 'Forgetting that the array MUST be sorted before you can use binary search.',
-        quickCheck: 'If you have 100 items, what is the maximum number of checks binary search needs? (Answer: roughly 7)',
-        nextStep: 'Practice implementing binary search in code.',
+        explanation: "Demo Mode: Binary search works by repeatedly dividing in half the portion of the list that could contain the item, until you've narrowed down the possible locations to just one.",
+        whyItWorks: "It works because in a sorted array, checking the middle element tells you exactly which half of the array your target must be in.",
+        example: "Like looking up a word in a dictionary. You don't read page by page; you open the middle, see if your word is earlier or later, and repeat.",
+        commonMistake: "Forgetting that the array MUST be sorted before you can use binary search.",
+        quickCheck: "If you have 100 items, what is the maximum number of checks binary search needs? (Answer: roughly 7)",
+        nextStep: "Practice implementing binary search in code.",
         isDemo: true
       };
     }
@@ -55,12 +55,12 @@ export const geminiService = {
   async explainAgain(question: string, previousExplanation: string): Promise<any> {
     if (!isAiAvailable || !model) {
       return {
-        explanation: 'Demo Alternative: Imagine guessing a number between 1 and 100. If you guess 50 and I say "higher", you''ve instantly eliminated 1-50. That''s the power of binary search.',
-        whyItWorks: 'Every step cuts the problem size in half, making it incredibly fast even for massive datasets.',
-        example: 'Searching a phone book with 1 million names takes at most 20 checks.',
-        commonMistake: 'Calculating the middle index incorrectly, leading to an infinite loop or out-of-bounds error (e.g. integer overflow).',
-        quickCheck: 'Why is O(log n) better than O(n)?',
-        nextStep: 'Try writing the condition for when the search should terminate.',
+        explanation: "Demo Alternative: Imagine guessing a number between 1 and 100. If you guess 50 and I say \"higher\", you've instantly eliminated 1-50. That's the power of binary search.",
+        whyItWorks: "Every step cuts the problem size in half, making it incredibly fast even for massive datasets.",
+        example: "Searching a phone book with 1 million names takes at most 20 checks.",
+        commonMistake: "Calculating the middle index incorrectly, leading to an infinite loop or out-of-bounds error (e.g. integer overflow).",
+        quickCheck: "Why is O(log n) better than O(n)?",
+        nextStep: "Try writing the condition for when the search should terminate.",
         isDemo: true
       };
     }

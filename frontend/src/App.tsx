@@ -1,4 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import type { ReactNode } from 'react';
 import LandingPage from './components/landing/LandingPage';
 import Login from './components/landing/Login';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -11,37 +14,52 @@ import Tutor from './components/dashboard/Tutor';
 import Revision from './components/dashboard/Revision';
 import Courses from './components/dashboard/Courses';
 import EducatorDashboard from './components/educator/EducatorDashboard';
+import CustomCursor from './components/CustomCursor';
+
+function RouteTransition({ children }: { children: ReactNode }) {
+  return <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}>{children}</motion.div>;
+}
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Public Routes */}
+        <Route path="/" element={<RouteTransition><LandingPage /></RouteTransition>} />
+        <Route path="/login" element={<RouteTransition><Login /></RouteTransition>} />
+        
+        {/* Protected Student Routes */}
+        <Route element={<ProtectedRoute allowedRole="student" />}>
+          <Route element={<StudentLayout />}>
+            <Route path="/dashboard" element={<RouteTransition><Dashboard /></RouteTransition>} />
+            <Route path="/courses" element={<RouteTransition><Courses /></RouteTransition>} />
+            <Route path="/course/:id" element={<RouteTransition><CourseView /></RouteTransition>} />
+            <Route path="/tutor" element={<RouteTransition><Tutor /></RouteTransition>} />
+            <Route path="/revision" element={<RouteTransition><Revision /></RouteTransition>} />
+          </Route>
+        </Route>
+
+        {/* Protected Educator Routes */}
+        <Route element={<ProtectedRoute allowedRole="educator" />}>
+          <Route element={<EducatorLayout />}>
+            <Route path="/educator" element={<RouteTransition><EducatorDashboard /></RouteTransition>} />
+          </Route>
+        </Route>
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
 
 function App() {
   return (
     <AuthProvider>
+      <CustomCursor />
       <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          
-          {/* Protected Student Routes */}
-          <Route element={<ProtectedRoute allowedRole="student" />}>
-            <Route element={<StudentLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/courses" element={<Courses />} />
-              <Route path="/course/:id" element={<CourseView />} />
-              <Route path="/tutor" element={<Tutor />} />
-              <Route path="/revision" element={<Revision />} />
-            </Route>
-          </Route>
-
-          {/* Protected Educator Routes */}
-          <Route element={<ProtectedRoute allowedRole="educator" />}>
-            <Route element={<EducatorLayout />}>
-              <Route path="/educator" element={<EducatorDashboard />} />
-            </Route>
-          </Route>
-
-          {/* Catch-all: redirect to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AnimatedRoutes />
       </Router>
     </AuthProvider>
   );

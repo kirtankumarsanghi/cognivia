@@ -87,4 +87,53 @@ BEGIN
     (student_id, c_binary_search, 'Medium', 12)
   ON CONFLICT DO NOTHING;
 
+  -- 9. Course Enrollments
+  INSERT INTO public.course_enrollments (student_id, course_id)
+  VALUES (student_id, course_id)
+  ON CONFLICT DO NOTHING;
+
+  -- 10. Learning Sessions
+  INSERT INTO public.learning_sessions (student_id, session_type, duration_minutes, created_at)
+  VALUES 
+    (student_id, 'lesson', 25, NOW() - INTERVAL '1 day'),
+    (student_id, 'tutor', 15, NOW() - INTERVAL '2 hours'),
+    (student_id, 'practice', 20, NOW() - INTERVAL '3 days')
+  ON CONFLICT DO NOTHING;
+
+  -- 11. Practice Questions
+  INSERT INTO public.practice_questions (concept_id, question_type, question_text, options, correct_answer, explanation)
+  VALUES 
+    (c_binary_search, 'mcq', 'What is the time complexity of binary search?', 
+     '["O(n)", "O(log n)", "O(n^2)", "O(1)"]'::jsonb, 
+     'O(log n)', 
+     'Binary search divides the search space in half each iteration, resulting in logarithmic time complexity.'),
+    (c_bigo, 'true_false', 'O(n) is faster than O(log n) for large inputs.', 
+     '["True", "False"]'::jsonb, 
+     'False', 
+     'O(log n) grows much slower than O(n), making it faster for large inputs.'),
+    (c_arrays, 'mcq', 'What is the time complexity of accessing an element by index in an array?',
+     '["O(n)", "O(log n)", "O(n^2)", "O(1)"]'::jsonb,
+     'O(1)',
+     'Arrays provide constant-time access to elements by index.')
+  ON CONFLICT DO NOTHING;
+
+  -- 12. Practice Attempts (some correct, some incorrect)
+  INSERT INTO public.practice_attempts (student_id, concept_id, correct, created_at)
+  VALUES 
+    (student_id, c_arrays, TRUE, NOW() - INTERVAL '2 days'),
+    (student_id, c_arrays, TRUE, NOW() - INTERVAL '2 days'),
+    (student_id, c_searching, TRUE, NOW() - INTERVAL '1 day'),
+    (student_id, c_bigo, FALSE, NOW() - INTERVAL '1 day'),
+    (student_id, c_bigo, FALSE, NOW() - INTERVAL '6 hours'),
+    (student_id, c_binary_search, FALSE, NOW() - INTERVAL '3 hours')
+  ON CONFLICT DO NOTHING;
+
+  -- 13. Notifications
+  INSERT INTO public.notifications (user_id, type, message, read, created_at)
+  VALUES 
+    (student_id, 'clarity_plan', 'Your Clarity Plan is ready.', FALSE, NOW() - INTERVAL '1 hour'),
+    (student_id, 'improvement', 'Binary Search improved to 15%!', FALSE, NOW() - INTERVAL '2 hours'),
+    (student_id, 'attention', '3 concepts still need attention.', TRUE, NOW() - INTERVAL '1 day')
+  ON CONFLICT DO NOTHING;
+
 END $$;

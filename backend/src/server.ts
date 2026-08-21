@@ -7,8 +7,8 @@ import apiRoutes from './routes/index';
 
 const app = express();
 
-app.use(cors({ origin: env.frontendUrl }));
-app.use(express.json());
+app.use(cors({ origin: env.frontendUrl, methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'x-user-id', 'x-user-role'] }));
+app.use(express.json({ limit: '1mb' }));
 
 // Basic health check
 app.get('/api/health', (req, res) => {
