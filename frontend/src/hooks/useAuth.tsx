@@ -9,6 +9,7 @@ type User = {
 type AuthContextType = {
   user: User | null;
   login: (role: 'student' | 'educator') => void;
+  switchRole: (role: 'student' | 'educator') => void;
   logout: () => void;
   isLoading: boolean;
 };
@@ -45,8 +46,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('cogniva_user');
   };
 
+  const switchRole = (role: 'student' | 'educator') => login(role);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, switchRole, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
