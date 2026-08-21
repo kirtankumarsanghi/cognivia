@@ -20,30 +20,30 @@ It tackles the same problem as the **PulseCheck** concept: professors in large l
 
 <br/>
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [What It Does](#-what-it-does)
-- [Tech Stack](#-tech-stack)
-- [Monorepo Structure](#-monorepo-structure)
-- [How Confusion Becomes a Signal](#-how-confusion-becomes-a-signal)
-- [Data Model](#-data-model)
-- [API Surface](#-api-surface)
-- [Frontend Structure](#-frontend-structure)
-- [Design System](#-design-system)
-- [Getting Started](#-getting-started)
-- [Environment Variables](#-environment-variables)
-- [Demo Mode](#-demo-mode-no-ai-key-required)
-- [Known Gaps / Work in Progress](#-known-gaps--work-in-progress)
+- [What It Does](#what-it-does)
+- [Tech Stack](#tech-stack)
+- [Monorepo Structure](#monorepo-structure)
+- [How Confusion Becomes a Signal](#how-confusion-becomes-a-signal)
+- [Data Model](#data-model)
+- [API Surface](#api-surface)
+- [Frontend Structure](#frontend-structure)
+- [Design System](#design-system)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Demo Mode](#demo-mode-no-ai-key-required)
+- [Known Gaps / Work in Progress](#known-gaps--work-in-progress)
 
 <br/>
 
-## 🎯 What It Does
+## What It Does
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-### 🧑‍🎓 For students
+### For students
 
 - **Flag confusion in the moment** — a persistent "I'm Confused" button marks a concept `Confused`, `Partially Clear`, or `Clear`, with an optional note.
 - **Get an AI explanation instantly** — a structured response: simple explanation, why it works, a relatable example, a common mistake, a quick comprehension check, and a next step. Still lost? Ask for it a *different* way, not a repeat.
@@ -55,7 +55,7 @@ It tackles the same problem as the **PulseCheck** concept: professors in large l
 </td>
 <td width="50%" valign="top">
 
-### 🧑‍🏫 For educators
+### For educators
 
 - **A live confusion pulse** — every signal across every student rolls up per concept into a 0–100% confusion score.
 - **A confusion heatmap and topic breakdown** — bar-chart and ranked-list views of which concepts are causing the most trouble class-wide.
@@ -68,7 +68,7 @@ It tackles the same problem as the **PulseCheck** concept: professors in large l
 
 <br/>
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -83,9 +83,9 @@ It tackles the same problem as the **PulseCheck** concept: professors in large l
 
 <br/>
 
-## 📁 Monorepo Structure
+## Monorepo Structure
 
-\```
+```
 cognivia/
 ├── backend/                 Express + TypeScript API
 │   └── src/
@@ -114,42 +114,42 @@ cognivia/
         ├── pages/             Route-level page wrappers
         ├── services/          Frontend API client wrappers
         └── types/             Shared frontend TS types
-\```
+```
 
 The root `package.json` is an npm **workspaces** root (`"workspaces": ["frontend", "backend"]`), so `npm install` at the repo root installs both packages' dependencies.
 
 <br/>
 
-## ⚡ How Confusion Becomes a Signal
+## How Confusion Becomes a Signal
 
 <table>
-<tr><td width="60">1️⃣</td><td>
+<tr><td width="60">1.</td><td>
 
 **Student submits a signal** — `POST /api/confusion/signal` with `{ concept_id, signal }` where `signal` is `Confused` | `Partially Clear` | `Clear`.
 
 </td></tr>
-<tr><td>2️⃣</td><td>
+<tr><td>2.</td><td>
 
 **Mastery updates immediately:**
 `Confused` → mastery score drops by 10 (floored at 0), and the concept is upserted into `revision_plans` as **High priority, 10 minutes**.
 `Clear` → mastery score rises by 15 (capped at 100), any pending revision plan for that concept is deleted, and a "you improved!" notification is created.
 
 </td></tr>
-<tr><td>3️⃣</td><td>
+<tr><td>3.</td><td>
 
 **Concept-level confusion % is computed on read** (`GET /api/concepts/:id`) from the student's last 10 signals for that concept: `Confused` = 1.0 weight, `Partially Clear` = 0.5, `Clear` = 0.0, averaged and expressed as a percentage.
 
 </td></tr>
-<tr><td>4️⃣</td><td>
+<tr><td>4.</td><td>
 
 **The aggregate "pulse"** (`GET /api/confusion/pulse` for students, `/api/analytics/educator` for class-wide) groups *all* signals by concept, computes the same weighted average across every student who has signaled on that concept, and buckets it:
 
-&nbsp;&nbsp;&nbsp;&nbsp;🔴 `≥ 66%` → **HIGH**
-&nbsp;&nbsp;&nbsp;&nbsp;🟡 `33–65%` → **MEDIUM**
-&nbsp;&nbsp;&nbsp;&nbsp;🟢 `< 33%` → **LOW**
+&nbsp;&nbsp;&nbsp;&nbsp;`≥ 66%` → **HIGH**
+&nbsp;&nbsp;&nbsp;&nbsp;`33–65%` → **MEDIUM**
+&nbsp;&nbsp;&nbsp;&nbsp;`< 33%` → **LOW**
 
 </td></tr>
-<tr><td>5️⃣</td><td>
+<tr><td>5.</td><td>
 
 **Revision completion** (`POST /api/revision/:id/complete`) or a **practice streak of ≥3 attempts with ≥80% accuracy** nudges mastery back up, and logs a `learning_sessions` row so streaks and weekly-activity charts stay accurate.
 
@@ -160,7 +160,7 @@ The root `package.json` is an npm **workspaces** root (`"workspaces": ["frontend
 
 <br/>
 
-## 🗃 Data Model
+## Data Model
 
 Defined in `database/schema.sql`, applied to Supabase Postgres:
 
@@ -188,7 +188,7 @@ Row-Level Security is enabled on every table. For the MVP, policies are intentio
 
 <br/>
 
-## 🔌 API Surface
+## API Surface
 
 All routes are currently defined in a single file — `backend/src/routes/index.ts` — and mounted at the root. Authentication for the MVP is a lightweight header-based mock: every request must include `x-user-id` and `x-user-role` headers, checked by an inline `requireAuth` middleware.
 
@@ -210,7 +210,7 @@ All routes are currently defined in a single file — `backend/src/routes/index.
 
 <br/>
 
-## 🖥 Frontend Structure
+## Frontend Structure
 
 <details>
 <summary><strong>Routing</strong> — public site, protected student &amp; educator route trees</summary>
@@ -275,7 +275,7 @@ Several components are intentionally left as stubs (e.g., `Sidebar.tsx`, `Topbar
 
 <br/>
 
-## 🎨 Design System
+## Design System
 
 Defined via Tailwind config (`frontend/tailwind.config.js`) and CSS custom properties (`frontend/src/index.css`):
 
@@ -293,41 +293,41 @@ Defined via Tailwind config (`frontend/tailwind.config.js`) and CSS custom prope
 
 <br/>
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Database
 
 Create a Supabase project, then run against it in order:
 
-\```bash
+```bash
 # in the Supabase SQL editor, or via the CLI
 database/schema.sql
 database/seed.sql
-\```
+```
 
 ### 2. Backend
 
-\```bash
+```bash
 cd backend
 cp .env.example ../.env      # copy to the REPO ROOT as `.env`
 # edit .env: set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
 npm install
 npm run dev                  # http://localhost:5000
-\```
+```
 
 ### 3. Frontend
 
-\```bash
+```bash
 cd frontend
 npm install
 npm run dev                  # http://localhost:5173 (Vite default)
-\```
+```
 
 Or, from the repo root, `npm install` will install both workspaces at once via npm workspaces.
 
 <br/>
 
-## 🔐 Environment Variables
+## Environment Variables
 
 Set in a `.env` file at the **repository root** (not inside `backend/`), per `backend/src/config/env.ts`:
 
@@ -341,7 +341,7 @@ Set in a `.env` file at the **repository root** (not inside `backend/`), per `ba
 
 <br/>
 
-## 🧪 Demo Mode (No AI Key Required)
+## Demo Mode (No AI Key Required)
 
 `geminiService.ts` checks for `GEMINI_API_KEY` at startup. If it's missing:
 - `askTutor()` and `explainAgain()` return a fixed, well-formed **binary search** explanation (with `isDemo: true`), so the entire student tutor flow — ask, receive structured explanation, confirm clarity or ask for an alternate explanation — works end-to-end with zero API cost.
@@ -351,7 +351,7 @@ This means the full product can be demoed (e.g., for a hackathon judge) without 
 
 <br/>
 
-## 🚧 Known Gaps / Work in Progress
+## Known Gaps / Work in Progress
 
 This is an early-stage MVP codebase, not a finished product. Worth knowing before building on it:
 
