@@ -1,0 +1,8 @@
+{
+  "name": "cogniva-root",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
+}
