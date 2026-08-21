@@ -926,10 +926,11 @@ router.get('/api/study-groups/matches', requireAuth, async (req, res) => {
         .limit(1)
         .single();
 
+      const conceptData = bestMastery?.concept as any;
       return {
         id: student.id,
         name: student.name,
-        strength: bestMastery?.concept?.name || 'General Programming',
+        strength: (Array.isArray(conceptData) ? conceptData[0]?.name : conceptData?.name) || 'General Programming',
         match: Math.floor(Math.random() * 20) + 80 // 80-99% match
       };
     }));
