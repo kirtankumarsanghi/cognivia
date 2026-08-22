@@ -1,424 +1,369 @@
-# 🧠 Cognivia - AI-Powered Learning Platform
+<div align="center">
 
-**An intelligent learning platform that detects confusion in real-time and provides personalized AI tutoring to help students master concepts faster.**
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0a0a0a,50:e84040,100:e8a634&height=200&section=header&text=Cogniva&fontSize=64&fontColor=f4f1ea&fontAlignY=38&desc=Turn%20confusion%20into%20clarity.&descAlignY=58&descSize=18&animation=fadeIn" width="100%"/>
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)
-![React](https://img.shields.io/badge/React-18.3-61DAFB.svg)
+<img src="https://img.shields.io/badge/status-early--stage%20MVP-e84040?style=for-the-badge&labelColor=0a0a0a" />
+<img src="https://img.shields.io/badge/stack-React%20·%20Express%20·%20Supabase-e8a634?style=for-the-badge&labelColor=0a0a0a" />
+<img src="https://img.shields.io/badge/AI-Gemini%201.5%20Flash-e84040?style=for-the-badge&labelColor=0a0a0a" />
 
----
+<br/><br/>
 
-## ✨ Features
+<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=16&duration=2600&pause=900&color=E8A634&center=true&vCenter=true&width=700&lines=No+raised+hands.+No+public+embarrassment.;A+confusion+signal+%E2%86%92+an+AI+tutor+%E2%86%92+a+revision+map.;A+working+full-stack+implementation+of+%22silent+classroom+confusion.%22" alt="typing-svg" />
 
-### 🎓 For Students
-- **📊 Personalized Dashboard** - Track learning progress with interactive visualizations
-- **🔴 Confusion Signals** - Report confusion in real-time to get targeted help
-- **🤖 AI Tutor** - Get instant, contextual explanations powered by Gemini AI
-- **🎯 Smart Revision Plan** - AI-driven practice queue based on your confusion signals
-- **📈 Knowledge Graph** - Visualize concept relationships and mastery levels
-- **🏆 Achievements** - Gamified learning with badges and streaks
-- **⚡ Real-time Progress** - Watch your mastery scores improve in real-time
+</div>
 
-### 👨‍🏫 For Educators
-- **📊 Analytics Dashboard** - Comprehensive class performance insights
-- **🔴 Confusion Pulse** - See which students need help, in real-time
-- **🤖 AI Recommendations** - Get teaching suggestions based on confusion patterns
-- **📈 Visual Analytics** - Interactive charts showing trends and patterns
-- **⚠️ Proactive Alerts** - Automatic notifications for at-risk students
-- **📱 Mobile Responsive** - Access insights anywhere, anytime
-- **♿ Fully Accessible** - WCAG 2.1 AA compliant interface
+<br/>
 
----
+Cogniva is a real-time learning intelligence platform for classrooms. Students privately flag the **exact moment** they get confused during a lesson, and Cogniva turns those signals into an AI-tutored explanation for the student and a same-day, prioritized revision map for the educator.
 
-## 🚀 Quick Start
+It tackles the same problem as the **PulseCheck** concept: professors in large lecture halls have no real-time signal for where the room lost the thread, and students rarely admit confusion out loud. Cogniva is a working full-stack implementation of that idea — a discreet confusion button, a confusion-intensity pulse per concept, an AI tutor, and an educator dashboard that turns raw signals into a ranked "what to re-teach next" list.
 
-### Option 1: 10-Minute Deploy (Recommended)
-Deploy to production in 10 minutes with free hosting:
+<br/>
 
-👉 **[QUICK_DEPLOY.md](QUICK_DEPLOY.md)** - Fast-track deployment guide
+## Table of Contents
 
-**What you'll get:**
-- ✅ Frontend on Vercel (Fast CDN)
-- ✅ Backend on Render (Free tier)
-- ✅ Auto-deployments on every push
-- ✅ Free SSL certificates
-- ✅ Total cost: $0/month
+- [What It Does](#what-it-does)
+- [Tech Stack](#tech-stack)
+- [Monorepo Structure](#monorepo-structure)
+- [How Confusion Becomes a Signal](#how-confusion-becomes-a-signal)
+- [Data Model](#data-model)
+- [API Surface](#api-surface)
+- [Frontend Structure](#frontend-structure)
+- [Design System](#design-system)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Demo Mode](#demo-mode-no-ai-key-required)
+- [Known Gaps / Work in Progress](#known-gaps--work-in-progress)
 
-### Option 2: Local Development
-Set up locally for development:
+<br/>
 
-👉 **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Complete local setup instructions
+## What It Does
 
-**Prerequisites:**
-- Node.js 18+
-- Supabase account (free)
-- Gemini API key (optional for AI features)
+<table>
+<tr>
+<td width="50%" valign="top">
 
-**Quick commands:**
-```bash
-# 1. Clone repository
-git clone <your-repo-url>
-cd cognivia
+### For students
 
-# 2. Set up backend
-cd backend
-cp .env.example .env
-# Edit .env with your credentials
-npm install
-npm run dev
+- **Flag confusion in the moment** — a persistent "I'm Confused" button marks a concept `Confused`, `Partially Clear`, or `Clear`, with an optional note.
+- **Get an AI explanation instantly** — a structured response: simple explanation, why it works, a relatable example, a common mistake, a quick comprehension check, and a next step. Still lost? Ask for it a *different* way, not a repeat.
+- **See a personal mastery map** — every concept carries a 0–100 mastery score that rises with correct practice and confirmed clarity, and falls when confusion is signaled.
+- **Follow a same-day revision plan** — confused concepts land in a prioritized queue (`High` / `Medium` / `Low`) with a suggested time investment.
+- **Practice with instant feedback** — MCQ / true-false / short-answer questions per concept, feeding straight back into mastery.
+- **Track streaks and weekly progress** — one learning score blends mastery, accuracy, clarity confirmations, and completed revisions.
 
-# 3. Set up frontend (new terminal)
-cd frontend
-# Edit .env with your credentials
-npm install
-npm run dev
+</td>
+<td width="50%" valign="top">
 
-# 4. Open http://localhost:5173
-```
+### For educators
 
----
+- **A live confusion pulse** — every signal across every student rolls up per concept into a 0–100% confusion score.
+- **A confusion heatmap and topic breakdown** — bar-chart and ranked-list views of which concepts are causing the most trouble class-wide.
+- **AI-generated teaching recommendations** — Gemini turns the class's confusion metrics into a concrete, two-sentence suggestion for the next lecture.
+- **Class-wide analytics** — student count, average class mastery score, and count of "critical" concepts (≥66% confusion).
 
-## 📚 Documentation
+</td>
+</tr>
+</table>
 
-| Guide | Description | Time |
-|-------|-------------|------|
-| **[QUICK_DEPLOY.md](QUICK_DEPLOY.md)** | Deploy to production in 10 minutes | 10 min |
-| **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** | Complete deployment guide with all platforms | 30 min |
-| **[SETUP_GUIDE.md](SETUP_GUIDE.md)** | Local development setup | 15 min |
-| **[FEATURE_GUIDE.md](FEATURE_GUIDE.md)** | Complete features documentation | - |
-| **[EDUCATOR_ANALYTICS_GUIDE.md](EDUCATOR_ANALYTICS_GUIDE.md)** | Educator dashboard guide | - |
-| **[DEVELOPER_NOTES.md](DEVELOPER_NOTES.md)** | Technical architecture and API docs | - |
+<br/>
 
----
+## Tech Stack
 
-## 🛠️ Tech Stack
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 18, TypeScript, Vite, React Router v6 |
+| **Styling** | Tailwind CSS (custom dark theme, design tokens), Framer Motion |
+| **Charts** | Recharts |
+| **Backend** | Node.js, Express, TypeScript (`ts-node-dev` for local dev) |
+| **Database / Auth** | Supabase (Postgres + Row-Level Security) |
+| **AI** | Google Generative AI (`gemini-1.5-flash`) via `@google/generative-ai`, with a deterministic demo-mode fallback |
+| **Validation** | Zod (backend) |
+| **Package management** | npm workspaces (root `package.json` links `frontend` and `backend`) |
 
-### Frontend
-- **React 18** - UI library
-- **TypeScript** - Type safety
-- **Vite** - Build tool and dev server
-- **TailwindCSS** - Utility-first CSS
-- **Framer Motion** - Animations
-- **Recharts** - Data visualization
-- **React Router** - Client-side routing
-- **Supabase Client** - Authentication and real-time
+<br/>
 
-### Backend
-- **Node.js** - Runtime
-- **Express** - Web framework
-- **TypeScript** - Type safety
-- **Supabase** - PostgreSQL database + Auth + Real-time
-- **Google Gemini AI** - AI tutoring capabilities
-- **Zod** - Schema validation
-
-### Infrastructure
-- **Supabase** - Database, auth, storage, real-time
-- **Vercel** - Frontend hosting (recommended)
-- **Render** - Backend hosting (recommended)
-- **GitHub** - Version control and CI/CD
-
----
-
-## 🏗️ Project Structure
+## Monorepo Structure
 
 ```
 cognivia/
-├── frontend/                 # React + Vite frontend
-│   ├── src/
-│   │   ├── components/      # React components
-│   │   │   ├── dashboard/   # Student dashboard components
-│   │   │   ├── concepts/    # Concept learning components
-│   │   │   ├── educator/    # Educator dashboard components
-│   │   │   └── ui/          # Reusable UI components
-│   │   ├── hooks/           # Custom React hooks
-│   │   ├── lib/             # Utilities and helpers
-│   │   ├── types/           # TypeScript types
-│   │   ├── utils/           # Utility functions
-│   │   ├── App.tsx          # Main app component
-│   │   └── main.tsx         # Entry point
-│   ├── public/              # Static assets
-│   ├── .env                 # Environment variables
-│   ├── package.json
-│   └── vite.config.ts       # Vite configuration
-│
-├── backend/                  # Node.js + Express API
-│   ├── src/
-│   │   ├── config/          # Configuration files
-│   │   ├── controllers/     # Route controllers
-│   │   ├── middleware/      # Express middleware
-│   │   ├── routes/          # API routes
-│   │   ├── services/        # Business logic
-│   │   ├── types/           # TypeScript types
-│   │   ├── utils/           # Utility functions
-│   │   └── server.ts        # Entry point
-│   ├── .env.example         # Example environment variables
-│   ├── package.json
-│   └── tsconfig.json        # TypeScript configuration
-│
-├── database/                 # Database setup
-│   ├── schema.sql           # Database schema
-│   ├── seed.sql             # Demo data
-│   └── README.md            # Database documentation
-│
-├── QUICK_DEPLOY.md          # 10-minute deployment guide
-├── DEPLOYMENT_GUIDE.md      # Complete deployment guide
-├── SETUP_GUIDE.md           # Local setup guide
-├── FEATURE_GUIDE.md         # Features documentation
-├── EDUCATOR_ANALYTICS_GUIDE.md  # Educator guide
-└── README.md                # This file
+├── backend/                 Express + TypeScript API
+│   └── src/
+│       ├── server.ts        App entrypoint, CORS, error handling
+│       ├── config/          Env loading, Supabase client
+│       ├── controllers/     (scaffolded, currently empty — see "Known Gaps")
+│       ├── middleware/      (scaffolded, currently empty — see "Known Gaps")
+│       ├── routes/          index.ts holds ALL current API routes
+│       ├── services/        geminiService.ts is implemented; others are stubs
+│       ├── types/           shared TS types (stub)
+│       └── utils/           scoring/validation/prompt helpers (stubs)
+├── database/
+│   ├── schema.sql           Full Postgres schema + RLS policies
+│   └── seed.sql              Demo data: 1 educator, 1 student, 1 course, 7 concepts
+└── frontend/                 React + Vite SPA
+    └── src/
+        ├── components/
+        │   ├── landing/       Marketing site (Hero, Problem, HowItWorks, sections, CTA)
+        │   ├── dashboard/     Student-facing app (Dashboard, Courses, Tutor, Revision…)
+        │   ├── educator/      Educator-facing analytics dashboard
+        │   ├── tutor/         Chat-style tutor UI primitives
+        │   ├── concepts/      Concept detail / graph / mastery bar (stubs)
+        │   └── ui/            Shared primitives (Badge, Button, Card, Modal, Loading)
+        ├── hooks/             useAuth, useApi, useDashboard, useTutor, useConfusionSignal
+        ├── layouts/           StudentLayout, EducatorLayout, PublicLayout
+        ├── pages/             Route-level page wrappers
+        ├── services/          Frontend API client wrappers
+        └── types/             Shared frontend TS types
 ```
 
----
+The root `package.json` is an npm **workspaces** root (`"workspaces": ["frontend", "backend"]`), so `npm install` at the repo root installs both packages' dependencies.
 
-## 🚀 Deployment
+<br/>
 
-### Recommended: Vercel + Render (Free)
+## How Confusion Becomes a Signal
 
-**Frontend on Vercel:**
-- ✅ Fast global CDN
-- ✅ Automatic deployments
-- ✅ Free SSL certificates
-- ✅ 100 GB bandwidth/month free
+<table>
+<tr><td width="60">1.</td><td>
 
-**Backend on Render:**
-- ✅ Free tier available
-- ✅ Automatic deployments
-- ✅ Free SSL certificates
-- ✅ Easy setup
+**Student submits a signal** — `POST /api/confusion/signal` with `{ concept_id, signal }` where `signal` is `Confused` | `Partially Clear` | `Clear`.
 
-**Follow:** [QUICK_DEPLOY.md](QUICK_DEPLOY.md) for step-by-step instructions
+</td></tr>
+<tr><td>2.</td><td>
 
-### Alternative Platforms
+**Mastery updates immediately:**
+`Confused` → mastery score drops by 10 (floored at 0), and the concept is upserted into `revision_plans` as **High priority, 10 minutes**.
+`Clear` → mastery score rises by 15 (capped at 100), any pending revision plan for that concept is deleted, and a "you improved!" notification is created.
 
-| Platform | Best For | Cost | Guide |
-|----------|----------|------|-------|
-| **Netlify + Railway** | Alternative free option | Free* | [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) |
-| **Render Full Stack** | Everything in one place | Free* | [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) |
-| **Vercel + Railway** | Best performance | $5/month* | [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) |
+</td></tr>
+<tr><td>3.</td><td>
 
-*Free tiers have limitations. See deployment guide for details.
+**Concept-level confusion % is computed on read** (`GET /api/concepts/:id`) from the student's last 10 signals for that concept: `Confused` = 1.0 weight, `Partially Clear` = 0.5, `Clear` = 0.0, averaged and expressed as a percentage.
 
----
+</td></tr>
+<tr><td>4.</td><td>
 
-## 📊 Key Features in Detail
+**The aggregate "pulse"** (`GET /api/confusion/pulse` for students, `/api/analytics/educator` for class-wide) groups *all* signals by concept, computes the same weighted average across every student who has signaled on that concept, and buckets it:
 
-### Confusion Signal System
-Students can report confusion with a single click. The system:
-1. **Captures intensity** - How confused are you? (1-5 scale)
-2. **Records context** - Which concept, what lesson, when
-3. **Alerts educators** - Real-time notifications to instructors
-4. **Triggers interventions** - Auto-generates revision plan
-5. **Tracks resolution** - Monitors when confusion clears
+&nbsp;&nbsp;&nbsp;&nbsp;`≥ 66%` → **HIGH**
+&nbsp;&nbsp;&nbsp;&nbsp;`33–65%` → **MEDIUM**
+&nbsp;&nbsp;&nbsp;&nbsp;`< 33%` → **LOW**
 
-### AI Tutoring
-Powered by Google Gemini AI:
-- **Contextual responses** - Understands course content
-- **Adaptive difficulty** - Adjusts explanations to student level
-- **Multi-format support** - Text, examples, analogies
-- **Follow-up questions** - Encourages deeper understanding
-- **Progress tracking** - Logs all interactions
+</td></tr>
+<tr><td>5.</td><td>
 
-### Knowledge Graph
-Interactive visualization of concept relationships:
-- **D3.js force simulation** - Physics-based layout
-- **Mastery-based coloring** - Visual progress indicators
-- **Interactive exploration** - Click, hover, zoom
-- **Prerequisite tracking** - Shows concept dependencies
-- **Personalized view** - Based on your progress
+**Revision completion** (`POST /api/revision/:id/complete`) or a **practice streak of ≥3 attempts with ≥80% accuracy** nudges mastery back up, and logs a `learning_sessions` row so streaks and weekly-activity charts stay accurate.
 
-### Educator Analytics
-Comprehensive insights for instructors:
-- **Real-time dashboard** - Updates every 15 seconds
-- **Confusion heatmap** - See struggling concepts at a glance
-- **Student performance** - Individual and class-wide metrics
-- **Trend analysis** - Track changes over time
-- **AI recommendations** - Suggested interventions
+</td></tr>
+</table>
 
----
+> This is the same anti-noise idea as an aggregate "confusion intensity" ranking discussed for classroom pulse tools: individual signals are cheap to give, but only the **aggregate, weighted, decayed-by-recency (last 10 signals)** view is what surfaces on a dashboard — a single student can't dominate a concept's confusion score.
 
-## 🔒 Security & Privacy
+<br/>
 
-- **🔐 Row-level security** - Supabase RLS policies protect data
-- **🔑 Secure authentication** - Supabase Auth with JWT tokens
-- **🛡️ API key protection** - Environment variables, never committed
-- **📊 FERPA compliant** - Meets educational privacy standards
-- **🔒 HTTPS only** - SSL certificates on all platforms
-- **🔐 CORS protection** - Only authorized origins allowed
+## Data Model
 
----
+Defined in `database/schema.sql`, applied to Supabase Postgres:
 
-## 🧪 Testing
+| Table | Purpose |
+|---|---|
+| `profiles` | Extends `auth.users`; role is `student`, `educator`, or `admin` |
+| `courses` | Top-level course, owned by an educator |
+| `lessons` | Ordered lessons within a course |
+| `concepts` | Individual learnable concepts within a lesson, with a difficulty tier |
+| `concept_dependencies` | Self-referential graph: which concepts are prerequisites for which |
+| `confusion_signals` | Every `Confused` / `Partially Clear` / `Clear` event a student submits |
+| `mastery_scores` | One row per (student, concept), 0–100 |
+| `ai_conversations` | Full Q&A history with the AI tutor, answer stored as structured JSONB |
+| `revision_plans` | Auto-generated queue of concepts to revisit, with priority + estimated minutes |
+| `practice_attempts` | Every answered practice question, correct or not |
+| `learning_sessions` | Engagement log (lesson / practice / revision / tutor), powers streaks |
+| `saved_explanations` | Student-bookmarked tutor explanations |
+| `notifications` | In-app notifications (improvements, attention needed, plan ready) |
+| `course_enrollments` | Student ↔ course join table |
+| `practice_questions` | Seeded MCQ / true-false / short-answer bank per concept |
 
-### Run Tests Locally
+Row-Level Security is enabled on every table. For the MVP, policies are intentionally permissive (`auth.role() = 'authenticated'` can read everything) with tighter `INSERT`/`UPDATE` policies restricting students to writing their own rows (`auth.uid() = student_id`). This is documented in the schema as a simplification to revisit before production use.
 
-**Backend:**
+`database/seed.sql` populates one demo educator, one demo student, one course ("Data Structures & Algorithms"), and seven interlinked concepts (Arrays → Searching → Big-O / Logarithms → Binary Search, etc.) with realistic seeded mastery scores, confusion signals, and practice history so the app is populated out of the box.
+
+<br/>
+
+## API Surface
+
+All routes are currently defined in a single file — `backend/src/routes/index.ts` — and mounted at the root. Authentication for the MVP is a lightweight header-based mock: every request must include `x-user-id` and `x-user-role` headers, checked by an inline `requireAuth` middleware.
+
+| Area | Endpoints |
+|---|---|
+| Health | `GET /api/health` |
+| Profile / Me | `GET /api/me`, `GET /api/profile`, `PUT /api/profile` |
+| Courses | `GET /api/courses`, `GET /api/courses/:id`, `GET /api/lessons/:id`, `GET /api/concepts/:id` |
+| Confusion | `POST /api/confusion/signal`, `GET /api/confusion/pulse`, `GET /api/confusion/history` |
+| AI Tutor | `POST /api/tutor/chat`, `POST /api/tutor/explain-again`, `GET /api/tutor/history` |
+| Revision | `GET /api/revision/plan`, `POST /api/revision/:id/complete` |
+| Practice | `GET /api/practice`, `POST /api/practice/attempt` |
+| Analytics | `GET /api/analytics/student`, `GET /api/analytics/educator` |
+| Notifications | `GET /api/notifications`, `POST /api/notifications/:id/read` |
+| Saved explanations | `GET /api/saved-explanations`, `POST /api/saved-explanations`, `DELETE /api/saved-explanations/:id` |
+| Search | `GET /api/search?q=` (courses, lessons, concepts) |
+
+> The `analyticsController`, `authController`, `confusionController`, `courseController`, `revisionController`, and `tutorController` files under `controllers/`, along with everything in `middleware/` and most of `services/`, exist as **empty scaffolding** — the actual logic currently lives directly in `routes/index.ts`. Splitting that file into the scaffolded controllers/services/middleware is the natural next refactor.
+
+<br/>
+
+## Frontend Structure
+
+<details>
+<summary><strong>Routing</strong> — public site, protected student &amp; educator route trees</summary>
+<br/>
+
+`App.tsx`: a public marketing site at `/`, a `/login` page, and two protected route trees gated by `ProtectedRoute` + `useAuth`:
+- **Student** (`allowedRole="student"`): `/dashboard`, `/courses`, `/course/:id`, `/tutor`, `/revision`, wrapped in `StudentLayout`.
+- **Educator** (`allowedRole="educator"`): `/educator`, wrapped in `EducatorLayout`.
+- Route transitions are animated with Framer Motion (`AnimatePresence` + a shared `RouteTransition` wrapper).
+
+</details>
+
+<details>
+<summary><strong>Landing page</strong> — marketing site components</summary>
+<br/>
+
+`components/landing/`: Hero with an animated 3D-style "abstract core" graphic, problem statement, a 5-step "How It Works" explainer, a student section, an educator section with a live dashboard mockup, a final CTA, and a footer.
+
+</details>
+
+<details>
+<summary><strong>Student dashboard</strong> — the Learning Score, streaks, Clarity Plan</summary>
+<br/>
+
+`components/dashboard/`: a circular "Learning Score" gauge, streak card, AI-recommended next action, today's Clarity Plan (revision queue), a confusion-signal timeline, weekly progress stats, and unread notifications — all driven by `GET /api/analytics/student`.
+
+</details>
+
+<details>
+<summary><strong>Confusion flow</strong> — the floating "I'm Confused" button</summary>
+<br/>
+
+`ConfusionButton.tsx` is a floating action button that opens a modal to pick course → lesson → concept → signal (Confused / Partially Clear / Clear) → optional note, then posts to `/api/confusion/signal`.
+
+</details>
+
+<details>
+<summary><strong>Tutor</strong> — the AI chat interface</summary>
+<br/>
+
+`components/dashboard/Tutor.tsx`: a single-question chat-style interface backed by `/api/tutor/chat`; renders the structured Gemini response (explanation, why it works, example, common mistake, quick check, next step) and lets the student confirm clarity (`Now I'm Clear`, with a small celebratory particle burst) or ask for an alternate explanation.
+
+</details>
+
+<details>
+<summary><strong>Revision</strong> — the prioritized practice queue</summary>
+<br/>
+
+`components/dashboard/Revision.tsx`: lists the prioritized revision queue and launches a practice-question flow per concept; completing a session with ≥70% accuracy auto-marks the revision item complete.
+
+</details>
+
+<details>
+<summary><strong>Educator dashboard</strong> — class-wide analytics</summary>
+<br/>
+
+`components/educator/EducatorDashboard.tsx`: summary cards (student count, average class score, high-confusion topic count), a Recharts bar chart of confusion-by-concept, a ranked topic breakdown with progress bars, and an AI-generated recommendation panel.
+
+</details>
+
+Several components are intentionally left as stubs (e.g., `Sidebar.tsx`, `Topbar.tsx`, `ConceptGraph.tsx`, `ConfusionPulse.tsx`, most of `educator/*` besides `EducatorDashboard.tsx`). A helper script, `frontend/fix-empty.cjs`, walks `src/` and auto-fills any zero-byte `.tsx` file with a minimal placeholder component so the app always compiles even mid-scaffolding.
+
+<br/>
+
+## Design System
+
+Defined via Tailwind config (`frontend/tailwind.config.js`) and CSS custom properties (`frontend/src/index.css`):
+
+<p align="left">
+<img src="https://img.shields.io/badge/-000000?style=flat-square&labelColor=000000" height="28"/>
+<img src="https://img.shields.io/badge/-0a0a0a?style=flat-square&labelColor=0a0a0a" height="28"/>
+<img src="https://img.shields.io/badge/-e84040?style=flat-square&labelColor=e84040" height="28"/>
+<img src="https://img.shields.io/badge/-e8a634?style=flat-square&labelColor=e8a634" height="28"/>
+</p>
+
+- **Palette:** near-black background (`#000000`/`#0a0a0a`), a coral/red accent (`#e84040`) used for the confusion/urgency signal, and a warm gold (`#e8a634`) used as the primary brand/CTA color.
+- **Typography:** Hanken Grotesk for display/headline text, Inter for body copy, JetBrains Mono for uppercase labels and eyebrow text — all loaded via Google Fonts.
+- **Motion:** Framer Motion drives staggered section reveals, an animated circular progress ring for the Learning Score, animated confusion-heatmap bars, and a fully custom animated cursor (`CustomCursor.tsx`) with a trailing glow, ring, and dot that react to hoverable elements.
+- **Icons:** Material Symbols throughout, alongside `lucide-react` for a handful of components.
+
+<br/>
+
+## Getting Started
+
+### 1. Database
+
+Create a Supabase project, then run against it in order:
+
+```bash
+# in the Supabase SQL editor, or via the CLI
+database/schema.sql
+database/seed.sql
+```
+
+### 2. Backend
+
 ```bash
 cd backend
-npm test
+cp .env.example ../.env      # copy to the REPO ROOT as `.env`
+# edit .env: set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
+npm install
+npm run dev                  # http://localhost:5000
 ```
 
-**Frontend:**
+### 3. Frontend
+
 ```bash
 cd frontend
-npm test
+npm install
+npm run dev                  # http://localhost:5173 (Vite default)
 ```
 
-### Test in Production
+Or, from the repo root, `npm install` will install both workspaces at once via npm workspaces.
 
-After deploying, verify:
-1. **Health check:** `https://your-backend-url.com/api/health`
-2. **Frontend loads:** `https://your-frontend-url.com`
-3. **Sign up works:** Create new account
-4. **Dashboard loads:** See demo data
-5. **API integration:** Submit confusion signal
-6. **AI tutoring:** Ask AI tutor a question
+<br/>
 
-See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) → Testing section
+## Environment Variables
 
----
+Set in a `.env` file at the **repository root** (not inside `backend/`), per `backend/src/config/env.ts`:
 
-## 📈 Performance
+| Variable | Required | Notes |
+|---|---|---|
+| `PORT` | No | Defaults to `5000` |
+| `FRONTEND_URL` | No | Defaults to `http://localhost:5173`; used for CORS |
+| `SUPABASE_URL` | Yes (for real data) | Falls back to a mock localhost URL if unset |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes (for real data) | Backend uses the service role key to bypass RLS and filters by `student_id` in queries manually |
+| `GEMINI_API_KEY` | No | See Demo Mode below |
 
-### Frontend
-- **⚡ <2s First Contentful Paint** - Fast initial load
-- **🚀 <100ms Time to Interactive** - Immediate user interaction
-- **📦 <500KB Initial Bundle** - Optimized bundle size
-- **♻️ Code splitting** - Lazy loading for routes
-- **🎨 60 FPS animations** - Smooth Framer Motion animations
+<br/>
 
-### Backend
-- **⚡ <100ms API Response** - Fast database queries
-- **📊 Connection pooling** - Efficient database connections
-- **🗄️ Indexed queries** - Optimized database schema
-- **💾 Caching ready** - Easy to add Redis/Memcached
+## Demo Mode (No AI Key Required)
 
----
+`geminiService.ts` checks for `GEMINI_API_KEY` at startup. If it's missing:
+- `askTutor()` and `explainAgain()` return a fixed, well-formed **binary search** explanation (with `isDemo: true`), so the entire student tutor flow — ask, receive structured explanation, confirm clarity or ask for an alternate explanation — works end-to-end with zero API cost.
+- `generateEducatorRecommendation()` returns a canned recommendation string.
 
-## 🤝 Contributing
+This means the full product can be demoed (e.g., for a hackathon judge) without ever configuring a Gemini key — only live, dynamic AI responses require one.
 
-Contributions are welcome! Here's how:
+<br/>
 
-1. **Fork the repository**
-2. **Create a feature branch:** `git checkout -b feature/amazing-feature`
-3. **Commit your changes:** `git commit -m 'feat: add amazing feature'`
-4. **Push to branch:** `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
+## Known Gaps / Work in Progress
 
-### Commit Convention
-Use [Conventional Commits](https://www.conventionalcommits.org/):
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation only
-- `style:` Formatting, missing semicolons, etc.
-- `refactor:` Code refactoring
-- `test:` Adding tests
-- `chore:` Maintenance tasks
+This is an early-stage MVP codebase, not a finished product. Worth knowing before building on it:
 
----
+- **Auth is a placeholder.** `requireAuth` in `routes/index.ts` trusts client-supplied `x-user-id` / `x-user-role` headers with no signature or session verification — there is no real login/session issuance wired up yet (`authController.ts`, `authMiddleware.ts`, and `authRoutes.ts` are all empty). This must be replaced with real Supabase Auth (or equivalent JWT verification) before handling real user data.
+- **Routes aren't split into controllers yet.** All business logic lives in one large `routes/index.ts`; the `controllers/`, most of `services/`, and `middleware/` directories are scaffolded but empty. Recommended next step: move each route group's logic into its matching controller + service pair, and move `requireAuth` into `middleware/authMiddleware.ts` with a real role-check in `roleMiddleware.ts`.
+- **`utils/scoring.ts`, `utils/validators.ts`, `utils/prompts.ts`, `types/index.ts` are empty** — scoring math (mastery deltas, confusion-percentage weighting) and Gemini prompt templates currently live inline in `routes/index.ts` and `geminiService.ts` rather than being centralized and reusable/testable.
+- **RLS policies are permissive by design** (`"Allow all authenticated read"` on nearly every table) — appropriate for an MVP demo, not for multi-tenant production use.
+- **Frontend has two `layouts/` directories** (`components/layouts/` and `layouts/`) with overlapping `EducatorLayout.tsx` / `StudentLayout.tsx` — worth consolidating to avoid drift between the two copies.
+- **Several UI components are unfinished stubs** (see Frontend Structure above) generated by `fix-empty.cjs` — they render a placeholder `<div>` rather than real UI.
 
-## 📝 License
+<br/>
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🆘 Support
-
-### Having issues?
-
-1. **Check documentation:**
-   - [SETUP_GUIDE.md](SETUP_GUIDE.md) - Setup issues
-   - [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - Deployment issues
-   - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common problems
-
-2. **Check logs:**
-   - Backend: Platform dashboard logs
-   - Frontend: Browser console (F12)
-   - Database: Supabase dashboard → Logs
-
-3. **Common fixes:**
-   - Environment variables incorrect (most common!)
-   - CORS misconfiguration
-   - Missing dependencies: Run `npm install`
-   - Build errors: Check Node.js version (need 18+)
-
-### Still need help?
-- **Create an issue** on GitHub
-- **Check existing issues** - Your problem might be solved!
-- **Include details:** Error messages, screenshots, steps to reproduce
-
----
-
-## 🎯 Roadmap
-
-### v1.1 (Current)
-- [x] Real-time confusion tracking
-- [x] AI tutoring with Gemini
-- [x] Educator analytics dashboard
-- [x] Knowledge graph visualization
-- [x] Automated revision plans
-
-### v1.2 (Upcoming)
-- [ ] Mobile apps (React Native)
-- [ ] Collaborative study groups
-- [ ] Video lesson integration
-- [ ] Advanced analytics (ML-based)
-- [ ] Multi-language support
-
-### v2.0 (Future)
-- [ ] Peer tutoring marketplace
-- [ ] Live virtual classrooms
-- [ ] Adaptive learning paths
-- [ ] AR/VR concept visualization
-- [ ] Institution-wide analytics
-
----
-
-## 📞 Contact
-
-- **Issues:** [GitHub Issues](https://github.com/yourusername/cognivia/issues)
-- **Email:** support@cognivia.com
-- **Website:** https://cognivia.com
-
----
-
-## 🙏 Acknowledgments
-
-- **Supabase** - For amazing open-source backend infrastructure
-- **Google Gemini** - For powerful AI capabilities
-- **Vercel** - For incredible deployment experience
-- **Render** - For reliable free hosting
-- **React Community** - For excellent libraries and tools
-
----
-
-## ⭐ Star History
-
-If you find this project useful, please consider giving it a star! ⭐
-
----
-
-**Built with ❤️ for better learning outcomes**
-
----
-
-## 📸 Screenshots
-
-### Student Dashboard
-![Student Dashboard](docs/screenshots/student-dashboard.png)
-
-### Educator Analytics
-![Educator Analytics](docs/screenshots/educator-analytics.png)
-
-### Knowledge Graph
-![Knowledge Graph](docs/screenshots/knowledge-graph.png)
-
-### AI Tutor
-![AI Tutor](docs/screenshots/ai-tutor.png)
-
----
-
-**Last Updated:** 2026-08-22
-**Version:** 1.1.0
-**Status:** Production Ready ✅
+<div align="center">
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:e8a634,100:e84040&height=100&section=footer" width="100%"/>
+</div>
