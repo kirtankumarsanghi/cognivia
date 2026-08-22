@@ -64,7 +64,7 @@ const SECTIONS = [
     id: 'decay-monitor',
     name: 'Learning Risk Monitor',
     icon: 'monitor_heart',
-    description: 'Tracks knowledge decay across students using Ebbinghaus' forgetting curve. Flags students where predicted retention has dropped below the recall threshold.',
+    description: "Tracks knowledge decay across students using Ebbinghaus' forgetting curve. Flags students where predicted retention has dropped below the recall threshold.",
     model_tag: 'Exponential Decay Model',
   },
   {
