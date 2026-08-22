@@ -293,6 +293,17 @@ export default function Login() {
           {/* Demo Accounts */}
           <motion.div custom={3.5} variants={fadeUp} className="mt-6 pt-6 border-t border-[rgba(255,255,255,0.05)]">
             <p className="text-xs uppercase tracking-widest text-white/40 mb-3 font-mono text-center">Fast Demo Login</p>
+            
+            {/* Show explicit credentials for manual typing */}
+            <div className="mb-4 text-center p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)]">
+              <p className="text-white/60 text-xs font-mono mb-1">
+                <span className="text-amber-400">Student:</span> student_demo@cognivia.com <span className="text-white/30">|</span> password123!
+              </p>
+              <p className="text-white/60 text-xs font-mono">
+                <span className="text-primary">Educator:</span> educator_demo@cognivia.com <span className="text-white/30">|</span> password123!
+              </p>
+            </div>
+            
             <div className="flex gap-3 justify-center">
               <button
                 type="button"
