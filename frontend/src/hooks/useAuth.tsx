@@ -85,6 +85,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
+        // --- OFFLINE BYPASS CHECK ---
+        if (session.offlineBypassProfile) {
+          console.log('[AuthProvider] Loading offline bypass profile directly');
+          if (mounted) {
+            setUser(session.offlineBypassProfile);
+            setSessionToken(session.access_token);
+            setIsLoading(false);
+          }
+          return;
+        }
+        // -----------------------------
+
         // Fetch the profile using the stored access token
         const SUPABASE_URL = 'https://cbqswhmpdbojubljyinv.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_AqQ0AZb6gH2AmWyLlN3_Zw_TFSQ1Qzf';

@@ -435,5 +435,40 @@ export const authService = {
       return null;
     }
   },
+
+  /**
+   * Instantly logs in the user by writing a fake session directly to localStorage.
+   * Completely bypasses all network requests and Supabase auth.
+   */
+  demoLocalBypass(role: 'student' | 'educator'): AuthResult<Profile> {
+    const fakeId = role === 'student' 
+      ? '00000000-0000-0000-0000-000000000001' 
+      : '00000000-0000-0000-0000-000000000002';
+      
+    const fakeProfile: Profile = {
+      id: fakeId,
+      name: role === 'student' ? 'Student Demo (Offline)' : 'Educator Demo (Offline)',
+      email: `${role}_offline@cognivia.local`,
+      role: role,
+      avatar: null,
+      created_at: new Date().toISOString()
+    };
+
+    const sessionData = {
+      access_token: 'fake_offline_token_12345',
+      refresh_token: 'fake_offline_refresh_token_12345',
+      expires_at: Math.floor(Date.now() / 1000) + 86400, // 24 hours from now
+      user: {
+        id: fakeId,
+        email: fakeProfile.email,
+        role: 'authenticated'
+      },
+      offlineBypassProfile: fakeProfile // we tuck this in so useAuth knows about it
+    };
+
+    localStorage.setItem('cogniva-session', JSON.stringify(sessionData));
+    console.log('[authService] Offline bypass session created:', role);
+    return { success: true, data: fakeProfile };
+  }
 };
 

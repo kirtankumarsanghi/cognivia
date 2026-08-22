@@ -304,6 +304,37 @@ export default function Login() {
               </p>
             </div>
             
+            <p className="text-[10px] uppercase tracking-widest text-emerald-400/70 mt-6 mb-3 font-mono text-center">Instant Offline Access (No Network)</p>
+            <div className="flex gap-3 justify-center mb-4">
+              <button
+                type="button"
+                onClick={() => {
+                  import('../../services/authService').then(({ authService }) => {
+                    authService.demoLocalBypass('educator');
+                    window.location.href = '/educator';
+                  });
+                }}
+                className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-xs flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[14px]">bolt</span>
+                Educator Bypass
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  import('../../services/authService').then(({ authService }) => {
+                    authService.demoLocalBypass('student');
+                    window.location.href = '/dashboard';
+                  });
+                }}
+                className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-xs flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[14px]">bolt</span>
+                Student Bypass
+              </button>
+            </div>
+
+            <p className="text-[10px] uppercase tracking-widest text-white/30 mb-3 font-mono text-center">Standard Demo (Network Test)</p>
             <div className="flex gap-3 justify-center">
               <button
                 type="button"
