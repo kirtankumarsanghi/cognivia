@@ -277,7 +277,20 @@ export default function Login() {
             <div className="flex gap-3 justify-center">
               <button
                 type="button"
-                onClick={() => { setEmail('educator@cognivia.demo'); setPassword('password123'); }}
+                onClick={async () => {
+                  setEmail('educator@cognivia.demo');
+                  setPassword('password123');
+                  if (submittingRef.current) return;
+                  submittingRef.current = true;
+                  setIsSubmitting(true);
+                  try {
+                    const res = await login('educator@cognivia.demo', 'password123');
+                    if (!res.success) setServerError(res.error || 'Something went wrong.');
+                  } finally {
+                    submittingRef.current = false;
+                    setIsSubmitting(false);
+                  }
+                }}
                 className="px-4 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm flex items-center gap-2"
               >
                 <span className="material-symbols-outlined text-[16px] text-primary">school</span>
@@ -285,7 +298,20 @@ export default function Login() {
               </button>
               <button
                 type="button"
-                onClick={() => { setEmail('student@cognivia.demo'); setPassword('password123'); }}
+                onClick={async () => {
+                  setEmail('student@cognivia.demo');
+                  setPassword('password123');
+                  if (submittingRef.current) return;
+                  submittingRef.current = true;
+                  setIsSubmitting(true);
+                  try {
+                    const res = await login('student@cognivia.demo', 'password123');
+                    if (!res.success) setServerError(res.error || 'Something went wrong.');
+                  } finally {
+                    submittingRef.current = false;
+                    setIsSubmitting(false);
+                  }
+                }}
                 className="px-4 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm flex items-center gap-2"
               >
                 <span className="material-symbols-outlined text-[16px] text-amber-400">person</span>
