@@ -20,6 +20,8 @@ import StudyGroups from './components/dashboard/StudyGroups';
 import KnowledgeGraphView from './components/dashboard/KnowledgeGraphView';
 import ClassRoster from './components/educator/ClassRoster';
 import CurriculumBuilder from './components/educator/CurriculumBuilder';
+import StudentMLInsights from './components/ml/StudentMLInsights';
+import EducatorMLInsights from './components/ml/EducatorMLInsights';
 import CustomCursor from './components/CustomCursor';
 
 function RouteTransition({ children }: { children: ReactNode }) {
@@ -47,6 +49,7 @@ function AnimatedRoutes() {
             <Route path="/study-groups" element={<RouteTransition><StudyGroups /></RouteTransition>} />
             <Route path="/knowledge-graph" element={<RouteTransition><KnowledgeGraphView /></RouteTransition>} />
             <Route path="/achievements" element={<RouteTransition><Achievements /></RouteTransition>} />
+            <Route path="/ml-insights" element={<RouteTransition><StudentMLInsights /></RouteTransition>} />
           </Route>
         </Route>
 
@@ -56,6 +59,7 @@ function AnimatedRoutes() {
             <Route path="/educator" element={<RouteTransition><EducatorDashboard /></RouteTransition>} />
             <Route path="/educator/roster" element={<RouteTransition><ClassRoster /></RouteTransition>} />
             <Route path="/educator/curriculum" element={<RouteTransition><CurriculumBuilder /></RouteTransition>} />
+            <Route path="/educator/ml-insights" element={<RouteTransition><EducatorMLInsights /></RouteTransition>} />
           </Route>
         </Route>
 

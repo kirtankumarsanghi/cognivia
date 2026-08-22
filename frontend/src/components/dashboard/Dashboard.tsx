@@ -9,7 +9,6 @@ import ConfusionButton from './ConfusionButton';
 import ConceptGraph from '../concepts/ConceptGraph';
 import ProgressTracker from './ProgressTracker';
 import AIStudyAssistant from './AIStudyAssistant';
-import CognivaAIEngine from './CognivaAIEngine';
 import { useMemo } from 'react';
 
 const AnimatedNumber = ({ value, duration = 1 }: { value: number; duration?: number }) => {
@@ -131,7 +130,6 @@ export default function Dashboard() {
   useEffect(() => {
     loadData();
     fetchProfile();
-    fetchMlRecommendation();
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
@@ -139,7 +137,7 @@ export default function Dashboard() {
     }, 30000);
     
     return () => clearInterval(interval);
-  }, [loadData, fetchProfile, fetchMlRecommendation]);
+  }, [loadData, fetchProfile]);
 
   if (loading) return <Loading variant="dashboard" />;
   
@@ -354,12 +352,26 @@ export default function Dashboard() {
             </div>
           </motion.section>
 
-          <CognivaAIEngine 
-            profile={profile} 
-            recommendation={mlRecommendation} 
-            loadingProfile={loadingProfile} 
-            onGenerate={fetchProfile} 
-          />
+          {/* ML Insights Link Card */}
+          <motion.section variants={fadeUp(0.25)} initial="hidden" animate="visible">
+            <Link to="/ml-insights" className="block rounded-2xl overflow-hidden relative group" style={{ background: '#0D1117', border: '1px solid rgba(42,212,174,0.2)' }}>
+              <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-[60px] pointer-events-none" style={{ background: 'rgba(42,212,174,0.1)' }} />
+              <div className="p-5 relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(42,212,174,0.15)', border: '1px solid rgba(42,212,174,0.3)' }}>
+                      <span className="material-symbols-outlined text-xl" style={{ color: '#2AD4AE' }}>memory</span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white">ML Insights Lab</h3>
+                      <p className="text-[11px] text-gray-500">6 models analysing your learning</p>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-gray-600 group-hover:text-white group-hover:translate-x-1 transition-all">arrow_forward</span>
+                </div>
+              </div>
+            </Link>
+          </motion.section>
 
         </div>
 

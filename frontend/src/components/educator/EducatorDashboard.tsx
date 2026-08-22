@@ -528,64 +528,29 @@ export default function EducatorDashboard() {
         {/* Right Column: AI Insights & Actions */}
         <div className="lg:col-span-5 space-y-6">
           
-          {/* Global ML Controls */}
+          {/* ML Lab Link Card */}
           <motion.div
             variants={fadeUp(0.05)}
             initial="hidden"
             animate="visible"
-            className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-label-md text-outline uppercase tracking-wider flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">tune</span> System Controls
-              </h3>
-              {controlSaved && (
-                <span className="text-[10px] text-[#3DD68C] font-bold animate-pulse">SAVED</span>
-              )}
-            </div>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <label className="text-[11px] font-label-sm text-on-surface-variant uppercase">Baseline Difficulty</label>
-                  <span className="text-[11px] text-primary">{globalControls.difficulty}%</span>
+            <a href="/educator/ml-insights" className="block rounded-2xl overflow-hidden relative group" style={{ background: '#0D1117', border: '1px solid rgba(99,102,241,0.2)' }}>
+              <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-[60px] pointer-events-none" style={{ background: 'rgba(99,102,241,0.1)' }} />
+              <div className="p-5 relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)' }}>
+                      <span className="material-symbols-outlined text-xl" style={{ color: '#6366F1' }}>model_training</span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white">ML Lab</h3>
+                      <p className="text-[11px] text-gray-500">6 models · Risk heatmap · System controls</p>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-gray-600 group-hover:text-white group-hover:translate-x-1 transition-all">arrow_forward</span>
                 </div>
-                <input 
-                  type="range" 
-                  min="0" max="100" 
-                  value={globalControls.difficulty}
-                  onChange={(e) => setGlobalControls({...globalControls, difficulty: parseInt(e.target.value)})}
-                  className="w-full h-1 bg-surface-bright rounded-lg appearance-none cursor-pointer accent-primary"
-                />
               </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <label className="text-[11px] font-label-sm text-on-surface-variant uppercase">Intervention Threshold</label>
-                  <span className="text-[11px] text-[#E8A634]">{globalControls.threshold}%</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="0" max="100" 
-                  value={globalControls.threshold}
-                  onChange={(e) => setGlobalControls({...globalControls, threshold: parseInt(e.target.value)})}
-                  className="w-full h-1 bg-surface-bright rounded-lg appearance-none cursor-pointer accent-[#E8A634]"
-                />
-              </div>
-              <div className="flex items-center justify-between pt-2">
-                <label className="text-[11px] font-label-sm text-on-surface-variant uppercase">Auto-Generate Resources</label>
-                <button 
-                  onClick={() => setGlobalControls({...globalControls, autoGenerate: !globalControls.autoGenerate})}
-                  className={`w-10 h-5 rounded-full relative transition-colors ${globalControls.autoGenerate ? 'bg-primary' : 'bg-surface-bright'}`}
-                >
-                  <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${globalControls.autoGenerate ? 'translate-x-5' : 'translate-x-0'}`}></div>
-                </button>
-              </div>
-              <button 
-                onClick={handleSaveControls}
-                className="w-full mt-2 py-2 bg-surface border border-outline-variant/20 rounded-lg text-xs font-label-sm uppercase tracking-wider text-on-surface hover:bg-surface-bright transition-colors"
-              >
-                Apply System Overrides
-              </button>
-            </div>
+            </a>
           </motion.div>
           {/* Live Student Doubts */}
           <motion.div
@@ -601,53 +566,20 @@ export default function EducatorDashboard() {
             <div className="space-y-3">
               {pulse && pulse.length > 0 ? (
                 pulse.slice(0, 3).map((item, index) => (
-                  <div key={index} className="flex flex-col p-3 bg-surface rounded-xl border border-outline-variant/10">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-headline-sm text-on-surface">{item.student_name}</h4>
-                        <p className="font-body-sm text-outline">Struggling with: {item.name}</p>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className={`font-label-sm uppercase px-2 py-1 rounded-full text-[10px] ${
-                          item.status === 'HIGH' ? 'bg-error/10 text-error' :
-                          item.status === 'MEDIUM' ? 'bg-[#E8A634]/10 text-[#E8A634]' :
-                          'bg-[#3DD68C]/10 text-[#3DD68C]'
-                        }`}>
-                          {item.status === 'HIGH' ? 'LOST' : item.status === 'MEDIUM' ? 'CONFUSED' : 'UNCLEAR'}
-                        </span>
-                        <span className="text-[10px] text-outline mt-1">{item.time}</span>
-                      </div>
+                  <div key={index} className="flex items-center justify-between p-3 bg-surface rounded-xl border border-outline-variant/10">
+                    <div>
+                      <h4 className="font-headline-sm text-on-surface">{item.student_name}</h4>
+                      <p className="font-body-sm text-outline">Struggling with: {item.name}</p>
                     </div>
-                    
-                    {/* NLP Intent Analysis Dropdown */}
-                    <div className="mt-2 pt-2 border-t border-outline-variant/10">
-                      {!intentResults[item.id || index] ? (
-                        <button
-                          onClick={() => handleAnalyzeIntent(item.id || index.toString(), `I don't understand ${item.name} at all.`)}
-                          disabled={analyzingIntent === (item.id || index.toString())}
-                          className="text-[11px] font-label-sm uppercase tracking-wider text-primary hover:text-primary/80 flex items-center gap-1 disabled:opacity-50"
-                        >
-                          <span className="material-symbols-outlined text-[14px]">
-                            {analyzingIntent === (item.id || index.toString()) ? 'hourglass_empty' : 'psychology'}
-                          </span>
-                          {analyzingIntent === (item.id || index.toString()) ? 'Analyzing...' : 'Analyze Intent'}
-                        </button>
-                      ) : (
-                        <div className="flex flex-col gap-1 mt-1 animate-in fade-in slide-in-from-top-2">
-                          <div className="flex gap-2 items-center">
-                            <span className="text-[10px] font-bold text-outline uppercase">Sentiment:</span>
-                            <span className="text-[11px] text-error font-medium capitalize">{intentResults[item.id || index].sentiment}</span>
-                          </div>
-                          <div className="flex gap-2 items-center">
-                            <span className="text-[10px] font-bold text-outline uppercase">Intent:</span>
-                            <span className="text-[11px] text-on-surface capitalize">{intentResults[item.id || index].intent.replace('_', ' ')}</span>
-                          </div>
-                          <div className="flex gap-2 items-center">
-                            <span className="text-[10px] font-bold text-outline uppercase">Urgency:</span>
-                            <span className="text-[11px] text-[#E8A634]">{(intentResults[item.id || index].urgency * 100).toFixed(0)}%</span>
-                          </div>
-                        </div>
-                      )}
+                    <div className="flex flex-col items-end">
+                      <span className={`font-label-sm uppercase px-2 py-1 rounded-full text-[10px] ${
+                        item.status === 'HIGH' ? 'bg-error/10 text-error' :
+                        item.status === 'MEDIUM' ? 'bg-[#E8A634]/10 text-[#E8A634]' :
+                        'bg-[#3DD68C]/10 text-[#3DD68C]'
+                      }`}>
+                        {item.status === 'HIGH' ? 'LOST' : item.status === 'MEDIUM' ? 'CONFUSED' : 'UNCLEAR'}
+                      </span>
+                      <span className="text-[10px] text-outline mt-1">{item.time}</span>
                     </div>
                   </div>
                 ))

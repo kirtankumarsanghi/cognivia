@@ -89,6 +89,21 @@ export default function EducatorLayout() {
           )}
           <span className="material-symbols-outlined">auto_stories</span>Curriculum Builder
         </NavLink>
+        <NavLink
+          to="/educator/ml-insights"
+          onClick={close}
+          className={`nav-item relative ${location.pathname === '/educator/ml-insights' ? 'nav-item-active' : ''}`}
+        >
+          {location.pathname === '/educator/ml-insights' && (
+            <motion.div
+              layoutId="activeNavPillEducator"
+              className="absolute inset-0 rounded-lg"
+              style={{ background: 'var(--accent-dim)', zIndex: -1 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+            />
+          )}
+          <span className="material-symbols-outlined">model_training</span>ML Lab
+        </NavLink>
       </nav>
       <div className="p-4 border-t border-outline-variant/10">
         <button onClick={() => logout()} className="nav-item w-full"><span className="material-symbols-outlined">logout</span>Sign out</button>

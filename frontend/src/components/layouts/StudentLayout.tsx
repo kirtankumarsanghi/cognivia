@@ -11,6 +11,7 @@ const studentLinks = [
   ['/revision', 'event_repeat', 'Revision Plan'],
   ['/study-groups', 'group', 'Peer Study Hub'],
   ['/knowledge-graph', 'hub', 'Knowledge Graph'],
+  ['/ml-insights', 'memory', 'ML Insights'],
   ['/achievements', 'emoji_events', 'Achievements'],
 ] as const;
 

@@ -352,9 +352,12 @@ export function useApi() {
         return {
           success: true,
           difficulty_score: 75,
+          difficulty_level: 'hard',
           adaptive_level: 'hard',
           estimated_time_mins: 15,
-          prerequisite_mastery_required: 0.8
+          prerequisite_mastery_required: 0.8,
+          common_misconception: 'Students confuse recursion depth with time complexity',
+          average_time_spent: 840
         };
       }
 
