@@ -312,6 +312,51 @@ export function useApi() {
           profile_description: 'You have a consistent and reliable learning pace. Your systematic approach serves you well.'
         };
       }
+      
+      if (endpoint === '/ml/learning-risk') {
+        return {
+          success: true,
+          at_risk: true,
+          risk_probability: 0.78,
+          risk_level: 'high',
+          contributing_factors: [
+            { factor: 'Rapid drop in accuracy', impact: 'high' },
+            { factor: 'Increased time spent per problem', impact: 'medium' }
+          ]
+        };
+      }
+
+      if (endpoint === '/ml/nlp-classifier') {
+        const body = typeof options.body === 'string' ? JSON.parse(options.body) : options.body;
+        return {
+          success: true,
+          text: body.text || 'I do not understand this at all',
+          sentiment: 'negative',
+          intent: 'request_explanation',
+          topic: 'general',
+          urgency: 0.85
+        };
+      }
+      
+      if (endpoint === '/ml/recommendation') {
+        return {
+          success: true,
+          next_best_action: 'review_prerequisites',
+          target_concept: 'c1-con1',
+          confidence: 0.92,
+          reasoning: 'Mastery in foundational concepts is low.'
+        };
+      }
+      
+      if (endpoint === '/ml/concept-difficulty') {
+        return {
+          success: true,
+          difficulty_score: 75,
+          adaptive_level: 'hard',
+          estimated_time_mins: 15,
+          prerequisite_mastery_required: 0.8
+        };
+      }
 
       // Match revision completion
       if (endpoint.startsWith('/revision/') && endpoint.endsWith('/complete')) {

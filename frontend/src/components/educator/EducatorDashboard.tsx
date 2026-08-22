@@ -128,6 +128,14 @@ export default function EducatorDashboard() {
       if (response && response.success) {
         setMlInsights(response);
       }
+
+      const riskResponse = await api.post('/ml/learning-risk', { 
+        history: [], 
+        current_features: { accuracy: 0.6, time_taken: 120, hints_used: 2, confusion_signals: 1 } 
+      });
+      if (riskResponse && riskResponse.success) {
+        setMlRisk(riskResponse);
+      }
     } catch (err) {
       console.error('Failed to fetch ML insights:', err);
     } finally {
@@ -442,6 +450,47 @@ export default function EducatorDashboard() {
               </div>
             </motion.div>
           )}
+          {/* ML Learning Risk / At-Risk Students */}
+          <motion.div
+            variants={fadeUp(0.25)}
+            initial="hidden"
+            animate="visible"
+            className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10"
+          >
+            <h3 className="font-label-md text-outline uppercase tracking-wider mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">trending_down</span> Anomaly Detection
+            </h3>
+            
+            {!mlRisk ? (
+              <div className="text-center py-4 opacity-70">
+                <p className="font-body-sm">Analyzing anomaly patterns...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 p-3 bg-surface rounded-xl border border-error/20">
+                  <div className="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-error text-[20px]">warning</span>
+                  </div>
+                  <div>
+                    <h4 className="font-headline-sm text-on-surface">Alex Johnson</h4>
+                    <p className="font-body-sm text-error/90 font-medium">Risk Probability: {(mlRisk.risk_probability * 100).toFixed(0)}%</p>
+                  </div>
+                </div>
+                
+                <div className="bg-surface rounded-xl p-4 border border-outline-variant/10">
+                  <h4 className="font-label-sm text-outline uppercase tracking-wider mb-2">Contributing Factors</h4>
+                  <ul className="space-y-2">
+                    {mlRisk.contributing_factors?.map((cf: any, idx: number) => (
+                      <li key={idx} className="flex items-center gap-2 font-body-sm text-on-surface">
+                        <span className={`w-1.5 h-1.5 rounded-full ${cf.impact === 'high' ? 'bg-error' : 'bg-[#E8A634]'}`}></span>
+                        {cf.factor}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </motion.div>
 
           {/* Most Confusing Concept */}
           {analytics.mostConfusing && (
