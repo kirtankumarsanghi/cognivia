@@ -90,7 +90,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.log('[AuthProvider] Loading offline bypass profile directly');
           if (mounted) {
             setUser(session.offlineBypassProfile);
-            setSessionToken(session.access_token);
             setIsLoading(false);
           }
           return;

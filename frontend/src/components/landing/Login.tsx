@@ -290,22 +290,14 @@ export default function Login() {
             </motion.div>
           </form>
 
-          {/* Demo Accounts */}
+          {/* Demo Accounts - Instant Access */}
           <motion.div custom={3.5} variants={fadeUp} className="mt-6 pt-6 border-t border-[rgba(255,255,255,0.05)]">
-            <p className="text-xs uppercase tracking-widest text-white/40 mb-3 font-mono text-center">Fast Demo Login</p>
+            <p className="text-sm uppercase tracking-widest text-emerald-400/90 mb-4 font-bold text-center flex items-center justify-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">bolt</span>
+              Quick Access Demo
+            </p>
             
-            {/* Show explicit credentials for manual typing */}
-            <div className="mb-4 text-center p-3 rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)]">
-              <p className="text-white/60 text-xs font-mono mb-1">
-                <span className="text-amber-400">Student:</span> student_demo@cognivia.com <span className="text-white/30">|</span> password123!
-              </p>
-              <p className="text-white/60 text-xs font-mono">
-                <span className="text-primary">Educator:</span> educator_demo@cognivia.com <span className="text-white/30">|</span> password123!
-              </p>
-            </div>
-            
-            <p className="text-[10px] uppercase tracking-widest text-emerald-400/70 mt-6 mb-3 font-mono text-center">Instant Offline Access (No Network)</p>
-            <div className="flex gap-3 justify-center mb-4">
+            <div className="flex gap-3 justify-center mb-6">
               <button
                 type="button"
                 onClick={() => {
@@ -314,10 +306,10 @@ export default function Login() {
                     window.location.href = '/educator';
                   });
                 }}
-                className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-xs flex items-center gap-2"
+                className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 text-white hover:from-primary/30 hover:to-primary/20 transition-all text-sm font-bold flex flex-col items-center gap-2 shadow-lg hover:shadow-primary/20"
               >
-                <span className="material-symbols-outlined text-[14px]">bolt</span>
-                Educator Bypass
+                <span className="material-symbols-outlined text-[24px] text-primary">school</span>
+                <span>Educator</span>
               </button>
               <button
                 type="button"
@@ -327,126 +319,14 @@ export default function Login() {
                     window.location.href = '/dashboard';
                   });
                 }}
-                className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-colors text-xs flex items-center gap-2"
+                className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/10 border border-amber-500/30 text-white hover:from-amber-500/30 hover:to-amber-500/20 transition-all text-sm font-bold flex flex-col items-center gap-2 shadow-lg hover:shadow-amber-500/20"
               >
-                <span className="material-symbols-outlined text-[14px]">bolt</span>
-                Student Bypass
+                <span className="material-symbols-outlined text-[24px] text-amber-400">person</span>
+                <span>Student</span>
               </button>
             </div>
 
-            <p className="text-[10px] uppercase tracking-widest text-white/30 mb-3 font-mono text-center">Standard Demo (Network Test)</p>
-            <div className="flex gap-3 justify-center">
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={async () => {
-                  if (submittingRef.current || isSubmitting) {
-                    console.log('[Demo Login] Already submitting, ignoring click');
-                    return;
-                  }
-                  
-                  console.log('[Demo Login] Starting educator login...');
-                  setServerError(null);
-                  setEmail('educator_demo@cognivia.com');
-                  setPassword('password123!');
-                  
-                  submittingRef.current = true;
-                  setIsSubmitting(true);
-                  
-                  const timeoutId = setTimeout(() => {
-                    console.error('[Demo Login] Login timeout after 15 seconds');
-                    submittingRef.current = false;
-                    setIsSubmitting(false);
-                    setServerError('Login is taking too long. Please refresh the page and try again.');
-                  }, 15000);
-                  
-                  try {
-                    console.log('[Demo Login] Calling login function...');
-                    const res = await login('educator_demo@cognivia.com', 'password123!');
-                    console.log('[Demo Login] Login result:', res);
-                    clearTimeout(timeoutId);
-                    
-                    if (!res.success) {
-                      console.error('[Demo Login] Login failed:', res.error);
-                      setServerError(res.error || 'Demo login failed. Please try again.');
-                    } else {
-                      console.log('[Demo Login] Login successful, should redirect...');
-                    }
-                  } catch (err) {
-                    clearTimeout(timeoutId);
-                    console.error('[Demo Login] Exception during login:', err);
-                    setServerError('An unexpected error occurred. Please try again.');
-                  } finally {
-                    submittingRef.current = false;
-                    setIsSubmitting(false);
-                    console.log('[Demo Login] Completed, isSubmitting reset');
-                  }
-                }}
-                className="px-4 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-[16px] text-primary">school</span>
-                )}
-                Educator
-              </button>
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={async () => {
-                  if (submittingRef.current || isSubmitting) {
-                    console.log('[Demo Login] Already submitting, ignoring click');
-                    return;
-                  }
-                  
-                  console.log('[Demo Login] Starting student login...');
-                  setServerError(null);
-                  setEmail('student_demo@cognivia.com');
-                  setPassword('password123!');
-                  
-                  submittingRef.current = true;
-                  setIsSubmitting(true);
-                  
-                  const timeoutId = setTimeout(() => {
-                    console.error('[Demo Login] Login timeout after 15 seconds');
-                    submittingRef.current = false;
-                    setIsSubmitting(false);
-                    setServerError('Login is taking too long. Please refresh the page and try again.');
-                  }, 15000);
-                  
-                  try {
-                    console.log('[Demo Login] Calling login function...');
-                    const res = await login('student_demo@cognivia.com', 'password123!');
-                    console.log('[Demo Login] Login result:', res);
-                    clearTimeout(timeoutId);
-                    
-                    if (!res.success) {
-                      console.error('[Demo Login] Login failed:', res.error);
-                      setServerError(res.error || 'Demo login failed. Please try again.');
-                    } else {
-                      console.log('[Demo Login] Login successful, should redirect...');
-                    }
-                  } catch (err) {
-                    clearTimeout(timeoutId);
-                    console.error('[Demo Login] Exception during login:', err);
-                    setServerError('An unexpected error occurred. Please try again.');
-                  } finally {
-                    submittingRef.current = false;
-                    setIsSubmitting(false);
-                    console.log('[Demo Login] Completed, isSubmitting reset');
-                  }
-                }}
-                className="px-4 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined text-[16px] text-amber-400">person</span>
-                )}
-                Student
-              </button>
-            </div>
+            <p className="text-[10px] uppercase tracking-widest text-white/20 mb-2 font-mono text-center">No login required • Instant access</p>
           </motion.div>
 
           {/* Footer */}

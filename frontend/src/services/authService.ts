@@ -374,14 +374,25 @@ export const authService = {
    */
   async signOut(): Promise<AuthResult> {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        const mapped = mapAuthError(error);
-        return { success: false, error: mapped.message, code: mapped.code };
+      // Direct REST API sign out to avoid Supabase JS client hanging
+      const token = await this.getAccessToken();
+      if (token) {
+        const SUPABASE_URL = 'https://cbqswhmpdbojubljyinv.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_AqQ0AZb6gH2AmWyLlN3_Zw_TFSQ1Qzf';
+        
+        await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${token}`
+          }
+        }).catch(() => {}); // Ignore network errors during logout
       }
+      
+      localStorage.removeItem('cogniva-session');
       return { success: true, data: undefined };
     } catch (err) {
-      // Even if signOut fails on the server, clear local state
+      localStorage.removeItem('cogniva-session');
       const mapped = mapAuthError(err);
       return { success: false, error: mapped.message, code: mapped.code };
     }
@@ -414,11 +425,11 @@ export const authService = {
    */
   async getSession() {
     try {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        return { session: null, error: mapAuthError(error).message };
+      const stored = localStorage.getItem('cogniva-session');
+      if (stored) {
+        return { session: JSON.parse(stored), error: null };
       }
-      return { session: data.session, error: null };
+      return { session: null, error: null };
     } catch (err) {
       return { session: null, error: mapAuthError(err).message };
     }
@@ -429,8 +440,11 @@ export const authService = {
    */
   async getAccessToken(): Promise<string | null> {
     try {
-      const { data } = await supabase.auth.getSession();
-      return data.session?.access_token ?? null;
+      const stored = localStorage.getItem('cogniva-session');
+      if (stored) {
+        return JSON.parse(stored).access_token ?? null;
+      }
+      return null;
     } catch {
       return null;
     }
