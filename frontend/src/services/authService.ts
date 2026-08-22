@@ -163,7 +163,18 @@ export const authService = {
         return { success: true, data: profileResult.data };
       }
 
-      // Fallback: if the trigger was slow or failed, return a temporary profile object so the user can proceed
+      // Fallback: if the trigger was slow or failed, self-heal by creating it from the frontend
+      const { error: insertError } = await supabase.from('profiles').insert({
+        id: authData.user.id,
+        name,
+        email: email,
+        role
+      });
+      
+      if (insertError) {
+        console.error('Failed to auto-heal profile on signup:', insertError);
+      }
+
       return { 
         success: true, 
         data: { id: authData.user.id, name, email, role, avatar: null } 
@@ -204,8 +215,21 @@ export const authService = {
       // Fetch profile
       const profileResult = await this.getProfile(authData.user.id);
       if (!profileResult.success) {
-        // Auth succeeded but profile is missing — do NOT sign out here,
-        // let the caller handle the "profile incomplete" state
+        // Auth succeeded but profile is missing. Attempt to self-heal.
+        const name = authData.user.user_metadata?.name || 'User';
+        const role = authData.user.user_metadata?.role || 'student';
+        
+        const { error: insertError } = await supabase.from('profiles').insert({
+          id: authData.user.id,
+          name,
+          email: authData.user.email || email,
+          role
+        });
+
+        if (!insertError) {
+          return { success: true, data: { id: authData.user.id, name, email: authData.user.email || email, role, avatar: null } };
+        }
+
         return {
           success: false,
           error: 'Your account exists but your profile data is missing. Please contact support or try signing up again.',
