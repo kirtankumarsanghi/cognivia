@@ -285,6 +285,34 @@ export function useApi() {
           nextStep: "Let's write out the logic in plain English pseudo-code before writing real code."
         };
       }
+      
+      if (endpoint === '/ml/early-warning') {
+        const body = typeof options.body === 'string' ? JSON.parse(options.body) : options.body;
+        return {
+          success: true,
+          risk_probability: 0.82,
+          risk_level: 'high',
+          risk_percentage: 82,
+          recommended_action: 'Review prerequisite concepts before proceeding',
+          model: 'early_warning',
+          feature_contributions: [
+            { factor: 'Prerequisite mastery is low', value: '40%', impact: 'high' },
+            { factor: 'Learning velocity is declining', value: '-0.10', impact: 'medium' }
+          ]
+        };
+      }
+
+      if (endpoint === '/ml/student-profile') {
+        return {
+          success: true,
+          cluster: 'Steady Learner',
+          cluster_id: 1,
+          confidence: 0.85,
+          model: 'kmeans_student_profile',
+          profile_description: 'You have a consistent and reliable learning pace. Your systematic approach serves you well.'
+        };
+      }
+
       // Match revision completion
       if (endpoint.startsWith('/revision/') && endpoint.endsWith('/complete')) {
         const id = endpoint.split('/')[2];
