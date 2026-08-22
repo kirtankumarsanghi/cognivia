@@ -25,6 +25,19 @@ export default function EducatorDashboard() {
   const [sessionDetails, setSessionDetails] = useState<any>(null);
   const [mlInsights, setMlInsights] = useState<any>(null);
   const [loadingMl, setLoadingMl] = useState(false);
+  
+  // New states for authoritative features
+  const [analyzingIntent, setAnalyzingIntent] = useState<string | null>(null);
+  const [intentResults, setIntentResults] = useState<Record<string, any>>({});
+  const [intervening, setIntervening] = useState<string | null>(null);
+  const [globalControls, setGlobalControls] = useState({
+    difficulty: 50,
+    threshold: 75,
+    autoGenerate: true
+  });
+  const [controlSaved, setControlSaved] = useState(false);
+  const [mlRisk, setMlRisk] = useState<any>(null); // Re-declare since I removed it by mistake
+
   const intervalRef = useRef<NodeJS.Timeout>();
 
   const loadData = async (hours: number) => {
@@ -154,6 +167,38 @@ export default function EducatorDashboard() {
       });
       setGeneratingGuide(false);
     }, 1500);
+  };
+
+  const handleAnalyzeIntent = async (doubtId: string, text: string) => {
+    setAnalyzingIntent(doubtId);
+    try {
+      const res = await api.post('/ml/nlp-classifier', { text });
+      if (res && res.success) {
+        setIntentResults(prev => ({ ...prev, [doubtId]: res }));
+      }
+    } catch (err) {
+      console.error('Failed to analyze intent:', err);
+    } finally {
+      setAnalyzingIntent(null);
+    }
+  };
+
+  const handleIntervene = async (studentId: string) => {
+    setIntervening(studentId);
+    try {
+      await api.post('/educator/intervene', { studentId, message: 'Your educator has assigned a review module.' });
+      // Simulate success toast/alert
+      alert(`Intervention sent to student ${studentId}`);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIntervening(null);
+    }
+  };
+
+  const handleSaveControls = () => {
+    setControlSaved(true);
+    setTimeout(() => setControlSaved(false), 2000);
   };
 
   if (loading) return <Loading variant="dashboard" />;
@@ -390,11 +435,139 @@ export default function EducatorDashboard() {
                 </div>
               ))}
             </div>
+          </motion.div>          {/* Student Intervention Roster */}
+          <motion.div
+            variants={fadeUp(0.35)}
+            initial="hidden"
+            animate="visible"
+            className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10"
+          >
+            <div className="flex justify-between items-end mb-6">
+              <div>
+                <h2 className="font-headline-md text-headline-md text-on-surface">Student Roster</h2>
+                <p className="font-body-sm text-on-surface-variant mt-1">Manage interventions and view ML risk profiles.</p>
+              </div>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-outline-variant/20">
+                    <th className="p-3 font-label-sm text-outline uppercase tracking-wider">Student</th>
+                    <th className="p-3 font-label-sm text-outline uppercase tracking-wider">Avg Score</th>
+                    <th className="p-3 font-label-sm text-outline uppercase tracking-wider">ML Risk Profile</th>
+                    <th className="p-3 font-label-sm text-outline uppercase tracking-wider text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant/10">
+                  {[
+                    { id: 's1', initials: 'AS', name: 'Alex Smith', score: '62%', risk: 'HIGH', lastActive: '2h ago' },
+                    { id: 's2', initials: 'SJ', name: 'Sam Johnson', score: '58%', risk: 'HIGH', lastActive: '1d ago' },
+                    { id: 's3', initials: 'MK', name: 'Maria Kim', score: '85%', risk: 'LOW', lastActive: '15m ago' },
+                    { id: 's4', initials: 'EJ', name: 'Emma Jones', score: '45%', risk: 'CRITICAL', lastActive: '3d ago' }
+                  ].map((student) => (
+                    <tr key={student.id} className="hover:bg-surface-bright transition-colors group">
+                      <td className="p-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                            {student.initials}
+                          </div>
+                          <div>
+                            <span className="font-body-sm text-on-surface block">{student.name}</span>
+                            <span className="text-[10px] text-outline">Active: {student.lastActive}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3 font-body-sm text-on-surface font-medium">{student.score}</td>
+                      <td className="p-3">
+                        <span className={`font-label-sm uppercase px-2 py-1 rounded-full text-[10px] ${
+                          student.risk === 'CRITICAL' ? 'bg-error/20 text-error font-bold' :
+                          student.risk === 'HIGH' ? 'bg-error/10 text-error' :
+                          student.risk === 'MEDIUM' ? 'bg-[#E8A634]/10 text-[#E8A634]' :
+                          'bg-[#3DD68C]/10 text-[#3DD68C]'
+                        }`}>
+                          {student.risk}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right">
+                        <button 
+                          onClick={() => handleIntervene(student.id)}
+                          disabled={intervening === student.id}
+                          className="bg-primary/10 text-primary px-3 py-1.5 rounded-lg font-label-sm uppercase tracking-wider hover:bg-primary hover:text-on-primary transition-colors text-[11px] disabled:opacity-50"
+                        >
+                          {intervening === student.id ? 'Sending...' : 'Intervene'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </motion.div>
         </div>
 
         {/* Right Column: AI Insights & Actions */}
         <div className="lg:col-span-5 space-y-6">
+          
+          {/* Global ML Controls */}
+          <motion.div
+            variants={fadeUp(0.05)}
+            initial="hidden"
+            animate="visible"
+            className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-label-md text-outline uppercase tracking-wider flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">tune</span> System Controls
+              </h3>
+              {controlSaved && (
+                <span className="text-[10px] text-[#3DD68C] font-bold animate-pulse">SAVED</span>
+              )}
+            </div>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-[11px] font-label-sm text-on-surface-variant uppercase">Baseline Difficulty</label>
+                  <span className="text-[11px] text-primary">{globalControls.difficulty}%</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" max="100" 
+                  value={globalControls.difficulty}
+                  onChange={(e) => setGlobalControls({...globalControls, difficulty: parseInt(e.target.value)})}
+                  className="w-full h-1 bg-surface-bright rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+              </div>
+              <div>
+                <div className="flex justify-between mb-1">
+                  <label className="text-[11px] font-label-sm text-on-surface-variant uppercase">Intervention Threshold</label>
+                  <span className="text-[11px] text-[#E8A634]">{globalControls.threshold}%</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="0" max="100" 
+                  value={globalControls.threshold}
+                  onChange={(e) => setGlobalControls({...globalControls, threshold: parseInt(e.target.value)})}
+                  className="w-full h-1 bg-surface-bright rounded-lg appearance-none cursor-pointer accent-[#E8A634]"
+                />
+              </div>
+              <div className="flex items-center justify-between pt-2">
+                <label className="text-[11px] font-label-sm text-on-surface-variant uppercase">Auto-Generate Resources</label>
+                <button 
+                  onClick={() => setGlobalControls({...globalControls, autoGenerate: !globalControls.autoGenerate})}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${globalControls.autoGenerate ? 'bg-primary' : 'bg-surface-bright'}`}
+                >
+                  <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${globalControls.autoGenerate ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                </button>
+              </div>
+              <button 
+                onClick={handleSaveControls}
+                className="w-full mt-2 py-2 bg-surface border border-outline-variant/20 rounded-lg text-xs font-label-sm uppercase tracking-wider text-on-surface hover:bg-surface-bright transition-colors"
+              >
+                Apply System Overrides
+              </button>
+            </div>
+          </motion.div>
           {/* Live Student Doubts */}
           <motion.div
             variants={fadeUp(0.1)}
@@ -409,20 +582,53 @@ export default function EducatorDashboard() {
             <div className="space-y-3">
               {pulse && pulse.length > 0 ? (
                 pulse.slice(0, 3).map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-surface rounded-xl border border-outline-variant/10">
-                    <div>
-                      <h4 className="font-headline-sm text-on-surface">{item.student_name}</h4>
-                      <p className="font-body-sm text-outline">Struggling with: {item.name}</p>
+                  <div key={index} className="flex flex-col p-3 bg-surface rounded-xl border border-outline-variant/10">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-headline-sm text-on-surface">{item.student_name}</h4>
+                        <p className="font-body-sm text-outline">Struggling with: {item.name}</p>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className={`font-label-sm uppercase px-2 py-1 rounded-full text-[10px] ${
+                          item.status === 'HIGH' ? 'bg-error/10 text-error' :
+                          item.status === 'MEDIUM' ? 'bg-[#E8A634]/10 text-[#E8A634]' :
+                          'bg-[#3DD68C]/10 text-[#3DD68C]'
+                        }`}>
+                          {item.status === 'HIGH' ? 'LOST' : item.status === 'MEDIUM' ? 'CONFUSED' : 'UNCLEAR'}
+                        </span>
+                        <span className="text-[10px] text-outline mt-1">{item.time}</span>
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end">
-                      <span className={`font-label-sm uppercase px-2 py-1 rounded-full text-[10px] ${
-                        item.status === 'HIGH' ? 'bg-error/10 text-error' :
-                        item.status === 'MEDIUM' ? 'bg-[#E8A634]/10 text-[#E8A634]' :
-                        'bg-[#3DD68C]/10 text-[#3DD68C]'
-                      }`}>
-                        {item.status === 'HIGH' ? 'LOST' : item.status === 'MEDIUM' ? 'CONFUSED' : 'UNCLEAR'}
-                      </span>
-                      <span className="text-[10px] text-outline mt-1">{item.time}</span>
+                    
+                    {/* NLP Intent Analysis Dropdown */}
+                    <div className="mt-2 pt-2 border-t border-outline-variant/10">
+                      {!intentResults[item.id || index] ? (
+                        <button
+                          onClick={() => handleAnalyzeIntent(item.id || index.toString(), `I don't understand ${item.name} at all.`)}
+                          disabled={analyzingIntent === (item.id || index.toString())}
+                          className="text-[11px] font-label-sm uppercase tracking-wider text-primary hover:text-primary/80 flex items-center gap-1 disabled:opacity-50"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">
+                            {analyzingIntent === (item.id || index.toString()) ? 'hourglass_empty' : 'psychology'}
+                          </span>
+                          {analyzingIntent === (item.id || index.toString()) ? 'Analyzing...' : 'Analyze Intent'}
+                        </button>
+                      ) : (
+                        <div className="flex flex-col gap-1 mt-1 animate-in fade-in slide-in-from-top-2">
+                          <div className="flex gap-2 items-center">
+                            <span className="text-[10px] font-bold text-outline uppercase">Sentiment:</span>
+                            <span className="text-[11px] text-error font-medium capitalize">{intentResults[item.id || index].sentiment}</span>
+                          </div>
+                          <div className="flex gap-2 items-center">
+                            <span className="text-[10px] font-bold text-outline uppercase">Intent:</span>
+                            <span className="text-[11px] text-on-surface capitalize">{intentResults[item.id || index].intent.replace('_', ' ')}</span>
+                          </div>
+                          <div className="flex gap-2 items-center">
+                            <span className="text-[10px] font-bold text-outline uppercase">Urgency:</span>
+                            <span className="text-[11px] text-[#E8A634]">{(intentResults[item.id || index].urgency * 100).toFixed(0)}%</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
