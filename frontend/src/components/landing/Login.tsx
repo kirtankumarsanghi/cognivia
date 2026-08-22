@@ -322,10 +322,18 @@ export default function Login() {
                   submittingRef.current = true;
                   setIsSubmitting(true);
                   
+                  const timeoutId = setTimeout(() => {
+                    console.error('[Demo Login] Login timeout after 15 seconds');
+                    submittingRef.current = false;
+                    setIsSubmitting(false);
+                    setServerError('Login is taking too long. Please refresh the page and try again.');
+                  }, 15000);
+                  
                   try {
                     console.log('[Demo Login] Calling login function...');
                     const res = await login('educator_demo@cognivia.com', 'password123!');
                     console.log('[Demo Login] Login result:', res);
+                    clearTimeout(timeoutId);
                     
                     if (!res.success) {
                       console.error('[Demo Login] Login failed:', res.error);
@@ -334,6 +342,7 @@ export default function Login() {
                       console.log('[Demo Login] Login successful, should redirect...');
                     }
                   } catch (err) {
+                    clearTimeout(timeoutId);
                     console.error('[Demo Login] Exception during login:', err);
                     setServerError('An unexpected error occurred. Please try again.');
                   } finally {
@@ -368,10 +377,18 @@ export default function Login() {
                   submittingRef.current = true;
                   setIsSubmitting(true);
                   
+                  const timeoutId = setTimeout(() => {
+                    console.error('[Demo Login] Login timeout after 15 seconds');
+                    submittingRef.current = false;
+                    setIsSubmitting(false);
+                    setServerError('Login is taking too long. Please refresh the page and try again.');
+                  }, 15000);
+                  
                   try {
                     console.log('[Demo Login] Calling login function...');
                     const res = await login('student_demo@cognivia.com', 'password123!');
                     console.log('[Demo Login] Login result:', res);
+                    clearTimeout(timeoutId);
                     
                     if (!res.success) {
                       console.error('[Demo Login] Login failed:', res.error);
@@ -380,6 +397,7 @@ export default function Login() {
                       console.log('[Demo Login] Login successful, should redirect...');
                     }
                   } catch (err) {
+                    clearTimeout(timeoutId);
                     console.error('[Demo Login] Exception during login:', err);
                     setServerError('An unexpected error occurred. Please try again.');
                   } finally {

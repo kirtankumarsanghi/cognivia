@@ -117,6 +117,31 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2, baseDelayMs = 
   throw lastError;
 }
 
+// ─── Fetch Wrapper ───────────────────────────────────────────────────
+
+/**
+ * A wrapper around fetch that guarantees a timeout, so network issues
+ * don't cause the UI to hang forever in an infinite loop.
+ */
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 8000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    return response;
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      throw new Error(`Request timed out after ${timeoutMs / 1000} seconds`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 // ─── Auth Service ────────────────────────────────────────────────────
 
 export const authService = {
@@ -134,7 +159,7 @@ export const authService = {
       const SUPABASE_KEY = 'sb_publishable_AqQ0AZb6gH2AmWyLlN3_Zw_TFSQ1Qzf';
       
       // Step 1: Create user via direct REST API
-      const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      const response = await fetchWithTimeout(`${SUPABASE_URL}/auth/v1/signup`, {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_KEY,
@@ -185,7 +210,7 @@ export const authService = {
         await new Promise(r => setTimeout(r, 1000));
         
         // Fetch profile
-        const profileResponse = await fetch(
+        const profileResponse = await fetchWithTimeout(
           `${SUPABASE_URL}/rest/v1/profiles?id=eq.${authData.user.id}&select=*`,
           {
             headers: {
@@ -204,7 +229,7 @@ export const authService = {
         }
         
         // Self-heal: create profile if trigger didn't
-        await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+        await fetchWithTimeout(`${SUPABASE_URL}/rest/v1/profiles`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
@@ -245,7 +270,7 @@ export const authService = {
       const SUPABASE_URL = 'https://cbqswhmpdbojubljyinv.supabase.co';
       const SUPABASE_KEY = 'sb_publishable_AqQ0AZb6gH2AmWyLlN3_Zw_TFSQ1Qzf';
       
-      const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      const response = await fetchWithTimeout(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_KEY,
@@ -288,7 +313,7 @@ export const authService = {
       console.log('[authService.signIn] Fetching profile...');
 
       // Fetch profile using the access token directly via REST
-      const profileResponse = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${authData.user.id}&select=*`, {
+      const profileResponse = await fetchWithTimeout(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${authData.user.id}&select=*`, {
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${authData.access_token}`,
@@ -311,7 +336,7 @@ export const authService = {
       console.log('[authService.signIn] Profile not found, self-healing with:', { name, role });
       
       // Try to create the profile
-      await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+      await fetchWithTimeout(`${SUPABASE_URL}/rest/v1/profiles`, {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_KEY,
@@ -411,3 +436,4 @@ export const authService = {
     }
   },
 };
+

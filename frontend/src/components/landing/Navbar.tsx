@@ -165,6 +165,22 @@ export default function Navbar() {
             <div className="w-px h-6 bg-white/10" />
 
             <Link 
+              to="/demo" 
+              className="transition-all duration-200 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5"
+              style={{ 
+                fontFamily: 'var(--font-mono)', 
+                fontSize: 11, 
+                fontWeight: 500, 
+                letterSpacing: '0.14em', 
+                textTransform: 'uppercase', 
+                color: '#34c759', 
+                textDecoration: 'none' 
+              }}
+            >
+              🧠 DEMO
+            </Link>
+            
+            <Link 
               to="/login" 
               className="transition-all duration-200 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5"
               style={{ 
@@ -334,6 +350,22 @@ export default function Navbar() {
               transition={{ delay: 0.4, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col gap-4 mt-8 w-full max-w-xs"
             >
+              <Link 
+                to="/demo" 
+                onClick={() => setMenuOpen(false)}
+                className="text-center py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-400 hover:from-green-500 hover:to-green-300 transition-all"
+                style={{
+                  fontFamily: 'var(--font-mono)', 
+                  fontSize: 14, 
+                  letterSpacing: '0.18em', 
+                  textTransform: 'uppercase',
+                  color: '#000', 
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                }}
+              >
+                🧠 TRY DEMO
+              </Link>
               <Link 
                 to="/login" 
                 onClick={() => setMenuOpen(false)}
