@@ -3,6 +3,16 @@ import { supabaseAdmin } from '../config/supabase';
 import { mlService } from '../services/mlService';
 import { masteryService } from '../services/masteryService';
 
+function getWeeklyBuckets() {
+  const buckets = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    buckets.push({ key: d.toISOString().slice(0, 10), sessions: 0, signals: 0 });
+  }
+  return buckets;
+}
+
 export const analyticsController = {
   /**
    * GET /api/analytics/student
@@ -27,75 +37,154 @@ export const analyticsController = {
 
       if (masteryError) throw masteryError;
 
-      // 2. Calculate aggregate learning score (weighted average)
-      const avgScore = masteryScores && masteryScores.length > 0
-        ? Math.round(masteryScores.reduce((sum, m) => sum + Number(m.score), 0) / masteryScores.length)
-        : 0;
+      const scores = masteryScores?.map(m => Number(m.score)) || [];
+      const avgMastery = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+      const masteredCount = scores.filter(s => s >= 80).length;
+      const needsAttentionCount = scores.filter(s => s < 60).length;
 
-      // 3. Count mastered vs needs attention
-      const masteredCount = masteryScores?.filter(m => Number(m.score) >= 85).length || 0;
-      const needsAttentionCount = masteryScores?.filter(m => Number(m.score) < 65).length || 0;
-
-      // 4. Get learning streak (consecutive days with practice)
-      const { data: recentAttempts } = await supabaseAdmin
+      // 2. Practice Accuracy
+      const { data: practiceData } = await supabaseAdmin
         .from('practice_attempts')
+        .select('correct')
+        .eq('student_id', userId);
+
+      const totalPractice = practiceData?.length || 0;
+      const correctPractice = practiceData?.filter(p => p.correct).length || 0;
+      const practiceAccuracy = totalPractice > 0 ? (correctPractice / totalPractice) * 100 : 0;
+
+      // 3. Clear Signals
+      const { data: clearSignals } = await supabaseAdmin
+        .from('confusion_signals')
+        .select('*')
+        .eq('student_id', userId)
+        .eq('signal', 'Clear')
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+
+      const clarityConfirmations = clearSignals?.length || 0;
+
+      // 4. Completed Revisions
+      const { data: completedRevisions } = await supabaseAdmin
+        .from('revision_plans')
+        .select('*')
+        .eq('student_id', userId)
+        .eq('completed', true)
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+
+      const revisionCompletion = completedRevisions?.length || 0;
+
+      // 5. Calculate final learning score
+      const learningScore = Math.round(
+        avgMastery * 0.5 +
+        practiceAccuracy * 0.25 +
+        Math.min(clarityConfirmations * 5, 15) +
+        Math.min(revisionCompletion * 2, 10)
+      );
+
+      // 6. Streak
+      const { data: sessions } = await supabaseAdmin
+        .from('learning_sessions')
         .select('created_at')
         .eq('student_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .order('created_at', { ascending: false });
 
       let streak = 0;
-      if (recentAttempts && recentAttempts.length > 0) {
-        const uniqueDays = new Set<string>();
-        recentAttempts.forEach((attempt: any) => {
-          const day = new Date(attempt.created_at).toISOString().split('T')[0];
-          uniqueDays.add(day);
-        });
+      if (sessions && sessions.length > 0) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         
-        const today = new Date().toISOString().split('T')[0];
-        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-        
-        if (uniqueDays.has(today) || uniqueDays.has(yesterday)) {
-          streak = uniqueDays.size;
+        let currentDate = new Date(today);
+        const sessionDates = new Set(
+          sessions.map(s => {
+            const d = new Date(s.created_at);
+            d.setHours(0, 0, 0, 0);
+            return d.getTime();
+          })
+        );
+
+        while (sessionDates.has(currentDate.getTime())) {
+          streak++;
+          currentDate.setDate(currentDate.getDate() - 1);
         }
       }
 
-      // 5. Get confusion history
-      const { data: confusionSignals } = await supabaseAdmin
+      // 7. Weekly Stats
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const { data: weeklySessions } = await supabaseAdmin
+        .from('learning_sessions')
+        .select('*')
+        .eq('student_id', userId)
+        .gte('created_at', weekAgo.toISOString());
+
+      const weeklySessionCount = weeklySessions?.length || 0;
+      
+      const { data: weeklySignals } = await supabaseAdmin
+        .from('confusion_signals')
+        .select('created_at, signal')
+        .eq('student_id', userId)
+        .gte('created_at', weekAgo.toISOString());
+
+      const weeklyProgress = getWeeklyBuckets();
+      (weeklySessions || []).forEach(session => {
+        const bucket = weeklyProgress.find(day => day.key === new Date(session.created_at).toISOString().slice(0, 10));
+        if (bucket) bucket.sessions += 1;
+      });
+      (weeklySignals || []).forEach(signal => {
+        const bucket = weeklyProgress.find(day => day.key === new Date(signal.created_at).toISOString().slice(0, 10));
+        if (bucket) bucket.signals += 1;
+      });
+
+      const weeklyChange = Math.min(15, Math.round(clarityConfirmations * 3 + revisionCompletion * 2 + weeklySessionCount * 0.5));
+
+      // 8. Revision Plan
+      const { data: revisionPlan } = await supabaseAdmin
+        .from('revision_plans')
+        .select('*, concepts(name)')
+        .eq('student_id', userId)
+        .eq('completed', false)
+        .order('priority', { ascending: false })
+        .limit(3);
+
+      // 9. Recommended Next
+      let recommendedNext = 'Continue learning!';
+      if (needsAttentionCount > 0) {
+        const { data: weakConcept } = await supabaseAdmin
+          .from('mastery_scores')
+          .select('*, concept:concepts(name)')
+          .eq('student_id', userId)
+          .lt('score', 60)
+          .order('score', { ascending: true })
+          .limit(1)
+          .single();
+        
+        if (weakConcept) {
+          // @ts-ignore
+          recommendedNext = `Review ${weakConcept.concept.name}`;
+        }
+      } else if (revisionPlan && revisionPlan.length > 0) {
+        recommendedNext = `Complete revision: ${revisionPlan[0].concepts.name}`;
+      }
+
+      // 10. Confusion History
+      const { data: confusionHistory } = await supabaseAdmin
         .from('confusion_signals')
         .select('*, concepts:concepts(name)')
         .eq('student_id', userId)
         .order('created_at', { ascending: false })
         .limit(10);
 
-      // 6. Get revision plan (concepts that need attention)
-      const needsRevision = masteryScores
-        ?.filter(m => Number(m.score) < 75)
-        .sort((a, b) => Number(a.score) - Number(b.score))
-        .slice(0, 5)
-        .map(m => ({
-          concept_id: m.concept_id,
-          // @ts-ignore
-          concept_name: m.concepts?.name,
-          score: m.score,
-          priority: Number(m.score) < 50 ? 'High' : Number(m.score) < 65 ? 'Medium' : 'Low'
-        })) || [];
-
-      // 7. Recommended next concept
-      const recommendedNext = needsRevision[0]?.concept_name || 'Continue learning!';
-
-      // 8. Weekly change (mock calculation for now)
-      const weeklyChange = Math.floor(Math.random() * 10) - 2; // -2 to +8
-
       res.json({
-        learningScore: avgScore,
+        learningScore,
+        weeklyChange,
         masteredCount,
         needsAttentionCount,
+        practiceAccuracy: Math.round(practiceAccuracy),
         streak,
-        weeklyChange,
+        weeklySessionCount,
+        weeklyProgress,
+        revisionPlan: revisionPlan || [],
         recommendedNext,
-        confusionHistory: confusionSignals || [],
-        revisionPlan: needsRevision,
+        confusionHistory: confusionHistory || [],
+        rank: learningScore >= 85 ? 'Expert' : learningScore >= 70 ? 'Pro Scholar' : learningScore >= 50 ? 'Focused Learner' : 'Learner',
         mlEnabled: await mlService.healthCheck()
       });
     } catch (error: any) {

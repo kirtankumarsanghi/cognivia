@@ -6,6 +6,7 @@ import { masteryService } from '../services/masteryService';
 import { analyticsController } from '../controllers/analyticsController';
 import sessionRoutes from './sessionRoutes';
 import mlRoutes from './mlRoutes';
+import achievementRoutes from './achievementRoutes';
 
 const router = Router();
 
@@ -14,6 +15,9 @@ router.use(sessionRoutes);
 
 // Mount ML routes
 router.use(mlRoutes);
+
+// Mount achievement routes
+router.use(achievementRoutes);
 
 // ML & Analytics Status
 router.get('/api/analytics/ml-status', requireAuth, analyticsController.getMLStatus);
@@ -120,6 +124,50 @@ router.get('/api/courses/:id', requireAuth, async (req, res) => {
   }
 });
 
+router.post('/api/courses', requireAuth, async (req, res) => {
+  const { name, description } = req.body;
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('courses')
+      .insert({ name, description: description || '' })
+      .select('*, lessons(*, concepts(*))')
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put('/api/courses/:id', requireAuth, async (req, res) => {
+  const { name } = req.body;
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('courses')
+      .update({ name })
+      .eq('id', req.params.id)
+      .select('*, lessons(*, concepts(*))')
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/api/courses/:id', requireAuth, async (req, res) => {
+  try {
+    const { error } = await supabaseAdmin
+      .from('courses')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/api/lessons/:id', requireAuth, async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -129,6 +177,34 @@ router.get('/api/lessons/:id', requireAuth, async (req, res) => {
       .single();
     if (error) throw error;
     res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/api/lessons', requireAuth, async (req, res) => {
+  const { course_id, name } = req.body;
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('lessons')
+      .insert({ course_id, name, order_num: 0 })
+      .select('*')
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/api/lessons/:id', requireAuth, async (req, res) => {
+  try {
+    const { error } = await supabaseAdmin
+      .from('lessons')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

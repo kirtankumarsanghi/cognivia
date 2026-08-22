@@ -101,7 +101,7 @@ export default function StudyGroups() {
   const handleJoinSession = async (session: Session) => {
     setIsJoining(session.id);
     try {
-      await api.post(`/study-groups/sessions/${session.id}/join`);
+      await api.post(`/study-groups/sessions/${session.id}/join`, {});
       await new Promise(r => setTimeout(r, 800)); // Simulate connection delay
       setActiveSessionRoom({ ...session, participants: session.participants + 1 });
     } catch (e) {

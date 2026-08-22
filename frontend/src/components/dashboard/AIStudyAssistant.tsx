@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useApi } from '../../hooks/useApi';
 
 interface Message {
   id: string;
@@ -21,6 +22,7 @@ export default function AIStudyAssistant() {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const api = useApi();
 
   const quickActions = [
     { icon: 'quiz', label: 'Generate Quiz', action: 'quiz' },
@@ -37,33 +39,14 @@ export default function AIStudyAssistant() {
     scrollToBottom();
   }, [messages]);
 
-  const simulateAIResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.includes('quiz')) {
-      return "I can generate a personalized quiz for you! Which concept would you like to practice? I'll create questions based on your current mastery level.";
-    } else if (lowerMessage.includes('explain') || lowerMessage.includes('what is')) {
-      return "I'd be happy to explain that! Could you tell me which specific concept you'd like me to break down? I can provide examples, analogies, and step-by-step explanations.";
-    } else if (lowerMessage.includes('study') || lowerMessage.includes('tips')) {
-      return "Here are some personalized study tips based on your learning patterns:\n\n1. Focus on 'Functions' - you've shown 70% mastery but haven't practiced in 3 days\n2. Review 'Classes' before moving to advanced topics\n3. Your best learning time is between 2-4 PM based on your activity\n4. Try the Pomodoro technique - 25 min focused study, 5 min break";
-    } else if (lowerMessage.includes('schedule') || lowerMessage.includes('plan')) {
-      return "Based on your current progress and upcoming deadlines, here's an optimized study plan:\n\n📅 Today: Review Arrays (30 min) → Practice Loops (45 min)\n📅 Tomorrow: Deep dive into Objects (1 hour)\n📅 This Week: Master Classes and Async/Await\n\nWould you like me to add these to your calendar?";
-    } else if (lowerMessage.includes('confused') || lowerMessage.includes('don\'t understand')) {
-      return "I see you're having trouble! Let me help break this down:\n\n1. Let's start with the fundamentals\n2. I'll provide visual examples\n3. We can work through practice problems together\n\nWhich specific part is confusing?";
-    } else if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
-      return "Hello! 👋 How can I help you with your studies today? I can explain concepts, generate quizzes, provide study tips, or help you plan your learning schedule.";
-    } else {
-      return "That's a great question! Based on your learning history and current progress, I recommend:\n\n• Breaking this down into smaller sub-topics\n• Starting with the prerequisite concepts you've mastered\n• Practicing with interactive exercises\n\nWould you like me to create a personalized learning path for this?";
-    }
-  };
-
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+  const handleSend = async (overrideMessage?: string) => {
+    const messageText = overrideMessage || inputValue;
+    if (!messageText.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
-      content: inputValue,
+      content: messageText,
       timestamp: new Date()
     };
 
@@ -71,28 +54,36 @@ export default function AIStudyAssistant() {
     setInputValue('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const response = await api.post('/tutor/chat', { question: messageText });
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: simulateAIResponse(inputValue),
+        content: typeof response === 'string' ? response : (response.answer || response.response || JSON.stringify(response)),
         timestamp: new Date()
       };
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: "Sorry, I'm having trouble connecting to my knowledge base right now. Please try again later.",
+        timestamp: new Date()
+      }]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleQuickAction = (action: string) => {
     const actionMessages: { [key: string]: string } = {
-      quiz: 'Generate a quiz for me',
-      explain: 'Explain a concept in detail',
-      tips: 'Give me study tips',
-      schedule: 'Help me plan my study schedule'
+      quiz: 'Can you generate a personalized practice quiz for me?',
+      explain: 'Can you explain a difficult concept in detail?',
+      tips: 'Can you give me some personalized study tips?',
+      schedule: 'Can you help me plan an optimal study schedule?'
     };
     
-    setInputValue(actionMessages[action]);
+    handleSend(actionMessages[action]);
   };
 
   return (
@@ -236,7 +227,7 @@ export default function AIStudyAssistant() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={handleSend}
+                  onClick={() => handleSend()}
                   disabled={!inputValue.trim()}
                   className="w-12 h-12 bg-primary hover:bg-primary/90 disabled:bg-surface-bright disabled:cursor-not-allowed rounded-xl flex items-center justify-center transition-colors"
                 >

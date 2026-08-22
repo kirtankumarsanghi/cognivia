@@ -64,7 +64,7 @@ export default function SessionManager({ courseId, onSessionChange }: SessionMan
 
     setLoading(true);
     try {
-      await api.post(`/sessions/${activeSession.id}/end`);
+      await api.post(`/sessions/${activeSession.id}/end`, {});
       setActiveSession(null);
       if (onSessionChange) onSessionChange(null);
     } catch (err) {

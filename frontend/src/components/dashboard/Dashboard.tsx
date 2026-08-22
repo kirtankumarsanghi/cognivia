@@ -272,20 +272,34 @@ export default function Dashboard() {
             <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-lg relative z-10">Cogniva Learning Score</h2>
             <div className="flex flex-col items-center justify-center relative z-10 mt-4 mb-8">
               <div className="relative w-48 h-48 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <svg className="w-full h-full transform -rotate-90 drop-shadow-xl" viewBox="0 0 100 100">
+                  <defs>
+                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#2AD4AE" />
+                      <stop offset="100%" stopColor="#2A9DD4" />
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
                   <circle className="text-surface-bright" cx="50" cy="50" fill="transparent" r="40" stroke="currentColor" strokeDasharray="251.2" strokeDashoffset="0" strokeWidth="8"></circle>
                   <motion.circle
-                    className="text-primary drop-shadow-[0_0_8px_rgba(232,166,52,0.4)]"
-                    cx="50" cy="50" fill="transparent" r="40" stroke="currentColor" strokeDasharray="251.2"
+                    stroke="url(#scoreGradient)"
+                    filter="url(#glow)"
+                    cx="50" cy="50" fill="transparent" r="40" strokeDasharray="251.2"
                     strokeLinecap="round" strokeWidth="8"
                     initial={{ strokeDashoffset: 251.2 }}
-                    animate={{ strokeDashoffset: 251.2 - (251.2 * analytics.learningScore) / 100 }}
+                    animate={{ strokeDashoffset: 251.2 - (251.2 * (analytics.learningScore || 0)) / 100 }}
                     transition={{ duration: 1.5, ease: premiumEase, delay: 0.2 }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="font-headline-xl text-headline-xl text-on-surface">
-                    <AnimatedNumber value={analytics.learningScore} duration={1.5} /><span className="text-[24px]">%</span>
+                  <span className="font-headline-xl text-headline-xl text-transparent bg-clip-text bg-gradient-to-br from-[#2AD4AE] to-[#2A9DD4]">
+                    <AnimatedNumber value={analytics.learningScore || 0} duration={1.5} /><span className="text-[24px]">%</span>
                   </span>
                 </div>
               </div>
@@ -354,21 +368,56 @@ export default function Dashboard() {
 
           {/* ML Insights Link Card */}
           <motion.section variants={fadeUp(0.25)} initial="hidden" animate="visible">
-            <Link to="/ml-insights" className="block rounded-2xl overflow-hidden relative group" style={{ background: '#0D1117', border: '1px solid rgba(42,212,174,0.2)' }}>
-              <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-[60px] pointer-events-none" style={{ background: 'rgba(42,212,174,0.1)' }} />
-              <div className="p-5 relative z-10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(42,212,174,0.15)', border: '1px solid rgba(42,212,174,0.3)' }}>
-                      <span className="material-symbols-outlined text-xl" style={{ color: '#2AD4AE' }}>memory</span>
+            <Link to="/ml-insights" className="block rounded-2xl overflow-hidden relative group transition-all duration-300 hover:shadow-[0_0_30px_rgba(42,212,174,0.15)] hover:-translate-y-1" style={{ background: 'linear-gradient(145deg, #0D1117 0%, #161B22 100%)', border: '1px solid rgba(42,212,174,0.3)' }}>
+              <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-[60px] pointer-events-none group-hover:scale-110 transition-transform duration-700" style={{ background: 'rgba(42,212,174,0.15)' }} />
+              <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-[60px] pointer-events-none group-hover:scale-110 transition-transform duration-700" style={{ background: 'rgba(42,157,212,0.1)' }} />
+              <div className="p-6 relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'rgba(42,212,174,0.15)', border: '1px solid rgba(42,212,174,0.4)', boxShadow: '0 0 15px rgba(42,212,174,0.2) inset' }}>
+                      <span className="material-symbols-outlined text-[24px]" style={{ color: '#2AD4AE' }}>memory</span>
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">ML Insights Lab</h3>
-                      <p className="text-[11px] text-gray-500">6 models analysing your learning</p>
+                      <h3 className="text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">ML Insights Lab</h3>
+                      <p className="text-xs text-gray-400 mt-1">6 models analyzing your learning</p>
                     </div>
                   </div>
-                  <span className="material-symbols-outlined text-gray-600 group-hover:text-white group-hover:translate-x-1 transition-all">arrow_forward</span>
+                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#2AD4AE]/20 transition-colors">
+                    <span className="material-symbols-outlined text-gray-500 group-hover:text-[#2AD4AE] transition-colors text-[18px]">arrow_forward</span>
+                  </div>
                 </div>
+                
+                {/* Quick ML Status Preview */}
+                {profile && (
+                  <div className="mt-3 pt-3 border-t border-gray-800">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="material-symbols-outlined text-sm" style={{ color: '#2AD4AE' }}>psychology</span>
+                      <span className="text-gray-400">Profile:</span>
+                      <span className="text-white font-bold">{profile.cluster}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {!profile && !loadingProfile && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      fetchProfile();
+                      fetchMlRecommendation();
+                    }}
+                    className="mt-3 text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+                  >
+                    <span>Click to analyze</span>
+                    <span className="material-symbols-outlined text-sm">play_arrow</span>
+                  </button>
+                )}
+                
+                {loadingProfile && (
+                  <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
+                    <div className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                    <span>Analyzing...</span>
+                  </div>
+                )}
               </div>
             </Link>
           </motion.section>
@@ -389,28 +438,37 @@ export default function Dashboard() {
             
             <motion.div variants={staggerContainer(0.05)} initial="hidden" animate="visible" className="flex flex-col gap-y-4">
               {analytics.revisionPlan.map((plan: any) => (
-                <motion.div variants={fadeUpChild} key={plan.id} className="group flex items-center justify-between p-4 bg-surface rounded-xl hover:bg-surface-bright transition-colors border border-transparent hover:border-outline-variant/20">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-surface-bright flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <motion.div variants={fadeUpChild} key={plan.id || plan.concept_id} className="group flex items-center justify-between p-4 bg-surface rounded-xl hover:bg-surface-container-high transition-all duration-300 border border-outline-variant/10 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(232,166,52,0.15)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-primary/0 group-hover:bg-primary transition-colors"></div>
+                  <div className="flex items-center gap-4 pl-2">
+                    <div className="w-12 h-12 rounded-full bg-surface-bright flex items-center justify-center group-hover:bg-primary/20 transition-colors border border-transparent group-hover:border-primary/30">
                       <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">functions</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-body-md text-body-md text-on-surface font-medium">{plan.concepts.name}</span>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant">{plan.priority} Priority • {plan.minutes} min</span>
+                      <span className="font-body-md text-body-md text-on-surface font-medium">{plan.concept_name || (plan.concepts && plan.concepts.name) || 'Concept'}</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full font-bold ${plan.priority === 'High' ? 'bg-error/20 text-error' : plan.priority === 'Medium' ? 'bg-[#E8A634]/20 text-[#E8A634]' : 'bg-primary/20 text-primary'}`}>
+                          {plan.priority} Priority
+                        </span>
+                        <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">schedule</span> {plan.minutes || 15} min
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <button 
-                      onClick={async () => {
-                        await api.post(`/revision/${plan.id}/complete`, {});
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        if (plan.id) await api.post(`/revision/${plan.id}/complete`, {});
                         loadData();
                       }}
-                      className="px-4 py-2 bg-surface-container rounded-lg hover:bg-primary/20 hover:text-primary text-on-surface transition-colors font-label-sm border border-outline-variant/10 hover:border-primary/30"
+                      className="px-4 py-2 bg-surface-container rounded-lg hover:bg-[#3DD68C]/20 hover:text-[#3DD68C] text-on-surface transition-colors font-label-sm border border-outline-variant/10 hover:border-[#3DD68C]/30 flex items-center gap-2"
                     >
-                      Complete
+                      <span className="material-symbols-outlined text-[16px]">check</span> Complete
                     </button>
-                    <Link to={`/tutor?concept=${plan.concept_id}`} className="w-8 h-8 rounded-full bg-surface-container border border-outline-variant/10 flex items-center justify-center text-on-surface hover:text-primary hover:bg-primary/20 hover:border-primary/30 transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">play_arrow</span>
+                    <Link to={`/tutor?concept=${plan.concept_id}`} className="w-10 h-10 rounded-full bg-surface-container border border-outline-variant/10 flex items-center justify-center text-on-surface hover:text-primary hover:bg-primary/20 hover:border-primary/30 transition-all hover:scale-110 hover:shadow-[0_0_10px_rgba(232,166,52,0.3)]">
+                      <span className="material-symbols-outlined text-[22px]">play_arrow</span>
                     </Link>
                   </div>
                 </motion.div>

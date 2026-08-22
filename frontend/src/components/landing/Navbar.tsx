@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Logo } from '../common/Logo';
-import { Search, Bell, Settings, ChevronDown } from 'lucide-react';
+import { Search, Bell, Settings, ChevronDown, User, Sliders, Moon, LogOut } from 'lucide-react';
 
 const navLinks = [
   { label: 'Product', href: '#product' },
@@ -12,15 +12,17 @@ const navLinks = [
 ];
 
 const features = [
-  { icon: 'psychology', label: 'AI Tutoring', description: 'Personalized learning' },
-  { icon: 'analytics', label: 'Analytics', description: 'Real-time insights' },
-  { icon: 'groups', label: 'Collaboration', description: 'Team learning' },
+  { icon: 'psychology', label: 'AI Tutoring', description: 'Personalized learning', path: '/tutor' },
+  { icon: 'analytics', label: 'Analytics', description: 'Real-time insights', path: '/ml-insights' },
+  { icon: 'groups', label: 'Collaboration', description: 'Team learning', path: '/study-groups' },
 ];
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const { scrollY } = useScroll();
   const bgOpacity = useTransform(scrollY, [0, 180], [0, 0.92]);
   const borderOpacity = useTransform(scrollY, [0, 180], [0, 0.1]);
@@ -102,22 +104,25 @@ export default function Navbar() {
                       >
                         <div className="p-4 space-y-2">
                           {features.map((feature, i) => (
-                            <motion.a
+                            <motion.div
                               key={feature.label}
-                              href={link.href}
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: i * 0.05 }}
-                              className="flex items-start gap-3 p-3 rounded-xl hover:bg-red-500/10 transition-colors group/item"
                             >
-                              <span className="material-symbols-outlined text-red-400 text-[24px] group-hover/item:scale-110 transition-transform">
-                                {feature.icon}
-                              </span>
-                              <div>
-                                <div className="text-white font-medium text-sm">{feature.label}</div>
-                                <div className="text-gray-400 text-xs">{feature.description}</div>
-                              </div>
-                            </motion.a>
+                              <Link
+                                to={feature.path}
+                                className="flex items-start gap-3 p-3 rounded-xl hover:bg-red-500/10 transition-colors group/item"
+                              >
+                                <span className="material-symbols-outlined text-red-400 text-[24px] group-hover/item:scale-110 transition-transform">
+                                  {feature.icon}
+                                </span>
+                                <div>
+                                  <div className="text-white font-medium text-sm">{feature.label}</div>
+                                  <div className="text-gray-400 text-xs">{feature.description}</div>
+                                </div>
+                              </Link>
+                            </motion.div>
                           ))}
                         </div>
                       </motion.div>
@@ -134,7 +139,11 @@ export default function Navbar() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setSearchOpen(!searchOpen)}
+              onClick={() => {
+                setSearchOpen(!searchOpen);
+                setNotificationsOpen(false);
+                setSettingsOpen(false);
+              }}
               className="p-2 rounded-lg hover:bg-white/5 transition-colors"
               aria-label="Search"
             >
@@ -142,44 +151,108 @@ export default function Navbar() {
             </motion.button>
 
             {/* Notifications */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-lg hover:bg-white/5 transition-colors relative"
-              aria-label="Notifications"
-            >
-              <Bell className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            </motion.button>
+            <div className="relative">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setNotificationsOpen(!notificationsOpen);
+                  setSettingsOpen(false);
+                  setSearchOpen(false);
+                }}
+                className="p-2 rounded-lg hover:bg-white/5 transition-colors relative"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              </motion.button>
+              
+              <AnimatePresence>
+                {notificationsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full right-0 mt-4 w-80 bg-black/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-red-500/20 overflow-hidden"
+                  >
+                    <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                      <h3 className="text-white font-medium text-sm">Notifications</h3>
+                      <button className="text-xs text-red-400 hover:text-red-300">Mark all as read</button>
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto">
+                      <div className="p-2 flex flex-col gap-1">
+                        {[
+                          { title: 'New Course Available: Advanced Algorithms', time: '5m ago', read: false },
+                          { title: 'AI Tutor generated a new summary for you', time: '1h ago', read: false },
+                          { title: 'Study Group "CS101" is now active', time: '3h ago', read: true },
+                          { title: 'Welcome to Cogniva!', time: '1d ago', read: true }
+                        ].map((n, i) => (
+                          <div key={i} className={`p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer flex gap-3 ${!n.read ? 'bg-red-500/5' : ''}`}>
+                            <div className={`w-2 h-2 mt-1.5 rounded-full shrink-0 ${!n.read ? 'bg-red-500' : 'bg-transparent'}`} />
+                            <div>
+                              <div className="text-sm text-white/90">{n.title}</div>
+                              <div className="text-xs text-gray-400 mt-1">{n.time}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Settings */}
-            <motion.button
-              whileHover={{ scale: 1.05, rotate: 90 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-lg hover:bg-white/5 transition-colors"
-              aria-label="Settings"
-            >
-              <Settings className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
-            </motion.button>
+            <div className="relative">
+              <motion.button
+                whileHover={{ scale: 1.05, rotate: 90 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setSettingsOpen(!settingsOpen);
+                  setNotificationsOpen(false);
+                  setSearchOpen(false);
+                }}
+                className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+              </motion.button>
+              
+              <AnimatePresence>
+                {settingsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full right-0 mt-4 w-56 bg-black/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-red-500/20 overflow-hidden"
+                  >
+                    <div className="p-2 flex flex-col">
+                      <button className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left text-sm text-white/90">
+                        <User className="w-4 h-4 text-gray-400" />
+                        Profile Settings
+                      </button>
+                      <button className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left text-sm text-white/90">
+                        <Sliders className="w-4 h-4 text-gray-400" />
+                        Preferences
+                      </button>
+                      <button className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left text-sm text-white/90">
+                        <Moon className="w-4 h-4 text-gray-400" />
+                        Dark Mode
+                      </button>
+                      <div className="h-px bg-white/10 my-1 mx-2" />
+                      <button className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 transition-colors text-left text-sm text-red-400">
+                        <LogOut className="w-4 h-4" />
+                        Log out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <div className="w-px h-6 bg-white/10" />
 
-            <Link 
-              to="/demo" 
-              className="transition-all duration-200 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5"
-              style={{ 
-                fontFamily: 'var(--font-mono)', 
-                fontSize: 11, 
-                fontWeight: 500, 
-                letterSpacing: '0.14em', 
-                textTransform: 'uppercase', 
-                color: '#34c759', 
-                textDecoration: 'none' 
-              }}
-            >
-              🧠 DEMO
-            </Link>
-            
+
             <Link 
               to="/login" 
               className="transition-all duration-200 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5"
@@ -350,22 +423,6 @@ export default function Navbar() {
               transition={{ delay: 0.4, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col gap-4 mt-8 w-full max-w-xs"
             >
-              <Link 
-                to="/demo" 
-                onClick={() => setMenuOpen(false)}
-                className="text-center py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-400 hover:from-green-500 hover:to-green-300 transition-all"
-                style={{
-                  fontFamily: 'var(--font-mono)', 
-                  fontSize: 14, 
-                  letterSpacing: '0.18em', 
-                  textTransform: 'uppercase',
-                  color: '#000', 
-                  textDecoration: 'none',
-                  fontWeight: 600,
-                }}
-              >
-                🧠 TRY DEMO
-              </Link>
               <Link 
                 to="/login" 
                 onClick={() => setMenuOpen(false)}

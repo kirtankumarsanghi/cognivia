@@ -1,24 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeUp, staggerContainer } from '../../utils/animation';
 import EducatorStudentProfile from './EducatorStudentProfile';
+import { useApi } from '../../hooks/useApi';
 
-const mockStudents = [
-  { id: '1', name: 'Alex Johnson', mastery: 85, status: 'Active', pulse: 'Low', lastActive: '2h ago', strugglingTopic: 'None', trend: 'up' },
-  { id: '2', name: 'Sarah Smith', mastery: 62, status: 'Active', pulse: 'High', lastActive: '1d ago', strugglingTopic: 'Binary Search Trees', trend: 'down' },
-  { id: '3', name: 'Michael Chen', mastery: 91, status: 'Active', pulse: 'Low', lastActive: '1h ago', strugglingTopic: 'None', trend: 'up' },
-  { id: '4', name: 'Emily Davis', mastery: 74, status: 'Active', pulse: 'Medium', lastActive: '4h ago', strugglingTopic: 'Big O Notation', trend: 'flat' },
-  { id: '5', name: 'James Wilson', mastery: 45, status: 'Inactive', pulse: 'High', lastActive: '5d ago', strugglingTopic: 'Dynamic Programming', trend: 'down' },
-  { id: '6', name: 'Olivia Martinez', mastery: 88, status: 'Active', pulse: 'Low', lastActive: '10m ago', strugglingTopic: 'Hash Tables', trend: 'up' },
-  { id: '7', name: 'Daniel Lee', mastery: 68, status: 'Active', pulse: 'Medium', lastActive: '1d ago', strugglingTopic: 'Graph Traversal', trend: 'down' },
-];
+interface StudentData {
+  id: string;
+  name: string;
+  mastery: number;
+  status: string;
+  pulse: string;
+  lastActive: string;
+  strugglingTopic: string;
+  trend: 'up' | 'flat' | 'down';
+}
+
+function timeSince(dateString: string | null) {
+  if (!dateString) return 'Never';
+  const date = new Date(dateString);
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  let interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + "d ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + "h ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + "m ago";
+  return Math.floor(seconds) + "s ago";
+}
 
 export default function ClassRoster() {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [students, setStudents] = useState<StudentData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const api = useApi();
+
+  useEffect(() => {
+    const fetchRoster = async () => {
+      try {
+        const data = await api.get('/analytics/educator/students');
+        if (Array.isArray(data)) {
+          const formatted = data.map((d: any) => ({
+            id: d.student_id,
+            name: d.student_name,
+            mastery: d.avg_mastery || 0,
+            status: d.last_session ? 'Active' : 'Inactive',
+            pulse: d.confusion_count > 5 ? 'High' : d.confusion_count > 2 ? 'Medium' : 'Low',
+            lastActive: timeSince(d.last_session?.created_at),
+            strugglingTopic: d.confusion_count > 0 ? `${d.confusion_count} Confusions` : 'None',
+            trend: ((d.practice_accuracy || 0) >= 80 ? 'up' : (d.practice_accuracy || 0) >= 50 ? 'flat' : 'down') as 'up' | 'flat' | 'down'
+          }));
+          setStudents(formatted);
+        }
+      } catch (err) {
+        console.error('Failed to load roster', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchRoster();
+  }, [api]);
 
   const handleExportCSV = () => {
     const headers = ['Student ID', 'Name', 'Mastery %', 'Confusion Pulse', 'Status', 'Last Active', 'Struggling Topic'];
-    const rows = mockStudents.map(s => 
+    const rows = students.map(s => 
       [s.id, s.name, s.mastery, s.pulse, s.status, s.lastActive, s.strugglingTopic].map(val => `"${val}"`).join(',')
     );
     const csvContent = [headers.join(','), ...rows].join('\n');
@@ -66,7 +110,11 @@ export default function ClassRoster() {
             </tr>
           </thead>
           <tbody>
-            {mockStudents.map((student) => (
+            {isLoading ? (
+              <tr><td colSpan={6} className="p-8 text-center text-outline">Loading roster data...</td></tr>
+            ) : students.length === 0 ? (
+              <tr><td colSpan={6} className="p-8 text-center text-outline">No students found.</td></tr>
+            ) : students.map((student) => (
               <tr key={student.id} className="border-b border-outline-variant/5 hover:bg-surface-variant/10 transition-colors group">
                 <td className="p-5">
                   <div className="flex items-center gap-3">
@@ -81,10 +129,10 @@ export default function ClassRoster() {
                 </td>
                 <td className="p-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-full max-w-[120px] h-2 rounded-full bg-surface-variant overflow-hidden">
+                    <div className="w-full max-w-[120px] h-2 rounded-full bg-surface-variant overflow-hidden relative">
                       <div 
-                        className={`h-full ${student.mastery > 80 ? 'bg-[#3DD68C]' : student.mastery > 60 ? 'bg-[#E8A634]' : 'bg-error'}`} 
-                        style={{ width: `${student.mastery}%` }}
+                        className={`absolute top-0 left-0 h-full ${student.mastery > 80 ? 'bg-gradient-to-r from-[#3DD68C] to-[#2BA86D]' : student.mastery > 60 ? 'bg-gradient-to-r from-[#E8A634] to-[#C98B22]' : 'bg-gradient-to-r from-error to-red-700'}`} 
+                        style={{ width: `${student.mastery}%`, boxShadow: `0 0 10px ${student.mastery > 80 ? '#3DD68C' : student.mastery > 60 ? '#E8A634' : 'red'}` }}
                       ></div>
                     </div>
                     <span className="font-body-sm font-medium">{student.mastery}%</span>
@@ -94,12 +142,15 @@ export default function ClassRoster() {
                   </div>
                 </td>
                 <td className="p-5">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider relative group-hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all ${
                     student.pulse === 'High' ? 'bg-error/10 text-error border border-error/20' :
                     student.pulse === 'Medium' ? 'bg-[#E8A634]/10 text-[#E8A634] border border-[#E8A634]/20' :
                     'bg-[#3DD68C]/10 text-[#3DD68C] border border-[#3DD68C]/20'
                   }`}>
                     {student.pulse}
+                    {student.pulse === 'High' && (
+                       <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-error rounded-full animate-ping"></span>
+                    )}
                   </span>
                 </td>
                 <td className="p-5">
