@@ -175,6 +175,16 @@ export default function Revision() {
               </div>
             </div>
           </div>
+          
+          {/* Progress Bar */}
+          <div className="mt-6 h-2 w-full bg-surface-container rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full bg-primary"
+              initial={{ width: 0 }}
+              animate={{ width: `${((currentQuestionIndex) / practiceQuestions.length) * 100}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
         </header>
 
         {showResults ? (
@@ -244,9 +254,23 @@ export default function Revision() {
             )}
 
             {showFeedback && currentQuestion.explanation && (
-              <div className="mt-6 p-6 rounded-xl bg-surface-bright">
-                <p className="text-on-surface">{currentQuestion.explanation}</p>
-              </div>
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-6 p-6 rounded-xl bg-surface-bright border border-outline-variant/20 overflow-hidden"
+              >
+                <div className="flex items-start gap-3">
+                  <span className={`material-symbols-outlined mt-0.5 ${selectedAnswer === currentQuestion.correct_answer ? 'text-[#3DD68C]' : 'text-error'}`}>
+                    {selectedAnswer === currentQuestion.correct_answer ? 'check_circle' : 'info'}
+                  </span>
+                  <div>
+                    <h4 className={`font-bold mb-1 ${selectedAnswer === currentQuestion.correct_answer ? 'text-[#3DD68C]' : 'text-error'}`}>
+                      {selectedAnswer === currentQuestion.correct_answer ? 'Correct!' : 'Incorrect'}
+                    </h4>
+                    <p className="text-on-surface">{currentQuestion.explanation}</p>
+                  </div>
+                </div>
+              </motion.div>
             )}
 
             <div className="flex justify-end gap-4 mt-6">
@@ -254,14 +278,14 @@ export default function Revision() {
                 <button
                   onClick={handleAnswerSubmit}
                   disabled={!selectedAnswer}
-                  className="bg-primary text-on-primary px-8 py-4 rounded-xl hover:opacity-90 disabled:opacity-50"
+                  className="bg-primary text-on-primary px-8 py-4 rounded-xl hover:opacity-90 disabled:opacity-50 transition-all shadow-md font-medium"
                 >
                   Submit Answer
                 </button>
               ) : (
                 <button
                   onClick={handleNextQuestion}
-                  className="bg-primary text-on-primary px-8 py-4 rounded-xl hover:opacity-90"
+                  className="bg-primary text-on-primary px-8 py-4 rounded-xl hover:opacity-90 transition-all shadow-md font-medium"
                 >
                   {currentQuestionIndex < practiceQuestions.length - 1 ? 'Next Question' : 'See Results'}
                 </button>
@@ -395,18 +419,30 @@ export default function Revision() {
             </motion.div>
           ) : (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
               className="p-16 text-center"
             >
-              <span className="material-symbols-outlined text-[80px] text-[#3DD68C] mb-6 block">
-                celebration
-              </span>
-              <h3 className="text-3xl text-on-surface mb-3 font-bold">
+              <motion.div
+                animate={{ 
+                  y: [0, -10, 0],
+                }}
+                transition={{ 
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <span className="material-symbols-outlined text-[80px] text-[#3DD68C] mb-6 block drop-shadow-[0_0_15px_rgba(61,214,140,0.3)]">
+                  celebration
+                </span>
+              </motion.div>
+              <h3 className="text-3xl text-on-surface mb-3 font-bold tracking-tight">
                 You're All Caught Up!
               </h3>
-              <p className="text-on-surface-variant text-lg mb-6">
-                Your revision queue is empty. Generate a smart plan to find topics that need attention.
+              <p className="text-on-surface-variant text-lg mb-8 max-w-md mx-auto">
+                Your revision queue is empty. Generate a smart plan to find topics that need attention based on your learning metrics.
               </p>
               <button
                 onClick={generateSmartPlan}

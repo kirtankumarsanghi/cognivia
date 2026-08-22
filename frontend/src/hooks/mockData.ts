@@ -243,5 +243,44 @@ export const mockData = {
     { id: 's1', title: 'Late Night DSA', topic: 'Graph Traversal algorithms and topological sorting', participants: 8, isLive: true },
     { id: 's2', title: 'Midterm Prep', topic: 'Reviewing Big O Notation and recursion', participants: 4, isLive: true },
     { id: 's3', title: 'Weekend Hackers', topic: 'Building a simple REST API', participants: 12, isLive: false }
-  ]
+  ],
+
+  practiceQuestions: {
+    'c1-con1': [ // Big O Notation
+      {
+        id: 'q1',
+        question_text: 'What is the time complexity of accessing an element in an array by index?',
+        question_type: 'mcq',
+        options: ['O(1)', 'O(n)', 'O(log n)', 'O(n^2)'],
+        correct_answer: 'O(1)',
+        explanation: 'Array elements are stored in contiguous memory, allowing direct access via mathematical offset calculations in constant time O(1).'
+      },
+      {
+        id: 'q2',
+        question_text: 'Which Big O notation represents a logarithmic time complexity?',
+        question_type: 'mcq',
+        options: ['O(n)', 'O(n log n)', 'O(1)', 'O(log n)'],
+        correct_answer: 'O(log n)',
+        explanation: 'O(log n) represents logarithmic time complexity, typical of algorithms like Binary Search that halve the search space each step.'
+      },
+      {
+        id: 'q3',
+        question_text: 'What is the worst-case time complexity of standard Bubble Sort?',
+        question_type: 'mcq',
+        options: ['O(n)', 'O(n log n)', 'O(n^2)', 'O(2^n)'],
+        correct_answer: 'O(n^2)',
+        explanation: 'In the worst case (reverse sorted array), Bubble Sort must compare and swap every pair of elements, resulting in n * n iterations.'
+      }
+    ],
+    'c3-con1': [ // Binary Search Trees
+      {
+        id: 'q4',
+        question_text: 'In a valid Binary Search Tree (BST), where are all elements smaller than the root node located?',
+        question_type: 'mcq',
+        options: ['Right subtree', 'Left subtree', 'Randomly distributed', 'Leaf nodes only'],
+        correct_answer: 'Left subtree',
+        explanation: 'By definition, a BST maintains the invariant that all nodes in the left subtree are smaller than the parent node.'
+      }
+    ]
+  }
 };

@@ -111,6 +111,15 @@ export function useApi() {
     if (endpoint.startsWith('/notifications')) return mockData.notifications;
     if (endpoint === '/study-groups/matches') return mockData.studyGroupMatches;
     if (endpoint === '/study-groups/sessions') return mockData.studyGroupSessions;
+    if (endpoint === '/revision/plan') return mockData.studentAnalytics.revisionPlan;
+    if (endpoint.startsWith('/practice?')) {
+      const url = new URL('http://localhost' + endpoint);
+      const conceptId = url.searchParams.get('concept_id');
+      if (conceptId && (mockData.practiceQuestions as any)[conceptId]) {
+        return (mockData.practiceQuestions as any)[conceptId];
+      }
+      return [];
+    }
     
     if (options.method === 'POST') {
       if (endpoint === '/confusion/signal') {
@@ -127,6 +136,32 @@ export function useApi() {
       }
       if (endpoint === '/educator/mini-lesson') return { reExplanation: "Mock explanation: This approach simplifies the core concepts so students understand it better.", workedExample: "Example: x = 5", commonMistake: "Mistaking X for Y" };
       
+      if (endpoint === '/revision/generate-smart-plan') {
+        mockData.studentAnalytics.revisionPlan = [
+          {
+            id: 'mock-plan-1',
+            concept_id: 'c1-con1',
+            priority: 'High',
+            minutes: 15,
+            concepts: { name: 'Big O Notation' }
+          },
+          {
+            id: 'mock-plan-2',
+            concept_id: 'c3-con1',
+            priority: 'Medium',
+            minutes: 25,
+            concepts: { name: 'Binary Search Trees' }
+          }
+        ];
+        return { message: 'Smart revision plan generated successfully!' };
+      }
+
+      if (endpoint === '/practice/attempt') {
+        const body = JSON.parse(options.body as string);
+        console.log('[Mock Backend] Logged practice attempt:', body);
+        return { success: true };
+      }
+
       if (endpoint === '/tutor/chat') {
         const body = typeof options.body === 'string' ? JSON.parse(options.body) : options.body;
         const q = (body.question || '').toLowerCase();
