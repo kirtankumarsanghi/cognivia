@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { staggerContainer, fadeUpChild } from '../../utils/animation';
 import Loading from '../ui/Loading';
-import Toast, { useToast } from '../ui/Toast';
+import { useToast } from '../ui/Toast';
 
 interface PracticeQuestion {
   id: string;
@@ -17,9 +17,9 @@ interface PracticeQuestion {
 
 export default function Revision() {
   const api = useApi();
-  const { toast, showToast, hideToast } = useToast();
+  const { showToast } = useToast();
   const [revisionPlan, setRevisionPlan] = useState<any[]>([]);
-  const [completedToday, setCompletedToday] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [practiceMode, setPracticeMode] = useState(false);
   const [currentConcept, setCurrentConcept] = useState<any>(null);
@@ -29,16 +29,14 @@ export default function Revision() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [practiceResults, setPracticeResults] = useState<{correct: number; total: number}>({correct: 0, total: 0});
   const [showResults, setShowResults] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
 
   const loadData = async () => {
     try {
-      setError(null);
       const revisionData = await api.get('/revision/plan');
       setRevisionPlan(revisionData || []);
     } catch (err: any) {
       console.error('Failed to load revision data', err);
-      setError(err.message || 'Failed to load revision plan');
     } finally {
       setLoading(false);
     }

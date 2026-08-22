@@ -29,7 +29,7 @@ export default function ConceptGraph({ concepts = [], selectedConceptId, onConce
   // Initialize nodes from concepts or create demo data
   useEffect(() => {
     const initNodes: Node[] = concepts.length > 0
-      ? concepts.map((concept, i) => ({
+      ? concepts.map((concept) => ({
           id: concept.id,
           name: concept.name,
           x: Math.random() * 700 + 50,

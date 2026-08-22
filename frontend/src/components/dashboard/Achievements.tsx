@@ -11,12 +11,12 @@ const badges = [
 export default function Achievements() {
   return (
     <motion.div
-      variants={staggerContainer}
+      variants={staggerContainer()}
       initial="hidden"
       animate="visible"
       className="max-w-4xl mx-auto"
     >
-      <motion.div variants={fadeUp} className="mb-8">
+      <motion.div variants={fadeUp()} className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight mb-2">Achievements</h1>
         <p className="text-outline">Track your progress and unlock badges as you learn.</p>
       </motion.div>

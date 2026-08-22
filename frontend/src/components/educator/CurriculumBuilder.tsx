@@ -41,12 +41,12 @@ export default function CurriculumBuilder() {
 
   return (
     <motion.div
-      variants={staggerContainer}
+      variants={staggerContainer()}
       initial="hidden"
       animate="visible"
       className="max-w-4xl mx-auto"
     >
-      <motion.div variants={fadeUp} className="mb-8 flex justify-between items-end">
+      <motion.div variants={fadeUp()} className="mb-8 flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">Curriculum Builder</h1>
           <p className="text-outline">Organize course modules and define concept dependencies.</p>

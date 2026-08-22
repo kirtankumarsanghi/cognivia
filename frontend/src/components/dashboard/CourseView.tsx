@@ -148,11 +148,6 @@ export default function CourseView() {
     return totalConcepts > 0 ? Math.round((5 / totalConcepts) * 100) : 0; // Simplified calculation
   };
 
-  const getStatusColor = (status: string) => {
-    if (status === 'Mastered') return 'text-[#3DD68C] bg-[#3DD68C]/10 border-[#3DD68C]/20';
-    if (status === 'In Progress') return 'text-[#E8A634] bg-[#E8A634]/10 border-[#E8A634]/20';
-    return 'text-outline bg-surface-bright border-outline-variant/20';
-  };
 
   return (
     <div className="page-shell">

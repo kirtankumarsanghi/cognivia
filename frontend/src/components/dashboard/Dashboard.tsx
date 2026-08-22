@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, fadeUpChild, premiumEase } from '../../utils/animation';
 import Loading from '../ui/Loading';
 import ConfusionButton from './ConfusionButton';

@@ -13,11 +13,11 @@ export default function KnowledgeGraphView() {
     api.get('/concepts/graph').then(setGraphData);
   }, []);
 
-  if (!graphData) return <Loading variant="card" />;
+  if (!graphData) return <Loading />;
 
   return (
     <motion.div
-      variants={fadeUp}
+      variants={fadeUp()}
       initial="hidden"
       animate="visible"
       className="h-[calc(100vh-100px)] flex flex-col"
@@ -30,7 +30,7 @@ export default function KnowledgeGraphView() {
       </div>
       
       <div className="flex-1 card overflow-hidden relative">
-        <ConceptGraph data={graphData} />
+        <ConceptGraph concepts={graphData} />
       </div>
     </motion.div>
   );

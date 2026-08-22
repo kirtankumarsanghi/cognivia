@@ -30,12 +30,12 @@ export default function ClassRoster() {
   };
   return (
     <motion.div
-      variants={staggerContainer}
+      variants={staggerContainer()}
       initial="hidden"
       animate="visible"
       className="max-w-5xl mx-auto"
     >
-      <motion.div variants={fadeUp} className="mb-8 flex justify-between items-end">
+      <motion.div variants={fadeUp()} className="mb-8 flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">Class Roster</h1>
           <p className="text-outline">Monitor individual student progress and confusion levels.</p>
@@ -48,7 +48,7 @@ export default function ClassRoster() {
         </button>
       </motion.div>
 
-      <motion.div variants={fadeUp} className="bg-surface-container rounded-2xl border border-outline-variant/10 shadow-lg overflow-x-auto custom-scrollbar relative">
+      <motion.div variants={fadeUp()} className="bg-surface-container rounded-2xl border border-outline-variant/10 shadow-lg overflow-x-auto custom-scrollbar relative">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none"></div>
         <table className="w-full text-left border-collapse min-w-[800px] relative z-10">
           <thead>

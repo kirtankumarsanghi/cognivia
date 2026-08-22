@@ -71,7 +71,7 @@ export default function StudyGroups() {
       animate="visible"
       className="max-w-6xl mx-auto"
     >
-      <motion.div variants={fadeUp} className="mb-8">
+      <motion.div variants={fadeUp()} className="mb-8">
         <h1 className="font-headline-lg text-3xl font-bold tracking-tight mb-2 text-on-surface">Peer Study Hub</h1>
         <p className="font-body-md text-on-surface-variant opacity-80">Connect with peers who have mastered concepts you are currently learning.</p>
       </motion.div>
