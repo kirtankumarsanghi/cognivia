@@ -1,7 +1,10 @@
 {
-  "buildCommand": "cd frontend && npm run build",
+  "buildCommand": "cd frontend && npm install --legacy-peer-deps --no-audit --no-fund && npm run build",
   "outputDirectory": "frontend/dist",
-  "installCommand": "cd frontend && npm install",
+  "installCommand": "cd frontend && npm ci --legacy-peer-deps --no-audit --no-fund || npm install --legacy-peer-deps --no-audit --no-fund",
   "framework": "vite",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "github": {
+    "silent": true
+  }
 }

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, fadeUpChild } from '../../utils/animation';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import Loading from '../ui/Loading';
 
 export default function EducatorDashboard() {
