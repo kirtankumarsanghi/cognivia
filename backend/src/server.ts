@@ -2,12 +2,18 @@ import express from 'express';
 import cors from 'cors';
 import { env } from './config/env';
 
-// Import Routes (will be created next)
+// Import Routes
 import apiRoutes from './routes/index';
 
 const app = express();
 
-app.use(cors({ origin: env.frontendUrl, methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'x-user-id', 'x-user-role'] }));
+// CORS: allow Authorization header for JWT-based auth
+app.use(cors({
+  origin: env.frontendUrl,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use(express.json({ limit: '1mb' }));
 
 // Basic health check

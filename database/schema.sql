@@ -197,6 +197,7 @@ CREATE POLICY "Allow user update own" ON public.revision_plans FOR UPDATE USING 
 CREATE POLICY "Allow user insert own" ON public.revision_plans FOR INSERT WITH CHECK (auth.uid() = student_id);
 
 CREATE POLICY "Allow user update own" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Allow user insert own" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 CREATE POLICY "Allow user update own" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Allow user insert own" ON public.course_enrollments FOR INSERT WITH CHECK (auth.uid() = student_id);

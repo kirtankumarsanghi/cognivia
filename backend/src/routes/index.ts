@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { geminiService } from '../services/geminiService';
+import { requireAuth } from '../middleware/authMiddleware';
 
 const router = Router();
 
@@ -11,18 +12,59 @@ const weeklyBuckets = () => Array.from({ length: 7 }, (_, offset) => {
   return { key: date.toISOString().slice(0, 10), label: date.toLocaleDateString('en-US', { weekday: 'short' }), sessions: 0, signals: 0 };
 });
 
-// Middleware to mock auth for demo purposes if no token provided.
-const requireAuth = async (req: Request, res: Response, next: Function) => {
-  const userId = req.headers['x-user-id'] as string;
-  const role = req.headers['x-user-role'] as string;
 
-  if (!userId || !role) {
-    return res.status(401).json({ error: 'Unauthorized' });
+// ========== AUTH ==========
+router.post('/api/auth/complete-signup', async (req: Request, res: Response) => {
+  const { name, email, password, role } = req.body;
+
+  if (!name || !email || !password || !role) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  (req as any).user = { id: userId, role };
-  next();
-};
+  try {
+    const cleanEmail = email.toLowerCase().trim();
+    
+    // 1. Create auth user with Admin API to bypass rate limits & auto-confirm email
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: cleanEmail,
+      password: password,
+      email_confirm: true,
+      user_metadata: { name: name.trim(), role }
+    });
+
+    if (authError) {
+      console.error('Error creating user via admin:', authError);
+      return res.status(400).json({ error: authError.message, code: authError.code || 'user_creation_failed' });
+    }
+
+    const userId = authData.user.id;
+
+    // 2. Insert profile
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .insert({
+        id: userId,
+        name: name.trim(),
+        email: cleanEmail,
+        role,
+        avatar: null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error inserting profile via admin:', error);
+      // Clean up the auth user if profile creation fails, so they can try again
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      return res.status(500).json({ error: 'Failed to create profile' });
+    }
+
+    res.status(201).json({ success: true, profile: data });
+  } catch (err) {
+    console.error('Unexpected error in complete-signup:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // ========== USER / ME ==========
 router.get('/api/me', requireAuth, async (req, res) => {
@@ -596,6 +638,25 @@ router.get('/api/analytics/student', requireAuth, async (req, res) => {
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// ========== STUDY GROUPS (MOCK DATA) ==========
+router.get('/api/study-groups/matches', requireAuth, async (req, res) => {
+  // Return mocked matches data
+  res.json([
+    { id: '1', name: 'Alex Johnson', strength: 'Data Structures', match: 92 },
+    { id: '2', name: 'Sarah Chen', strength: 'Algorithms', match: 85 },
+    { id: '3', name: 'Michael Smith', strength: 'Database Design', match: 78 }
+  ]);
+});
+
+router.get('/api/study-groups/sessions', requireAuth, async (req, res) => {
+  // Return mocked sessions data
+  res.json([
+    { id: 's1', title: 'Data Structures Review', topic: 'Linked Lists & Trees', participants: 4, isLive: true },
+    { id: 's2', title: 'Algorithm Practice', topic: 'Sorting Algorithms', participants: 8, isLive: true },
+    { id: 's3', title: 'SQL Basics', topic: 'JOIN operations', participants: 2, isLive: false }
+  ]);
 });
 
 // ========== EDUCATOR ANALYTICS ==========

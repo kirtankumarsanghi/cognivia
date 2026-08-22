@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 import LandingPage from './components/landing/LandingPage';
 import Login from './components/landing/Login';
+import Signup from './components/landing/Signup';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import StudentLayout from './components/layouts/StudentLayout';
 import EducatorLayout from './components/layouts/EducatorLayout';
@@ -33,6 +34,7 @@ function AnimatedRoutes() {
         {/* Public Routes */}
         <Route path="/" element={<RouteTransition><LandingPage /></RouteTransition>} />
         <Route path="/login" element={<RouteTransition><Login /></RouteTransition>} />
+        <Route path="/signup" element={<RouteTransition><Signup /></RouteTransition>} />
         
         {/* Protected Student Routes */}
         <Route element={<ProtectedRoute allowedRole="student" />}>

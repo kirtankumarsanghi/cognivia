@@ -1,21 +1,26 @@
 import React from 'react';
 import { useAuth } from './useAuth';
 import { mockData } from './mockData';
+import { authService } from '../services/authService';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export function useApi() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const request = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
     const headers = new Headers(options.headers);
     headers.set('Content-Type', 'application/json');
-    
-    if (user) {
-      headers.set('x-user-id', user.id);
-      headers.set('x-user-role', user.role);
+
+    // ─── Attach Bearer token instead of spoofable headers ────────
+    const token = await authService.getAccessToken();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
     }
 
     // BYPASS FETCH ENTIRELY FOR DEMO PURPOSES TO PREVENT HANGING
+    // (Backend is not deployed yet — all data comes from mockData)
+    // When backend is deployed, remove this block and use the real fetch below.
     await new Promise(resolve => setTimeout(resolve, 300)); // Small artificial delay
     
     if (endpoint === '/analytics/student') return mockData.studentAnalytics;

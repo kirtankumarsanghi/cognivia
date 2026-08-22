@@ -1,14 +1,13 @@
-import { Link, NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { premiumEase } from '../../utils/animation';
 
 export default function EducatorLayout() {
-  const { user, logout, switchRole } = useAuth();
+  const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 768px)').matches);
-  const navigate = useNavigate();
   const location = useLocation();
   const close = () => setMenuOpen(false);
 
@@ -90,11 +89,9 @@ export default function EducatorLayout() {
           )}
           <span className="material-symbols-outlined">auto_stories</span>Curriculum Builder
         </NavLink>
-        <p className="nav-label mt-7">Student tools</p>
-        <button className="nav-item w-full text-left" onClick={() => { switchRole('student'); navigate('/dashboard'); close(); }}><span className="material-symbols-outlined">dashboard</span>Student View</button>
       </nav>
       <div className="p-4 border-t border-outline-variant/10">
-        <button onClick={logout} className="nav-item w-full"><span className="material-symbols-outlined">logout</span>Sign out</button>
+        <button onClick={() => logout()} className="nav-item w-full"><span className="material-symbols-outlined">logout</span>Sign out</button>
       </div>
     </motion.aside>
 
@@ -102,7 +99,9 @@ export default function EducatorLayout() {
       <header className="app-topbar">
         <button aria-label="Open navigation" className="icon-button md:hidden" onClick={() => setMenuOpen(true)}><span className="material-symbols-outlined">menu</span></button>
         <Link to="/educator" className="md:hidden brand text-lg"><span className="brand-mark">◉</span>Cogniva</Link>
-        <nav className="hidden md:flex gap-2"><button onClick={() => { switchRole('student'); navigate('/dashboard'); }} className="view-button">Student View</button><button className="view-button view-button-active">Educator View</button></nav>
+        <nav className="hidden md:flex gap-2">
+          <span className="view-button view-button-active">Educator View</span>
+        </nav>
         <div className="ml-auto flex items-center gap-3"><button aria-label="Notifications" className="icon-button"><span className="material-symbols-outlined">notifications</span></button><div className="hidden sm:block text-right"><p className="text-sm font-bold text-on-surface">{user?.name}</p><p className="text-label-sm text-outline">Lead Instructor</p></div><div className="avatar"><span className="material-symbols-outlined">school</span></div></div>
       </header>
       <main className="app-main">
