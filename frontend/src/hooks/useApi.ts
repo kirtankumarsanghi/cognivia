@@ -13,6 +13,13 @@ demoChannel.on('broadcast', { event: 'confusion_signal' }, (payload) => {
   const { body, user } = payload.payload;
   applyConfusionSignalToMockData(body, user);
   window.dispatchEvent(new CustomEvent('mockDataUpdated'));
+}).on('broadcast', { event: 'session_created' }, (payload) => {
+  const { session } = payload.payload;
+  // Make sure we don't duplicate if we created it ourselves
+  if (!mockData.studyGroupSessions.find(s => s.id === session.id)) {
+    mockData.studyGroupSessions.unshift(session);
+    window.dispatchEvent(new CustomEvent('mockDataUpdated'));
+  }
 }).subscribe();
 
 function applyConfusionSignalToMockData(body: any, user: any) {
@@ -159,6 +166,42 @@ export function useApi() {
       if (endpoint === '/practice/attempt') {
         const body = JSON.parse(options.body as string);
         console.log('[Mock Backend] Logged practice attempt:', body);
+        return { success: true };
+      }
+
+      if (endpoint === '/study-groups/connect') {
+        const body = JSON.parse(options.body as string);
+        console.log('[Mock Backend] Connected to peer:', body.peerId);
+        return { success: true };
+      }
+
+      if (endpoint === '/study-groups/sessions') {
+        const body = JSON.parse(options.body as string);
+        const newSession = {
+          id: 's' + Date.now(),
+          title: body.title,
+          topic: body.topic,
+          participants: 1,
+          isLive: true
+        };
+        mockData.studyGroupSessions.unshift(newSession);
+        
+        // Broadcast the event
+        demoChannel.send({
+          type: 'broadcast',
+          event: 'session_created',
+          payload: { session: newSession }
+        });
+
+        return newSession;
+      }
+
+      if (endpoint.startsWith('/study-groups/sessions/') && endpoint.endsWith('/join')) {
+        const id = endpoint.split('/')[2];
+        const session = mockData.studyGroupSessions.find((s: any) => s.id === id);
+        if (session) {
+          session.participants += 1;
+        }
         return { success: true };
       }
 
