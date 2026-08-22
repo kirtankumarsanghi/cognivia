@@ -231,5 +231,17 @@ export const mockData = {
       created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
       read: false
     }
+  ],
+  
+  studyGroupMatches: [
+    { id: 'u1', name: 'Alex Johnson', strength: 'Binary Search Trees', match: 95 },
+    { id: 'u2', name: 'Emma Jones', strength: 'Dynamic Programming', match: 88 },
+    { id: 'u3', name: 'Sam Smith', strength: 'Hash Tables', match: 76 }
+  ],
+  
+  studyGroupSessions: [
+    { id: 's1', title: 'Late Night DSA', topic: 'Graph Traversal algorithms and topological sorting', participants: 8, isLive: true },
+    { id: 's2', title: 'Midterm Prep', topic: 'Reviewing Big O Notation and recursion', participants: 4, isLive: true },
+    { id: 's3', title: 'Weekend Hackers', topic: 'Building a simple REST API', participants: 12, isLive: false }
   ]
 };

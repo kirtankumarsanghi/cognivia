@@ -52,6 +52,8 @@ export function useApi() {
     if (endpoint.startsWith('/confusion/history')) return mockData.confusionHistory;
     if (endpoint.startsWith('/concepts/graph')) return mockData.conceptGraph;
     if (endpoint.startsWith('/notifications')) return mockData.notifications;
+    if (endpoint === '/study-groups/matches') return mockData.studyGroupMatches;
+    if (endpoint === '/study-groups/sessions') return mockData.studyGroupSessions;
     
     if (options.method === 'POST') {
       if (endpoint === '/confusion/signal') {
