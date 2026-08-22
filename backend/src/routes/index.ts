@@ -3,6 +3,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { geminiService } from '../services/geminiService';
 import { requireAuth } from '../middleware/authMiddleware';
 import { masteryService } from '../services/masteryService';
+import { analyticsController } from '../controllers/analyticsController';
 import sessionRoutes from './sessionRoutes';
 import mlRoutes from './mlRoutes';
 
@@ -13,6 +14,9 @@ router.use(sessionRoutes);
 
 // Mount ML routes
 router.use(mlRoutes);
+
+// ML & Analytics Status
+router.get('/api/analytics/ml-status', requireAuth, analyticsController.getMLStatus);
 
 const weeklyBuckets = () => Array.from({ length: 7 }, (_, offset) => {
   const date = new Date();
@@ -657,7 +661,11 @@ router.get('/api/concepts/:id/risk', requireAuth, async (req, res) => {
 });
 
 // ========== STUDENT ANALYTICS ==========
-router.get('/api/analytics/student', requireAuth, async (req, res) => {
+// Use the new controller for enhanced analytics
+router.get('/api/analytics/student', requireAuth, analyticsController.getStudentAnalytics);
+
+// Legacy implementation (kept for fallback)
+router.get('/api/analytics/student-legacy', requireAuth, async (req, res) => {
   const userId = (req as any).user.id;
   try {
     const { data: masteryData } = await supabaseAdmin
@@ -819,7 +827,11 @@ router.get('/api/study-groups/sessions', requireAuth, async (req, res) => {
 });
 
 // ========== EDUCATOR ANALYTICS ==========
-router.get('/api/analytics/educator', requireAuth, async (req, res) => {
+// Use the new controller for enhanced analytics
+router.get('/api/analytics/educator', requireAuth, analyticsController.getEducatorAnalytics);
+
+// Legacy implementation (kept for fallback)
+router.get('/api/analytics/educator-legacy', requireAuth, async (req, res) => {
   try {
     const { count: studentCount } = await supabaseAdmin
       .from('profiles')
