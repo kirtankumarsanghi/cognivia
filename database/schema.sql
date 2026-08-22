@@ -201,3 +201,24 @@ CREATE POLICY "Allow user insert own" ON public.profiles FOR INSERT WITH CHECK (
 
 CREATE POLICY "Allow user update own" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Allow user insert own" ON public.course_enrollments FOR INSERT WITH CHECK (auth.uid() = student_id);
+
+-- Trigger to automatically create a profile when a new user signs up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$$
+BEGIN
+  INSERT INTO public.profiles (id, name, email, role)
+  VALUES (
+    new.id,
+    new.raw_user_meta_data->>'name',
+    new.email,
+    new.raw_user_meta_data->>'role'
+  );
+  RETURN new;
+END;
+$$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Drop if exists and recreate trigger
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();

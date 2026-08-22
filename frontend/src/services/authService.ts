@@ -128,34 +128,47 @@ export const authService = {
     role: 'student' | 'educator'
   ): Promise<AuthResult<Profile>> {
     try {
-      // Step 1: Create user and profile via backend to bypass rate limits and auto-confirm email
-      const profile = await withRetry(async () => {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/complete-signup`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, role }),
-        });
-        
-        const json = await res.json();
-        if (!res.ok) {
-          throw { isApiError: true, message: json.error || 'Failed to create account', code: json.code };
-        }
-        return json.profile as Profile;
-      });
-
-      // Step 2: Sign in to get the session locally
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      // Step 1: Create user directly with Supabase, passing name and role as metadata.
+      // The Supabase Database Trigger (handle_new_user) will automatically create the profile.
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            name,
+            role,
+          },
+        },
       });
 
       if (authError) {
-        // Very unlikely to fail if Step 1 succeeded, but handle it gracefully
-        console.error('Failed to sign in after account creation:', authError);
-        return { success: false, error: 'Account created but failed to log in automatically. Please try logging in manually.', code: 'auto_login_failed' };
+        throw authError; // handled by catch block below
       }
 
-      return { success: true, data: profile };
+      if (!authData.user) {
+        return { success: false, error: 'Signup failed. Please try again.', code: 'no_user_returned' };
+      }
+
+      // Step 2: The trigger handles creating the profile, but there can be a slight sub-second delay.
+      // We will poll for the profile to be created.
+      let profileResult = await this.getProfile(authData.user.id);
+      let retries = 5;
+      while (!profileResult.success && retries > 0) {
+        await new Promise(r => setTimeout(r, 400));
+        profileResult = await this.getProfile(authData.user.id);
+        retries--;
+      }
+
+      if (profileResult.success) {
+        return { success: true, data: profileResult.data };
+      }
+
+      // Fallback: if the trigger was slow or failed, return a temporary profile object so the user can proceed
+      return { 
+        success: true, 
+        data: { id: authData.user.id, name, email, role, avatar: null } 
+      };
+      
     } catch (err: any) {
       if (err.isApiError) {
         if (err.code === 'user_already_exists' || (err.message && err.message.toLowerCase().includes('already registered'))) {
