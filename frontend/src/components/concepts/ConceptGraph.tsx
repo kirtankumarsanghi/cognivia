@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Node {
@@ -11,6 +11,14 @@ interface Node {
   mastery: number;
   connections: string[];
   difficulty: 'beginner' | 'intermediate' | 'advanced';
+  description?: string;
+}
+
+interface Particle {
+  fromId: string;
+  toId: string;
+  progress: number;
+  speed: number;
 }
 
 interface ConceptGraphProps {
@@ -22,11 +30,17 @@ interface ConceptGraphProps {
 export default function ConceptGraph({ concepts = [], selectedConceptId, onConceptClick }: ConceptGraphProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nodesRef = useRef<Node[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const animationFrameRef = useRef<number>();
+  
+  // Pan and Zoom state
+  const transformRef = useRef({ x: 0, y: 0, scale: 1 });
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
 
-  // Initialize nodes from concepts or create demo data
+  // Initialize nodes
   useEffect(() => {
     const initNodes: Node[] = concepts.length > 0
       ? concepts.map((concept) => ({
@@ -38,23 +52,36 @@ export default function ConceptGraph({ concepts = [], selectedConceptId, onConce
           vy: (Math.random() - 0.5) * 0.5,
           mastery: concept.mastery || Math.random() * 100,
           connections: concept.prerequisites?.map((p: any) => p.id) || [],
-          difficulty: concept.difficulty || 'intermediate'
+          difficulty: concept.difficulty || 'intermediate',
+          description: concept.description
         }))
-      : [
-          { id: '1', name: 'Variables', x: 200, y: 150, vx: 0.3, vy: 0.2, mastery: 85, connections: [], difficulty: 'beginner' },
-          { id: '2', name: 'Functions', x: 400, y: 200, vx: -0.2, vy: 0.3, mastery: 70, connections: ['1'], difficulty: 'beginner' },
-          { id: '3', name: 'Loops', x: 300, y: 350, vx: 0.2, vy: -0.3, mastery: 60, connections: ['1'], difficulty: 'intermediate' },
-          { id: '4', name: 'Arrays', x: 500, y: 300, vx: -0.3, vy: -0.2, mastery: 75, connections: ['1', '3'], difficulty: 'intermediate' },
-          { id: '5', name: 'Objects', x: 600, y: 150, vx: 0.2, vy: 0.3, mastery: 55, connections: ['1', '4'], difficulty: 'intermediate' },
-          { id: '6', name: 'Classes', x: 650, y: 400, vx: -0.2, vy: -0.3, mastery: 40, connections: ['2', '5'], difficulty: 'advanced' },
-          { id: '7', name: 'Async/Await', x: 450, y: 450, vx: 0.3, vy: -0.2, mastery: 30, connections: ['2'], difficulty: 'advanced' },
-          { id: '8', name: 'Recursion', x: 250, y: 500, vx: -0.2, vy: 0.2, mastery: 45, connections: ['2', '3'], difficulty: 'advanced' },
-        ];
+      : [];
     
     nodesRef.current = initNodes;
+
+    // Initialize flowing particles
+    const initParticles: Particle[] = [];
+    initNodes.forEach(node => {
+      node.connections.forEach(targetId => {
+        // Spawn 2-3 particles per connection
+        const count = Math.floor(Math.random() * 2) + 2;
+        for (let i = 0; i < count; i++) {
+          initParticles.push({
+            fromId: node.id,
+            toId: targetId,
+            progress: Math.random(),
+            speed: 0.002 + Math.random() * 0.003
+          });
+        }
+      });
+    });
+    particlesRef.current = initParticles;
+
+    // Reset view
+    transformRef.current = { x: 0, y: 0, scale: 1 };
   }, [concepts]);
 
-  // Handle canvas resize
+  // Handle resize
   useEffect(() => {
     const parent = canvasRef.current?.parentElement;
     if (!parent) return;
@@ -67,195 +94,58 @@ export default function ConceptGraph({ concepts = [], selectedConceptId, onConce
     };
 
     updateDimensions();
-
-    const observer = new ResizeObserver(() => {
-      updateDimensions();
-    });
+    const observer = new ResizeObserver(updateDimensions);
     observer.observe(parent);
-
     return () => observer.disconnect();
   }, []);
 
-  // Physics simulation
+  // Interaction handlers
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    const zoomSensitivity = 0.001;
+    const delta = -e.deltaY * zoomSensitivity;
+    
+    const newScale = Math.min(Math.max(0.5, transformRef.current.scale + delta), 2.5);
+    
+    // Zoom around mouse
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (rect) {
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      transformRef.current.x = mouseX - (mouseX - transformRef.current.x) * (newScale / transformRef.current.scale);
+      transformRef.current.y = mouseY - (mouseY - transformRef.current.y) * (newScale / transformRef.current.scale);
+      transformRef.current.scale = newScale;
+    }
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (canvas) {
+      canvas.addEventListener('wheel', handleWheel, { passive: false });
+      return () => canvas.removeEventListener('wheel', handleWheel);
+    }
+  }, [handleWheel]);
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    isDraggingRef.current = true;
+    dragStartRef.current = { x: e.clientX - transformRef.current.x, y: e.clientY - transformRef.current.y };
+  };
 
-    const animate = () => {
-      ctx.clearRect(0, 0, dimensions.width, dimensions.height);
-
-      if (dimensions.width > 100 && dimensions.height > 100) {
-        const currentNodes = nodesRef.current;
-
-        // First pass: Calculate physics
-        currentNodes.forEach(node => {
-          let newX = node.x + node.vx;
-          let newY = node.y + node.vy;
-          let newVx = node.vx;
-          let newVy = node.vy;
-
-          // Bounce off walls
-          if (newX < 30 || newX > dimensions.width - 30) {
-            newVx *= -0.8;
-            newX = Math.max(30, Math.min(dimensions.width - 30, newX));
-          }
-          if (newY < 30 || newY > dimensions.height - 30) {
-            newVy *= -0.8;
-            newY = Math.max(30, Math.min(dimensions.height - 30, newY));
-          }
-
-          // Apply forces towards connected nodes
-          node.connections.forEach(targetId => {
-            const target = currentNodes.find(n => n.id === targetId);
-            if (target) {
-              const dx = target.x - node.x;
-              const dy = target.y - node.y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist > 0) {
-                // Spring force
-                const force = (dist - 150) * 0.002;
-                newVx += (dx / dist) * force;
-                newVy += (dy / dist) * force;
-              }
-            }
-          });
-
-          // Repulsion from other nodes
-          currentNodes.forEach(other => {
-            if (other.id !== node.id) {
-              const dx = node.x - other.x;
-              const dy = node.y - other.y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist < 100 && dist > 0) {
-                const force = (100 - dist) * 0.005;
-                newVx += (dx / dist) * force;
-                newVy += (dy / dist) * force;
-              }
-            }
-          });
-
-          // Slight pull to center
-          const centerX = dimensions.width / 2;
-          const centerY = dimensions.height / 2;
-          newVx += (centerX - node.x) * 0.0001;
-          newVy += (centerY - node.y) * 0.0001;
-
-          // Add slight friction
-          newVx *= 0.99;
-          newVy *= 0.99;
-
-          node.x = newX;
-          node.y = newY;
-          node.vx = newVx;
-          node.vy = newVy;
-        });
-
-        // Second pass: Draw connections
-        currentNodes.forEach(node => {
-          node.connections.forEach(connId => {
-            const connectedNode = currentNodes.find(n => n.id === connId);
-            if (connectedNode) {
-              ctx.beginPath();
-              ctx.moveTo(node.x, node.y);
-              ctx.lineTo(connectedNode.x, connectedNode.y);
-              ctx.strokeStyle = hoveredNode === node.id || hoveredNode === connId
-                ? 'rgba(232, 64, 64, 0.6)'
-                : 'rgba(232, 166, 52, 0.2)';
-              ctx.lineWidth = hoveredNode === node.id || hoveredNode === connId ? 2 : 1;
-              ctx.stroke();
-            }
-          });
-        });
-
-        // Third pass: Draw nodes
-        currentNodes.forEach(node => {
-          const isSelected = selectedConceptId === node.id;
-          const isHovered = hoveredNode === node.id;
-          const radius = isHovered ? 35 : isSelected ? 32 : 28;
-
-          // Node glow
-          if (isHovered || isSelected) {
-            const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, radius + 10);
-            gradient.addColorStop(0, `rgba(232, 64, 64, 0.3)`);
-            gradient.addColorStop(1, 'transparent');
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, radius + 10, 0, Math.PI * 2);
-            ctx.fill();
-          }
-
-          // Mastery background ring
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(30, 30, 30, 0.9)';
-          ctx.fill();
-          ctx.strokeStyle = 'rgba(232, 166, 52, 0.3)';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-
-          // Mastery progress arc
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, radius, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * node.mastery / 100));
-          ctx.strokeStyle = node.mastery > 70 
-            ? 'rgba(61, 214, 140, 0.8)' 
-            : node.mastery > 40 
-            ? 'rgba(232, 166, 52, 0.8)' 
-            : 'rgba(232, 64, 64, 0.8)';
-          ctx.lineWidth = 4;
-          ctx.stroke();
-
-          // Difficulty indicator
-          const difficultyColor = node.difficulty === 'beginner' 
-            ? '#3DD68C' 
-            : node.difficulty === 'intermediate' 
-            ? '#E8A634' 
-            : '#E84040';
-          ctx.fillStyle = difficultyColor;
-          ctx.beginPath();
-          ctx.arc(node.x + radius - 8, node.y - radius + 8, 4, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Node label
-          ctx.fillStyle = '#ffffff';
-          ctx.font = isHovered ? 'bold 13px var(--font-body)' : '12px var(--font-body)';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          const maxWidth = radius * 1.5;
-          const nodeName = node.name || 'Unknown';
-          const text = nodeName.length > 10 ? nodeName.substring(0, 10) + '...' : nodeName;
-          ctx.fillText(text, node.x, node.y, maxWidth);
-
-          if (isHovered) {
-            ctx.font = '10px var(--font-mono)';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.fillText(`${Math.round(node.mastery)}%`, node.x, node.y + 18);
-          }
-        });
-      }
-
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [dimensions, hoveredNode, selectedConceptId]);
-
-  // Handle mouse interactions
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    if (isDraggingRef.current) {
+      transformRef.current.x = e.clientX - dragStartRef.current.x;
+      transformRef.current.y = e.clientY - dragStartRef.current.y;
+      canvas.style.cursor = 'grabbing';
+      return;
+    }
+
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = (e.clientX - rect.left - transformRef.current.x) / transformRef.current.scale;
+    const y = (e.clientY - rect.top - transformRef.current.y) / transformRef.current.scale;
 
     const hoveredNode = nodesRef.current.find(node => {
       const dx = x - node.x;
@@ -264,16 +154,22 @@ export default function ConceptGraph({ concepts = [], selectedConceptId, onConce
     });
 
     setHoveredNode(hoveredNode?.id || null);
-    canvas.style.cursor = hoveredNode ? 'pointer' : 'default';
+    canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+  };
+
+  const handleMouseUp = () => {
+    isDraggingRef.current = false;
+    if (canvasRef.current) canvasRef.current.style.cursor = hoveredNode ? 'pointer' : 'grab';
   };
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isDraggingRef.current) return;
     const canvas = canvasRef.current;
     if (!canvas || !onConceptClick) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = (e.clientX - rect.left - transformRef.current.x) / transformRef.current.scale;
+    const y = (e.clientY - rect.top - transformRef.current.y) / transformRef.current.scale;
 
     const clickedNode = nodesRef.current.find(node => {
       const dx = x - node.x;
@@ -286,73 +182,220 @@ export default function ConceptGraph({ concepts = [], selectedConceptId, onConce
     }
   };
 
+  // Main Render Loop
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const animate = () => {
+      ctx.clearRect(0, 0, dimensions.width, dimensions.height);
+
+      if (dimensions.width > 100 && dimensions.height > 100) {
+        const currentNodes = nodesRef.current;
+        const transform = transformRef.current;
+
+        // Apply Transform
+        ctx.save();
+        ctx.translate(transform.x, transform.y);
+        ctx.scale(transform.scale, transform.scale);
+
+        // Calculate physics
+        currentNodes.forEach(node => {
+          let newX = node.x + node.vx;
+          let newY = node.y + node.vy;
+          let newVx = node.vx;
+          let newVy = node.vy;
+
+          // Bounce off invisible boundaries (to keep them roughly in view)
+          const bounds = { w: Math.max(dimensions.width, 1200), h: Math.max(dimensions.height, 800) };
+          if (newX < 50 || newX > bounds.w - 50) newVx *= -0.8;
+          if (newY < 50 || newY > bounds.h - 50) newVy *= -0.8;
+          newX = Math.max(50, Math.min(bounds.w - 50, newX));
+          newY = Math.max(50, Math.min(bounds.h - 50, newY));
+
+          // Spring forces for connections
+          node.connections.forEach(targetId => {
+            const target = currentNodes.find(n => n.id === targetId);
+            if (target) {
+              const dx = target.x - node.x;
+              const dy = target.y - node.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist > 0) {
+                const force = (dist - 200) * 0.001;
+                newVx += (dx / dist) * force;
+                newVy += (dy / dist) * force;
+              }
+            }
+          });
+
+          // Repulsion
+          currentNodes.forEach(other => {
+            if (other.id !== node.id) {
+              const dx = node.x - other.x;
+              const dy = node.y - other.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < 150 && dist > 0) {
+                const force = (150 - dist) * 0.008;
+                newVx += (dx / dist) * force;
+                newVy += (dy / dist) * force;
+              }
+            }
+          });
+
+          // Center pull
+          newVx += ((dimensions.width / 2) - node.x) * 0.00005;
+          newVy += ((dimensions.height / 2) - node.y) * 0.00005;
+          newVx *= 0.95; // Friction
+          newVy *= 0.95;
+
+          node.x = newX;
+          node.y = newY;
+          node.vx = newVx;
+          node.vy = newVy;
+        });
+
+        // Draw connections
+        currentNodes.forEach(node => {
+          node.connections.forEach(connId => {
+            const connectedNode = currentNodes.find(n => n.id === connId);
+            if (connectedNode) {
+              ctx.beginPath();
+              ctx.moveTo(node.x, node.y);
+              ctx.lineTo(connectedNode.x, connectedNode.y);
+              const isActive = hoveredNode === node.id || hoveredNode === connId || selectedConceptId === node.id || selectedConceptId === connId;
+              ctx.strokeStyle = isActive ? 'rgba(232, 166, 52, 0.5)' : 'rgba(255, 255, 255, 0.05)';
+              ctx.lineWidth = isActive ? 2 : 1;
+              ctx.stroke();
+            }
+          });
+        });
+
+        // Update & Draw Flowing Particles
+        particlesRef.current.forEach(particle => {
+          const fromNode = currentNodes.find(n => n.id === particle.fromId);
+          const toNode = currentNodes.find(n => n.id === particle.toId);
+          
+          if (fromNode && toNode) {
+            particle.progress += particle.speed;
+            if (particle.progress >= 1) particle.progress = 0;
+
+            const px = fromNode.x + (toNode.x - fromNode.x) * particle.progress;
+            const py = fromNode.y + (toNode.y - fromNode.y) * particle.progress;
+
+            ctx.beginPath();
+            ctx.arc(px, py, 2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(232, 166, 52, 0.8)';
+            ctx.shadowColor = '#E8A634';
+            ctx.shadowBlur = 5;
+            ctx.fill();
+            ctx.shadowBlur = 0; // reset
+          }
+        });
+
+        // Draw nodes
+        currentNodes.forEach(node => {
+          const isSelected = selectedConceptId === node.id;
+          const isHovered = hoveredNode === node.id;
+          const radius = isHovered ? 35 : isSelected ? 32 : 28;
+
+          if (isHovered || isSelected) {
+            const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, radius + 15);
+            gradient.addColorStop(0, `rgba(232, 166, 52, 0.2)`);
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, radius + 15, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(20, 20, 22, 1)';
+          ctx.fill();
+          ctx.strokeStyle = isSelected ? '#E8A634' : 'rgba(255, 255, 255, 0.1)';
+          ctx.lineWidth = isSelected ? 3 : 2;
+          ctx.stroke();
+
+          // Mastery Arc
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, radius, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * node.mastery / 100));
+          ctx.strokeStyle = node.mastery > 70 
+            ? 'rgba(61, 214, 140, 0.9)' 
+            : node.mastery > 40 
+            ? 'rgba(232, 166, 52, 0.9)' 
+            : 'rgba(232, 64, 64, 0.9)';
+          ctx.lineWidth = 4;
+          ctx.stroke();
+
+          // Text Label
+          ctx.fillStyle = isSelected ? '#E8A634' : '#ffffff';
+          ctx.font = isHovered || isSelected ? 'bold 13px var(--font-body)' : '12px var(--font-body)';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const text = node.name.length > 12 ? node.name.substring(0, 11) + '...' : node.name;
+          ctx.fillText(text, node.x, node.y, radius * 1.8);
+        });
+
+        ctx.restore();
+      }
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    };
+  }, [dimensions, hoveredNode, selectedConceptId]);
+
   return (
-    <div className="relative w-full h-full bg-surface-container rounded-2xl overflow-hidden border border-outline-variant/10 shadow-xl">
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-surface-container to-transparent p-6 pb-12">
+    <div className="relative w-full h-full bg-surface-container rounded-2xl overflow-hidden border border-outline-variant/10 shadow-xl cursor-grab active:cursor-grabbing">
+      {/* HUD overlay */}
+      <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-surface-container to-transparent p-6 pb-12 pointer-events-none">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-headline-md text-headline-md text-on-surface mb-1">
-              Concept Knowledge Graph
+              Concept Graph
             </h3>
-            <p className="font-body-sm text-on-surface-variant">
-              Interactive visualization of your learning journey
+            <p className="font-body-sm text-on-surface-variant flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px]">mouse</span>
+              Scroll to zoom, drag to pan
             </p>
-          </div>
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#3DD68C]" />
-              <span className="text-on-surface-variant">Mastered</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#E8A634]" />
-              <span className="text-on-surface-variant">Learning</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#E84040]" />
-              <span className="text-on-surface-variant">Needs Work</span>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Canvas */}
       <canvas
         ref={canvasRef}
         width={dimensions.width}
         height={dimensions.height}
+        onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         onClick={handleClick}
-        className="w-full h-full"
+        className="w-full h-full block"
       />
 
-      {/* Hovered node tooltip */}
       <AnimatePresence>
-        {hoveredNode && (
+        {hoveredNode && !selectedConceptId && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-surface-container-high border border-outline-variant/20 rounded-xl px-6 py-3 shadow-2xl backdrop-blur-sm"
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-surface-container-high border border-outline-variant/20 rounded-xl px-6 py-3 shadow-2xl backdrop-blur-sm pointer-events-none"
           >
             <p className="font-body-sm text-on-surface text-center">
-              Click to explore <span className="font-semibold text-primary">
+              Click to inspect <span className="font-semibold text-primary">
                 {nodesRef.current.find(n => n.id === hoveredNode)?.name}
               </span>
             </p>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Instructions */}
-      {!hoveredNode && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center">
-          <p className="font-body-sm text-on-surface-variant flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">touch_app</span>
-            Hover and click nodes to explore concepts
-          </p>
-        </div>
-      )}
     </div>
   );
 }

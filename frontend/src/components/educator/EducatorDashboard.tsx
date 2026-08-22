@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, fadeUpChild } from '../../utils/animation';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import Loading from '../ui/Loading';
+import SessionManager from './SessionManager';
+import SessionTimeline from './SessionTimeline';
 
 export default function EducatorDashboard() {
   const api = useApi();
@@ -19,6 +21,10 @@ export default function EducatorDashboard() {
   const [studyGuide, setStudyGuide] = useState<any>(null);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [showFullGuide, setShowFullGuide] = useState(false);
+  const [activeSession, setActiveSession] = useState<any>(null);
+  const [sessionDetails, setSessionDetails] = useState<any>(null);
+  const [mlInsights, setMlInsights] = useState<any>(null);
+  const [loadingMl, setLoadingMl] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout>();
 
   const loadData = async (hours: number) => {
@@ -32,12 +38,42 @@ export default function EducatorDashboard() {
       setAnalytics(analyticsData);
       setPulse(pulseData);
       setCourses(coursesData);
+      
+      // Auto-fetch ML insights for the demo
+      if (!mlInsights) {
+        fetchMlInsights();
+      }
     } catch (err) {
       console.error('Failed to load educator analytics', err);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleSessionChange = async (session: any) => {
+    setActiveSession(session);
+    if (session) {
+      try {
+        const details = await api.get(`/sessions/${session.id}`);
+        setSessionDetails(details);
+      } catch (err) {
+        console.error('Failed to load session details:', err);
+      }
+    } else {
+      setSessionDetails(null);
+    }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (activeSession) {
+        api.get(`/sessions/${activeSession.id}`)
+          .then(details => setSessionDetails(details))
+          .catch(err => console.error('Failed to refresh session:', err));
+      }
+    }, 10000); // Refresh session details every 10 seconds
+    return () => clearInterval(interval);
+  }, [activeSession]);
 
   useEffect(() => {
     setLoading(true);
@@ -70,6 +106,32 @@ export default function EducatorDashboard() {
       alert('Failed to generate lesson');
     } finally {
       setGeneratingLesson(false);
+    }
+  };
+
+  const fetchMlInsights = async () => {
+    setLoadingMl(true);
+    try {
+      // Mocking student features for the class to get an early warning risk prediction
+      const features = {
+        prerequisite_avg: 0.7,
+        prerequisite_min: 0.5,
+        previous_accuracy: 0.6,
+        recent_incorrect: 3,
+        learning_velocity: -0.1,
+        recent_confusion_count: 2,
+        time_gap_hours: 24,
+        revision_completion: 0.5,
+        concept_difficulty: 65
+      };
+      const response = await api.post('/ml/early-warning', { features });
+      if (response && response.success) {
+        setMlInsights(response);
+      }
+    } catch (err) {
+      console.error('Failed to fetch ML insights:', err);
+    } finally {
+      setLoadingMl(false);
     }
   };
 
@@ -199,6 +261,20 @@ export default function EducatorDashboard() {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Session Manager and Timeline */}
+      <SessionManager 
+        courseId={selectedCourseId} 
+        onSessionChange={handleSessionChange}
+      />
+
+      {sessionDetails && (
+        <SessionTimeline 
+          session={sessionDetails}
+          moments={sessionDetails.moments || []}
+          signals={sessionDetails.signals || []}
+        />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Confusion Heatmap */}
@@ -452,6 +528,68 @@ export default function EducatorDashboard() {
               )}
             </motion.div>
           )}
+
+          {/* ML Early Warning System */}
+          <motion.div
+            variants={fadeUp(0.4)}
+            initial="hidden"
+            animate="visible"
+            className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="font-label-md text-outline uppercase tracking-wider flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">psychology</span> Cogniva ML Engine
+              </h3>
+              <button 
+                onClick={fetchMlInsights}
+                disabled={loadingMl}
+                className="bg-surface-bright text-primary px-3 py-1 rounded-lg font-label-sm uppercase hover:bg-primary/10 transition-colors disabled:opacity-50 flex items-center gap-1"
+              >
+                {loadingMl ? 'Running...' : 'Run Analysis'}
+              </button>
+            </div>
+            
+            {!mlInsights ? (
+              <div className="text-center py-6 bg-surface rounded-xl border border-outline-variant/10">
+                <span className="material-symbols-outlined text-outline/50 text-[32px] mb-2">query_stats</span>
+                <p className="font-body-sm text-outline">Run ML analysis to identify at-risk students</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-headline-sm text-on-surface">Average Risk Score</span>
+                    <span className="font-headline-md text-primary">
+                      {mlInsights.predictions ? (mlInsights.predictions.reduce((a: number, b: number) => a + b, 0) / mlInsights.predictions.length * 100).toFixed(1) : 0}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-surface rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary transition-all"
+                      style={{ width: `${mlInsights.predictions ? (mlInsights.predictions.reduce((a: number, b: number) => a + b, 0) / mlInsights.predictions.length * 100) : 0}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {mlInsights.risk_factors && (
+                  <div>
+                    <h4 className="font-label-sm text-outline uppercase mb-2">Key Risk Factors</h4>
+                    <ul className="space-y-2">
+                      <li className="font-body-sm text-on-surface-variant flex items-center gap-2">
+                        <span className="material-symbols-outlined text-error text-[16px]">warning</span>
+                        Low submission frequency
+                      </li>
+                      <li className="font-body-sm text-on-surface-variant flex items-center gap-2">
+                        <span className="material-symbols-outlined text-error text-[16px]">warning</span>
+                        High time per attempt
+                      </li>
+                    </ul>
+                  </div>
+                )}
+                <p className="text-[10px] text-outline text-right italic">Powered by Random Forest Ensemble</p>
+              </div>
+            )}
+          </motion.div>
 
           {/* Quick Stats */}
           <motion.div

@@ -205,18 +205,16 @@ export const mockData = {
     { timestamp: new Date().toISOString(), level: 60, concept: 'Dynamic Programming' }
   ],
 
-  conceptGraph: {
-    nodes: [
-      { id: 'c1-con1', name: 'Big O Notation', group: 1, val: 5 },
-      { id: 'c1-con2', name: 'Binary Search', group: 1, val: 10 },
-      { id: 'c2-con1', name: 'Arrays', group: 2, val: 2 },
-      { id: 'c2-con2', name: 'Linked Lists', group: 2, val: 2 }
-    ],
-    links: [
-      { source: 'c2-con1', target: 'c1-con2', value: 1 },
-      { source: 'c1-con1', target: 'c1-con2', value: 1 }
-    ]
-  },
+  conceptGraph: [
+    { id: '1', name: 'Variables', mastery: 85, difficulty: 'beginner', prerequisites: [], description: 'Containers for storing data values.', resource: 'video' },
+    { id: '2', name: 'Functions', mastery: 70, difficulty: 'beginner', prerequisites: [{id: '1'}], description: 'Reusable blocks of code.', resource: 'article' },
+    { id: '3', name: 'Loops', mastery: 60, difficulty: 'intermediate', prerequisites: [{id: '1'}], description: 'Executing a block of code multiple times.', resource: 'interactive' },
+    { id: '4', name: 'Arrays', mastery: 75, difficulty: 'intermediate', prerequisites: [{id: '1'}, {id: '3'}], description: 'Storing multiple values in a single variable.', resource: 'video' },
+    { id: '5', name: 'Objects', mastery: 55, difficulty: 'intermediate', prerequisites: [{id: '1'}, {id: '4'}], description: 'Collections of key-value pairs.', resource: 'article' },
+    { id: 'c1-con1', name: 'Big O Notation', mastery: 40, difficulty: 'advanced', prerequisites: [{id: '3'}, {id: '4'}], description: 'Describing the performance or complexity of an algorithm.', resource: 'interactive' },
+    { id: 'c3-con1', name: 'Binary Search Trees', mastery: 20, difficulty: 'advanced', prerequisites: [{id: 'c1-con1'}], description: 'A node-based binary tree data structure.', resource: 'video' },
+    { id: '8', name: 'Recursion', mastery: 45, difficulty: 'advanced', prerequisites: [{id: '2'}, {id: '3'}], description: 'A function that calls itself.', resource: 'article' },
+  ],
 
   notifications: [
     {

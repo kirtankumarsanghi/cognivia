@@ -2,8 +2,17 @@ import { Router, Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { geminiService } from '../services/geminiService';
 import { requireAuth } from '../middleware/authMiddleware';
+import { masteryService } from '../services/masteryService';
+import sessionRoutes from './sessionRoutes';
+import mlRoutes from './mlRoutes';
 
 const router = Router();
+
+// Mount session routes
+router.use(sessionRoutes);
+
+// Mount ML routes
+router.use(mlRoutes);
 
 const weeklyBuckets = () => Array.from({ length: 7 }, (_, offset) => {
   const date = new Date();
@@ -175,13 +184,36 @@ router.get('/api/concepts/:id', requireAuth, async (req, res) => {
 
 // ========== CONFUSION SIGNALS ==========
 router.post('/api/confusion/signal', requireAuth, async (req, res) => {
-  const { concept_id, signal } = req.body;
+  const { concept_id, signal, session_id } = req.body;
   const userId = (req as any).user.id;
 
   try {
+    let lecture_timestamp_seconds = null;
+
+    // If session_id is provided, calculate timestamp
+    if (session_id) {
+      const { data: session } = await supabaseAdmin
+        .from('class_sessions')
+        .select('started_at, ended_at')
+        .eq('id', session_id)
+        .single();
+
+      if (session && !session.ended_at) {
+        const startedAt = new Date(session.started_at);
+        const now = new Date();
+        lecture_timestamp_seconds = Math.floor((now.getTime() - startedAt.getTime()) / 1000);
+      }
+    }
+
     const { data, error } = await supabaseAdmin
       .from('confusion_signals')
-      .insert({ student_id: userId, concept_id, signal })
+      .insert({ 
+        student_id: userId, 
+        concept_id, 
+        signal,
+        session_id: session_id || null,
+        lecture_timestamp_seconds 
+      })
       .select()
       .single();
     
@@ -297,7 +329,7 @@ router.get('/api/confusion/history', requireAuth, async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('confusion_signals')
-      .select('*, concepts(name, lesson:lessons(course:courses(name)))')
+      .select('id, signal, lecture_timestamp_seconds, session_id, created_at, concepts(id, name, lesson:lessons(course:courses(name)))')
       .eq('student_id', userId)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -309,17 +341,45 @@ router.get('/api/confusion/history', requireAuth, async (req, res) => {
 
 // ========== AI TUTOR ==========
 router.post('/api/tutor/chat', requireAuth, async (req, res) => {
-  const { question, concept_id } = req.body;
+  const { question, concept_id, signal_id } = req.body;
   const userId = (req as any).user.id;
 
   try {
     let context = '';
+    let momentContext = '';
+    
     if (concept_id) {
        const { data } = await supabaseAdmin.from('concepts').select('name, description').eq('id', concept_id).single();
        if (data) context = `The student is currently learning about: ${data.name} - ${data.description}.`;
     }
 
-    const aiResponse = await geminiService.askTutor(question, context);
+    // If this is related to a confusion signal with lecture timestamp, get moment context
+    if (signal_id) {
+      const { data: signalData } = await supabaseAdmin
+        .from('confusion_signals')
+        .select('lecture_timestamp_seconds, session_id')
+        .eq('id', signal_id)
+        .single();
+
+      if (signalData && signalData.lecture_timestamp_seconds !== null && signalData.session_id) {
+        // Find nearby lecture moments (±90 seconds)
+        const targetTime = signalData.lecture_timestamp_seconds;
+        const { data: nearbyMoments } = await supabaseAdmin
+          .from('lecture_moments')
+          .select('label, timestamp_seconds')
+          .eq('session_id', signalData.session_id)
+          .gte('timestamp_seconds', targetTime - 90)
+          .lte('timestamp_seconds', targetTime + 90)
+          .order('timestamp_seconds', { ascending: true });
+
+        if (nearbyMoments && nearbyMoments.length > 0) {
+          const momentLabels = nearbyMoments.map(m => m.label).join(', ');
+          momentContext = `The student got confused while the instructor was covering: ${momentLabels}.`;
+        }
+      }
+    }
+
+    const aiResponse = await geminiService.askTutor(question, context, momentContext);
 
     await supabaseAdmin.from('ai_conversations').insert({
       student_id: userId,
@@ -489,15 +549,16 @@ router.post('/api/revision/generate-smart-plan', requireAuth, async (req, res) =
     const recommendations = masteryData
       ?.filter(m => m.score < 80) // Only concepts needing improvement
       .map(m => {
-        const confusionScore = confusionMap[m.concept.id] || 0;
+        const concept = Array.isArray(m.concept) ? m.concept[0] : m.concept;
+        const confusionScore = confusionMap[concept.id] || 0;
         const masteryGap = 100 - m.score;
-        const difficultyWeight = m.concept.difficulty === 'advanced' ? 1.5 : m.concept.difficulty === 'intermediate' ? 1.2 : 1;
+        const difficultyWeight = concept.difficulty === 'advanced' ? 1.5 : concept.difficulty === 'intermediate' ? 1.2 : 1;
         
         // Combined priority score
         const priorityScore = (masteryGap * 0.5 + confusionScore * 10) * difficultyWeight;
         
         return {
-          concept: m.concept,
+          concept: concept,
           score: m.score,
           confusionCount: confusionScore,
           priorityScore,
@@ -563,37 +624,7 @@ router.post('/api/practice/attempt', requireAuth, async (req, res) => {
     
     if (error) throw error;
 
-    const { data: recentAttempts } = await supabaseAdmin
-      .from('practice_attempts')
-      .select('correct')
-      .eq('student_id', userId)
-      .eq('concept_id', concept_id)
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    if (recentAttempts && recentAttempts.length >= 3) {
-      const correctCount = recentAttempts.filter(a => a.correct).length;
-      const accuracy = correctCount / recentAttempts.length;
-
-      const { data: currentMastery } = await supabaseAdmin
-        .from('mastery_scores')
-        .select('score')
-        .eq('student_id', userId)
-        .eq('concept_id', concept_id)
-        .single();
-
-      let change = 0;
-      if (accuracy >= 0.8) change = 10;
-      else if (accuracy >= 0.6) change = 5;
-      else if (accuracy < 0.4) change = -5;
-
-      const newScore = Math.max(0, Math.min(100, (currentMastery?.score || 50) + change));
-      await supabaseAdmin.from('mastery_scores').upsert({
-        student_id: userId,
-        concept_id,
-        score: newScore
-      }, { onConflict: 'student_id,concept_id' });
-    }
+    await masteryService.updateMastery(userId, concept_id);
 
     await supabaseAdmin.from('learning_sessions').insert({
       student_id: userId,
@@ -602,6 +633,24 @@ router.post('/api/practice/attempt', requireAuth, async (req, res) => {
     });
 
     res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/api/concepts/:id/risk', requireAuth, async (req, res) => {
+  const conceptId = req.params.id;
+  const userId = (req as any).user.id;
+  
+  try {
+    const result = await masteryService.getConfusionRisk(userId, conceptId);
+    if (!result.success) throw result.error;
+    
+    res.json({
+      success: true,
+      risk_percentage: result.risk_percentage,
+      risk_probability: result.risk_probability
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

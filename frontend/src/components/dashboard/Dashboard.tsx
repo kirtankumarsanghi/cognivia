@@ -46,6 +46,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
   // Compute a real flat list of concepts from the courses to power the knowledge graph
   const graphConcepts = useMemo(() => {
@@ -85,8 +87,32 @@ export default function Dashboard() {
     }
   }, [api]);
 
+  const fetchProfile = useCallback(async () => {
+    setLoadingProfile(true);
+    try {
+      const features = {
+        avg_practice_accuracy: 0.65,
+        avg_confusion_frequency: 0.2,
+        session_frequency: 4,
+        revision_completion: 0.8,
+        tutor_usage: 2,
+        avg_mastery_progression: 0.7,
+        total_practice_attempts: 12
+      }; // Example features as dictionary
+      const response = await api.post('/ml/student-profile', { studentId: user?.id || 'demo', features });
+      if (response && response.success) {
+        setProfile(response);
+      }
+    } catch (err) {
+      console.error('Failed to fetch ML profile:', err);
+    } finally {
+      setLoadingProfile(false);
+    }
+  }, [api, user]);
+
   useEffect(() => {
     loadData();
+    fetchProfile();
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
@@ -94,7 +120,7 @@ export default function Dashboard() {
     }, 30000);
     
     return () => clearInterval(interval);
-  }, [loadData]);
+  }, [loadData, fetchProfile]);
 
   if (loading) return <Loading variant="dashboard" />;
   
@@ -134,8 +160,48 @@ export default function Dashboard() {
       {/* AI Study Assistant - Floating */}
       <AIStudyAssistant />
 
+      {/* Intervention Banner */}
+      {notifications.filter(n => !n.read && n.type === 'intervention').map(notif => (
+        <motion.div 
+          key={notif.id}
+          initial={{ opacity: 0, y: -20, scale: 0.95 }} 
+          animate={{ opacity: 1, y: 0, scale: 1 }} 
+          className="mb-8 p-4 bg-error/10 border border-error/20 rounded-2xl relative overflow-hidden flex items-center justify-between"
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-error"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-error/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none"></div>
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-12 h-12 rounded-xl bg-error/20 flex items-center justify-center border border-error/30 shrink-0">
+              <span className="material-symbols-outlined text-error text-[24px]">school</span>
+            </div>
+            <div>
+              <h3 className="font-headline-sm text-error m-0">Educator Intervention</h3>
+              <p className="font-body-sm text-on-surface/90 mt-1">{notif.message}</p>
+              {notif.topic && <p className="font-label-sm text-outline uppercase tracking-wider mt-2">Targeted Topic: {notif.topic}</p>}
+            </div>
+          </div>
+          <div className="flex items-center gap-3 relative z-10 shrink-0 ml-4">
+            <button 
+              onClick={async () => {
+                await api.post(`/notifications/${notif.id}/read`, {});
+                loadData();
+              }}
+              className="px-4 py-2 bg-surface-container border border-outline-variant/10 text-on-surface rounded-xl font-label-sm uppercase hover:bg-surface-bright transition-colors"
+            >
+              Dismiss
+            </button>
+            <Link 
+              to="/revision" 
+              className="px-4 py-2 bg-error text-on-error rounded-xl font-label-sm uppercase shadow-[0_0_15px_rgba(255,94,94,0.3)] hover:opacity-90 transition-opacity flex items-center gap-2"
+            >
+              View Study Guide <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </Link>
+          </div>
+        </motion.div>
+      ))}
+
       {/* Header Section */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm relative">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm relative mb-8">
         <motion.div variants={fadeUp(0)} initial="hidden" animate="visible" className="flex flex-col">
           <span className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">Student Dashboard</span>
           <h1 className="font-headline-xl text-3xl leading-tight sm:text-headline-xl text-on-background m-0">
@@ -268,6 +334,56 @@ export default function Dashboard() {
               )}
             </div>
           </motion.section>
+
+          {/* Cognitive Profile */}
+          <motion.section variants={fadeUp(0.25)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
+            <div className="flex justify-between items-start mb-stack-md">
+              <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">psychology</span> Cognitive Profile
+              </h2>
+              <button 
+                onClick={fetchProfile}
+                disabled={loadingProfile}
+                className="bg-primary/10 text-primary px-3 py-1 rounded-lg font-label-sm uppercase hover:bg-primary/20 transition-colors disabled:opacity-50"
+              >
+                {loadingProfile ? 'Analyzing...' : 'Generate'}
+              </button>
+            </div>
+            
+            {!profile ? (
+              <div className="text-center py-4 opacity-70">
+                <p className="font-body-sm">Click Generate to run ML analysis on your learning pattern.</p>
+              </div>
+            ) : (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary text-[24px]">
+                      {profile.cluster === 'Struggling' ? 'warning' : profile.cluster === 'Advanced' ? 'rocket_launch' : 'pace'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-label-sm text-outline uppercase tracking-widest block mb-1">Learning Pattern</span>
+                    <span className="font-headline-md text-on-surface">{profile.cluster}</span>
+                  </div>
+                </div>
+                
+                <div className="bg-surface rounded-xl p-4 border border-outline-variant/10">
+                  <div className="flex justify-between mb-2">
+                    <span className="font-body-sm text-on-surface-variant">Model Confidence</span>
+                    <span className="font-label-sm text-primary">{(profile.confidence * 100).toFixed(0)}%</span>
+                  </div>
+                  <div className="h-1.5 bg-surface-bright rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary transition-all duration-1000"
+                      style={{ width: `${profile.confidence * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.section>
+
         </div>
 
         {/* Right Column: Plans and Activity */}

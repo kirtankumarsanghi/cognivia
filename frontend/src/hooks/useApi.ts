@@ -77,11 +77,31 @@ export function useApi() {
       headers.set('Authorization', `Bearer ${token}`);
     }
 
-    // BYPASS FETCH ENTIRELY FOR DEMO PURPOSES TO PREVENT HANGING
-    // (Backend is not deployed yet — all data comes from mockData)
-    // When backend is deployed, remove this block and use the real fetch below.
-    await new Promise(resolve => setTimeout(resolve, 300)); // Small artificial delay
+    // Try hitting real backend first, fallback to mock data if backend is unavailable
+    const USE_REAL_BACKEND = import.meta.env.VITE_USE_REAL_BACKEND !== 'false'; // Default to true
     
+    if (USE_REAL_BACKEND) {
+      try {
+        const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+          method: options.method || 'GET',
+          headers,
+          body: options.body
+        });
+        
+        if (res.ok) {
+          return await res.json();
+        }
+        
+        // If endpoint doesn't exist (404) or server error, fall through to mock data
+        console.warn(`Backend returned ${res.status} for ${endpoint}, using mock data`);
+      } catch (e: any) {
+        console.warn(`Backend unavailable for ${endpoint}, using mock data:`, e.message);
+      }
+    }
+    
+    // FALLBACK: Mock data when backend is unavailable
+    await new Promise(resolve => setTimeout(resolve, 300)); // Small artificial delay
+
     if (endpoint === '/analytics/student') return mockData.studentAnalytics;
     if (endpoint.startsWith('/analytics/educator')) {
       const url = new URL('http://localhost' + endpoint);
@@ -143,6 +163,20 @@ export function useApi() {
       }
       if (endpoint === '/educator/mini-lesson') return { reExplanation: "Mock explanation: This approach simplifies the core concepts so students understand it better.", workedExample: "Example: x = 5", commonMistake: "Mistaking X for Y" };
       
+      if (endpoint === '/educator/intervene') {
+        const body = JSON.parse(options.body as string);
+        const newNotification = {
+          id: 'n' + Date.now(),
+          type: 'intervention',
+          message: body.message || 'Your educator sent an intervention.',
+          topic: body.topic,
+          created_at: new Date().toISOString(),
+          read: false
+        };
+        mockData.notifications.unshift(newNotification);
+        return { success: true, message: 'Intervention sent successfully.' };
+      }
+
       if (endpoint === '/revision/generate-smart-plan') {
         mockData.studentAnalytics.revisionPlan = [
           {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { staggerContainer, fadeUpChild, premiumEase } from '../../utils/animation';
@@ -400,6 +400,7 @@ function MessageCard({
 export default function Tutor() {
   const [searchParams] = useSearchParams();
   const conceptId = searchParams.get('concept');
+  const location = useLocation();
   const navigate = useNavigate();
   const api = useApi();
 
@@ -408,11 +409,33 @@ export default function Tutor() {
   const [conceptContext, setConceptContext] = useState<{ name: string; description: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const requestTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [currentSignalId, setCurrentSignalId] = useState<string | null>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Handle initial question from navigation state (from confusion history)
+  useEffect(() => {
+    if (location.state) {
+      const { initialQuestion, signalId, hasTimestamp } = location.state as any;
+      if (initialQuestion) {
+        setQuestion(initialQuestion);
+        setCurrentSignalId(signalId || null);
+        // Clear the state so it doesn't re-trigger
+        navigate(location.pathname + location.search, { replace: true, state: {} });
+        
+        if (hasTimestamp) {
+          // Automatically submit for timestamped signals
+          setTimeout(() => {
+            // Will use the signalId stored in state
+            handleAsk(initialQuestion);
+          }, 100);
+        }
+      }
+    }
+  }, []);
 
   // Load concept context if conceptId is provided
   useEffect(() => {
@@ -480,7 +503,8 @@ export default function Tutor() {
 
       const data = await api.post('/tutor/chat', { 
         question: questionToAsk, 
-        concept_id: conceptId 
+        concept_id: conceptId,
+        signal_id: currentSignalId
       });
 
       // Clear timeout on success

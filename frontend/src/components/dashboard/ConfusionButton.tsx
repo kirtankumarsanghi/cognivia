@@ -17,12 +17,24 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [activeSession, setActiveSession] = useState<any>(null);
 
   const handleOpen = async () => {
     setShowModal(true);
     try {
       const coursesData = await api.get('/courses');
       setCourses(coursesData);
+      
+      // Check for active session when modal opens
+      if (selectedCourse) {
+        try {
+          const session = await api.get(`/sessions/active/${selectedCourse}`);
+          setActiveSession(session);
+        } catch (err) {
+          // No active session, that's okay
+          setActiveSession(null);
+        }
+      }
     } catch (err) {
       console.error('Failed to load courses', err);
     }
@@ -43,7 +55,8 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
         concept_id: selectedConcept,
         concept: selectedConceptData?.name || 'Unknown Concept',
         signal,
-        note
+        note,
+        session_id: activeSession?.id || null
       });
       setSuccess(true);
       setTimeout(() => {
@@ -137,6 +150,14 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
                             setSelectedCourse(e.target.value);
                             setSelectedLesson('');
                             setSelectedConcept('');
+                            // Check for active session when course changes
+                            if (e.target.value) {
+                              api.get(`/sessions/active/${e.target.value}`)
+                                .then(session => setActiveSession(session))
+                                .catch(() => setActiveSession(null));
+                            } else {
+                              setActiveSession(null);
+                            }
                           }}
                           className="w-full bg-surface border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary transition-colors"
                           required
@@ -146,6 +167,12 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
                             <option key={course.id} value={course.id}>{course.name}</option>
                           ))}
                         </select>
+                        {activeSession && (
+                          <div className="mt-2 flex items-center gap-2 text-xs text-primary">
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                            <span>Live session active - your signal will be timestamped!</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Lesson Selection */}

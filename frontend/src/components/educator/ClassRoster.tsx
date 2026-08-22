@@ -1,5 +1,7 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fadeUp, staggerContainer } from '../../utils/animation';
+import EducatorStudentProfile from './EducatorStudentProfile';
 
 const mockStudents = [
   { id: '1', name: 'Alex Johnson', mastery: 85, status: 'Active', pulse: 'Low', lastActive: '2h ago', strugglingTopic: 'None', trend: 'up' },
@@ -12,6 +14,8 @@ const mockStudents = [
 ];
 
 export default function ClassRoster() {
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+
   const handleExportCSV = () => {
     const headers = ['Student ID', 'Name', 'Mastery %', 'Confusion Pulse', 'Status', 'Last Active', 'Struggling Topic'];
     const rows = mockStudents.map(s => 
@@ -110,7 +114,7 @@ export default function ClassRoster() {
                   </span>
                 </td>
                 <td className="p-5 text-right">
-                  <button onClick={() => alert(`View profile for ${student.name} is coming soon!`)} className="text-primary hover:underline font-label-sm uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => setSelectedStudent(student)} className="text-primary hover:underline font-label-sm uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
                     View Profile
                   </button>
                 </td>
@@ -119,6 +123,14 @@ export default function ClassRoster() {
           </tbody>
         </table>
       </motion.div>
+
+      {selectedStudent && (
+        <EducatorStudentProfile 
+          student={selectedStudent} 
+          courseId="cse2101" 
+          onClose={() => setSelectedStudent(null)} 
+        />
+      )}
     </motion.div>
   );
 }

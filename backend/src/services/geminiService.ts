@@ -8,7 +8,7 @@ const model = isAiAvailable ? genAI!.getGenerativeModel({ model: 'gemini-1.5-fla
 export const geminiService = {
   isAvailable: () => isAiAvailable,
 
-  async askTutor(question: string, context?: string): Promise<any> {
+  async askTutor(question: string, context?: string, momentContext?: string): Promise<any> {
     if (!isAiAvailable || !model) {
       // Return Fallback Demo Mode Response
       return {
@@ -23,10 +23,15 @@ export const geminiService = {
     }
 
     try {
+      let promptAddition = '';
+      if (momentContext) {
+        promptAddition = `\n\nIMPORTANT: ${momentContext} Give a short, targeted recap of just this specific point being taught at that moment, not a generic concept-level explanation. Focus on the exact teaching moment where confusion occurred.`;
+      }
+
       const prompt = `
         You are an expert, encouraging AI Tutor named Cogniva.
         The student has asked: "${question}"
-        Context: ${context || 'None'}
+        Context: ${context || 'None'}${promptAddition}
         
         Respond with a JSON object strictly following this structure:
         {
@@ -52,7 +57,7 @@ export const geminiService = {
       const jsonStr = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
       const parsed = JSON.parse(jsonStr);
       
-      return { ...parsed, isDemo: false };
+      return { ...parsed, isDemo: false, hasMomentContext: !!momentContext };
     } catch (error: any) {
       console.error('Gemini API Error:', error);
       

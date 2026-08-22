@@ -47,7 +47,8 @@ router.get('/api/study-groups/matches', requireAuth, async (req: Request, res: R
           totalScore: 0
         };
       }
-      matchMap[match.student_id].concepts.push(match.concept.name);
+      const concept = Array.isArray(match.concept) ? match.concept[0] : match.concept;
+      matchMap[match.student_id].concepts.push(concept.name);
       matchMap[match.student_id].totalScore += match.score;
     });
 
