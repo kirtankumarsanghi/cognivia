@@ -9,6 +9,7 @@ import ConfusionButton from './ConfusionButton';
 import ConceptGraph from '../concepts/ConceptGraph';
 import ProgressTracker from './ProgressTracker';
 import AIStudyAssistant from './AIStudyAssistant';
+import CognivaAIEngine from './CognivaAIEngine';
 import { useMemo } from 'react';
 
 const AnimatedNumber = ({ value, duration = 1 }: { value: number; duration?: number }) => {
@@ -353,95 +354,12 @@ export default function Dashboard() {
             </div>
           </motion.section>
 
-          {/* Cognitive Profile */}
-          <motion.section variants={fadeUp(0.25)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
-            <div className="flex justify-between items-start mb-stack-md">
-              <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">psychology</span> Cognitive Profile
-              </h2>
-              <button 
-                onClick={fetchProfile}
-                disabled={loadingProfile}
-                className="bg-primary/10 text-primary px-3 py-1 rounded-lg font-label-sm uppercase hover:bg-primary/20 transition-colors disabled:opacity-50"
-              >
-                {loadingProfile ? 'Analyzing...' : 'Generate'}
-              </button>
-            </div>
-            
-            {!profile ? (
-              <div className="text-center py-4 opacity-70">
-                <p className="font-body-sm">Click Generate to run ML analysis on your learning pattern.</p>
-              </div>
-            ) : (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary text-[24px]">
-                      {profile.cluster === 'Struggling' ? 'warning' : profile.cluster === 'Advanced' ? 'rocket_launch' : 'pace'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-label-sm text-outline uppercase tracking-widest block mb-1">Learning Pattern</span>
-                    <span className="font-headline-md text-on-surface">{profile.cluster}</span>
-                  </div>
-                </div>
-                
-                <div className="bg-surface rounded-xl p-4 border border-outline-variant/10">
-                  <div className="flex justify-between mb-2">
-                    <span className="font-body-sm text-on-surface-variant">Model Confidence</span>
-                    <span className="font-label-sm text-primary">{(profile.confidence * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="h-1.5 bg-surface-bright rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-primary transition-all duration-1000"
-                      style={{ width: `${profile.confidence * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </motion.section>
-
-          {/* ML Adaptive Recommendation */}
-          <motion.section variants={fadeUp(0.27)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
-            <div className="flex justify-between items-start mb-stack-md">
-              <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">auto_awesome</span> Adaptive ML Engine
-              </h2>
-            </div>
-            
-            {!mlRecommendation ? (
-              <div className="text-center py-4 opacity-70">
-                <p className="font-body-sm">Analyzing learning data...</p>
-              </div>
-            ) : (
-              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-[#E8A634]/20 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[#E8A634] text-[24px]">explore</span>
-                  </div>
-                  <div>
-                    <span className="font-label-sm text-outline uppercase tracking-widest block mb-1">Suggested Next Action</span>
-                    <span className="font-headline-md text-on-surface capitalize">{mlRecommendation.next_best_action.replace(/_/g, ' ')}</span>
-                  </div>
-                </div>
-                
-                <div className="bg-surface rounded-xl p-4 border border-outline-variant/10">
-                  <p className="font-body-sm text-on-surface-variant mb-2"><strong>Reasoning:</strong> {mlRecommendation.reasoning}</p>
-                  <div className="flex justify-between mb-1 mt-3">
-                    <span className="font-body-sm text-on-surface-variant">Prediction Confidence</span>
-                    <span className="font-label-sm text-[#E8A634]">{(mlRecommendation.confidence * 100).toFixed(0)}%</span>
-                  </div>
-                  <div className="h-1.5 bg-surface-bright rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-[#E8A634] transition-all duration-1000"
-                      style={{ width: `${mlRecommendation.confidence * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </motion.section>
+          <CognivaAIEngine 
+            profile={profile} 
+            recommendation={mlRecommendation} 
+            loadingProfile={loadingProfile} 
+            onGenerate={fetchProfile} 
+          />
 
         </div>
 

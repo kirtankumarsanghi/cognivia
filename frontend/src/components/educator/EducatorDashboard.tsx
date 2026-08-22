@@ -6,6 +6,7 @@ import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Ba
 import Loading from '../ui/Loading';
 import SessionManager from './SessionManager';
 import SessionTimeline from './SessionTimeline';
+import EducatorMLTerminal from './EducatorMLTerminal';
 
 export default function EducatorDashboard() {
   const api = useApi();
@@ -30,6 +31,7 @@ export default function EducatorDashboard() {
   const [analyzingIntent, setAnalyzingIntent] = useState<string | null>(null);
   const [intentResults, setIntentResults] = useState<Record<string, any>>({});
   const [intervening, setIntervening] = useState<string | null>(null);
+  const [conceptAnalysis, setConceptAnalysis] = useState<any>(null);
   const [globalControls, setGlobalControls] = useState({
     difficulty: 50,
     threshold: 75,
@@ -199,6 +201,23 @@ export default function EducatorDashboard() {
   const handleSaveControls = () => {
     setControlSaved(true);
     setTimeout(() => setControlSaved(false), 2000);
+  };
+
+  const handleSelectTopic = async (topicName: string | null) => {
+    setSelectedTopic(topicName);
+    if (topicName) {
+      setConceptAnalysis(null);
+      try {
+        const res = await api.post('/ml/concept-difficulty', { concept_id: topicName });
+        if (res && res.success) {
+          setConceptAnalysis(res);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      setConceptAnalysis(null);
+    }
   };
 
   if (loading) return <Loading variant="dashboard" />;
@@ -384,7 +403,7 @@ export default function EducatorDashboard() {
                   fill="url(#barGradient)" 
                   radius={[6, 6, 0, 0]} 
                   barSize={44}
-                  onClick={(data) => setSelectedTopic(data.name)}
+                  onClick={(data) => handleSelectTopic(data.name)}
                   cursor="pointer"
                   className="hover:opacity-80 transition-opacity"
                 />
@@ -656,47 +675,12 @@ export default function EducatorDashboard() {
               </div>
             </motion.div>
           )}
-          {/* ML Learning Risk / At-Risk Students */}
-          <motion.div
-            variants={fadeUp(0.25)}
-            initial="hidden"
-            animate="visible"
-            className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10"
-          >
-            <h3 className="font-label-md text-outline uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">trending_down</span> Anomaly Detection
-            </h3>
-            
-            {!mlRisk ? (
-              <div className="text-center py-4 opacity-70">
-                <p className="font-body-sm">Analyzing anomaly patterns...</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 p-3 bg-surface rounded-xl border border-error/20">
-                  <div className="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-error text-[20px]">warning</span>
-                  </div>
-                  <div>
-                    <h4 className="font-headline-sm text-on-surface">Alex Johnson</h4>
-                    <p className="font-body-sm text-error/90 font-medium">Risk Probability: {(mlRisk.risk_probability * 100).toFixed(0)}%</p>
-                  </div>
-                </div>
-                
-                <div className="bg-surface rounded-xl p-4 border border-outline-variant/10">
-                  <h4 className="font-label-sm text-outline uppercase tracking-wider mb-2">Contributing Factors</h4>
-                  <ul className="space-y-2">
-                    {mlRisk.contributing_factors?.map((cf: any, idx: number) => (
-                      <li key={idx} className="flex items-center gap-2 font-body-sm text-on-surface">
-                        <span className={`w-1.5 h-1.5 rounded-full ${cf.impact === 'high' ? 'bg-error' : 'bg-[#E8A634]'}`}></span>
-                        {cf.factor}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-          </motion.div>
+          <EducatorMLTerminal 
+            mlRisk={mlRisk} 
+            mlInsights={mlInsights} 
+            loadingMl={loadingMl} 
+            onGenerate={fetchMlInsights} 
+          />
 
           {/* Most Confusing Concept */}
           {analytics.mostConfusing && (
@@ -784,67 +768,7 @@ export default function EducatorDashboard() {
             </motion.div>
           )}
 
-          {/* ML Early Warning System */}
-          <motion.div
-            variants={fadeUp(0.4)}
-            initial="hidden"
-            animate="visible"
-            className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10"
-          >
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="font-label-md text-outline uppercase tracking-wider flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">psychology</span> Cogniva ML Engine
-              </h3>
-              <button 
-                onClick={fetchMlInsights}
-                disabled={loadingMl}
-                className="bg-surface-bright text-primary px-3 py-1 rounded-lg font-label-sm uppercase hover:bg-primary/10 transition-colors disabled:opacity-50 flex items-center gap-1"
-              >
-                {loadingMl ? 'Running...' : 'Run Analysis'}
-              </button>
-            </div>
-            
-            {!mlInsights ? (
-              <div className="text-center py-6 bg-surface rounded-xl border border-outline-variant/10">
-                <span className="material-symbols-outlined text-outline/50 text-[32px] mb-2">query_stats</span>
-                <p className="font-body-sm text-outline">Run ML analysis to identify at-risk students</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="bg-primary/5 rounded-xl p-4 border border-primary/20">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-headline-sm text-on-surface">Average Risk Score</span>
-                    <span className="font-headline-md text-primary">
-                      {mlInsights.predictions ? (mlInsights.predictions.reduce((a: number, b: number) => a + b, 0) / mlInsights.predictions.length * 100).toFixed(1) : 0}%
-                    </span>
-                  </div>
-                  <div className="h-2 bg-surface rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-primary transition-all"
-                      style={{ width: `${mlInsights.predictions ? (mlInsights.predictions.reduce((a: number, b: number) => a + b, 0) / mlInsights.predictions.length * 100) : 0}%` }}
-                    />
-                  </div>
-                </div>
-                
-                {mlInsights.risk_factors && (
-                  <div>
-                    <h4 className="font-label-sm text-outline uppercase mb-2">Key Risk Factors</h4>
-                    <ul className="space-y-2">
-                      <li className="font-body-sm text-on-surface-variant flex items-center gap-2">
-                        <span className="material-symbols-outlined text-error text-[16px]">warning</span>
-                        Low submission frequency
-                      </li>
-                      <li className="font-body-sm text-on-surface-variant flex items-center gap-2">
-                        <span className="material-symbols-outlined text-error text-[16px]">warning</span>
-                        High time per attempt
-                      </li>
-                    </ul>
-                  </div>
-                )}
-                <p className="text-[10px] text-outline text-right italic">Powered by Random Forest Ensemble</p>
-              </div>
-            )}
-          </motion.div>
+
 
           {/* Quick Stats */}
           <motion.div
@@ -889,7 +813,7 @@ export default function EducatorDashboard() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-error/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
             
             <button 
-              onClick={() => setSelectedTopic(null)}
+              onClick={() => handleSelectTopic(null)}
               className="absolute top-4 right-4 text-outline hover:text-on-surface z-10 transition-colors"
             >
               <span className="material-symbols-outlined">close</span>
@@ -904,6 +828,29 @@ export default function EducatorDashboard() {
                 <p className="font-body-sm text-error/90 font-medium">{selectedTopic}</p>
               </div>
             </div>
+            
+            {conceptAnalysis && (
+              <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-xl relative z-10 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-label-sm text-primary uppercase tracking-wider flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">psychology</span> ML Concept Analysis
+                  </h4>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                    conceptAnalysis.difficulty_level === 'hard' ? 'bg-error text-white' : 
+                    conceptAnalysis.difficulty_level === 'medium' ? 'bg-[#E8A634] text-white' : 
+                    'bg-[#3DD68C] text-white'
+                  }`}>
+                    {conceptAnalysis.difficulty_level} ({(conceptAnalysis.difficulty_score * 10).toFixed(1)}/10)
+                  </span>
+                </div>
+                <p className="font-body-sm text-on-surface mb-2">
+                  <span className="text-outline">Misconception:</span> {conceptAnalysis.common_misconception}
+                </p>
+                <p className="text-xs text-on-surface-variant italic">
+                  * Students are spending ~{Math.floor(conceptAnalysis.average_time_spent / 60)}m on this block.
+                </p>
+              </div>
+            )}
             
             <div className="space-y-3 relative z-10">
               {[
@@ -929,7 +876,7 @@ export default function EducatorDashboard() {
             </div>
             
             <button 
-              onClick={() => setSelectedTopic(null)} 
+              onClick={() => handleSelectTopic(null)} 
               className="w-full mt-6 py-3 bg-surface-variant text-on-surface rounded-xl font-label-sm uppercase tracking-wider hover:bg-surface-variant/80 transition-colors relative z-10"
             >
               Close Portal
