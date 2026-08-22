@@ -4,5 +4,8 @@
   "workspaces": [
     "frontend",
     "backend"
-  ]
+  ],
+  "overrides": {
+    "rollup": "npm:@rollup/wasm-node@^4.62.5"
+  }
 }

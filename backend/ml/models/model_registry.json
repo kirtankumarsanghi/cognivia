@@ -1,0 +1,103 @@
+{
+  "confusion_risk": {
+    "model_name": "confusion_risk",
+    "version": "v1.0",
+    "training_date": "2026-08-22T14:26:11.620399",
+    "features": [
+      "current_mastery",
+      "prerequisite_avg",
+      "prerequisite_min",
+      "incorrect_attempts",
+      "recent_accuracy",
+      "confusion_frequency",
+      "recent_confusion_count",
+      "time_since_last_practice",
+      "total_attempts",
+      "streak",
+      "revision_completion_rate",
+      "previous_concept_accuracy"
+    ],
+    "metrics": {
+      "accuracy": 0.64,
+      "precision": 0.6429,
+      "recall": 0.4891,
+      "f1_score": 0.5556,
+      "roc_auc": 0.6998
+    },
+    "dataset_type": "SYNTHETIC",
+    "prediction_count": 0
+  },
+  "early_warning": {
+    "model_name": "early_warning",
+    "version": "v1.0",
+    "training_date": "2026-08-22T14:26:13.558879",
+    "features": [
+      "prerequisite_avg",
+      "prerequisite_min",
+      "previous_accuracy",
+      "recent_incorrect",
+      "learning_velocity",
+      "recent_confusion_count",
+      "time_gap_hours",
+      "revision_completion",
+      "concept_difficulty"
+    ],
+    "metrics": {
+      "accuracy": 0.61,
+      "precision": 0.4032,
+      "recall": 0.1736,
+      "f1_score": 0.2427,
+      "roc_auc": 0.5403
+    },
+    "dataset_type": "SYNTHETIC",
+    "prediction_count": 1
+  },
+  "student_clusters": {
+    "model_name": "student_clusters",
+    "version": "v1.0",
+    "training_date": "2026-08-22T14:26:19.452482",
+    "features": [
+      "avg_practice_accuracy",
+      "avg_confusion_frequency",
+      "session_frequency",
+      "revision_completion",
+      "tutor_usage",
+      "avg_mastery_progression",
+      "total_practice_attempts"
+    ],
+    "metrics": {
+      "silhouette_score": 0.2112,
+      "n_clusters": 5
+    },
+    "dataset_type": "SYNTHETIC",
+    "prediction_count": 1
+  },
+  "anomaly_detector": {
+    "model_name": "anomaly_detector",
+    "version": "v1.0",
+    "training_date": "2026-08-22T14:26:20.735399",
+    "features": [
+      "signal_count"
+    ],
+    "metrics": {
+      "contamination_rate": 0.05,
+      "detected_anomaly_rate": 0.0451
+    },
+    "dataset_type": "SYNTHETIC",
+    "prediction_count": 0
+  },
+  "confusion_classifier": {
+    "model_name": "confusion_classifier",
+    "version": "v1.0",
+    "training_date": "2026-08-22T14:26:21.555754",
+    "features": [
+      "text_tfidf"
+    ],
+    "metrics": {
+      "accuracy": 1.0,
+      "vocab_size": 117
+    },
+    "dataset_type": "SYNTHETIC",
+    "prediction_count": 1
+  }
+}

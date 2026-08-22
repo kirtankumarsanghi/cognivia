@@ -1,0 +1,801 @@
+text,category,concept,dataset_type
+How do I compute Sorting Algorithms step by step?,Calculation,Sorting Algorithms,SYNTHETIC
+I need a refresher on Arrays to understand Queue Implementation also,Prerequisite,Queue Implementation,SYNTHETIC
+I understand the steps but not why Graph Traversal is important,Conceptual,Graph Traversal,SYNTHETIC
+I don't have the background for Recursion also,Prerequisite,Recursion,SYNTHETIC
+What does the term Recursion mean? basically,Terminology,Recursion,SYNTHETIC
+I can't figure out the process for Binary Search sort of,Procedural,Binary Search,SYNTHETIC
+I keep getting the wrong answer for Queue Implementation calculations,Calculation,Queue Implementation,SYNTHETIC
+The theory behind Graph Traversal makes no sense to me kind of,Conceptual,Graph Traversal,SYNTHETIC
+I keep getting the wrong answer for Recursion calculations,Calculation,Recursion,SYNTHETIC
+The procedure for Big O Notation is confusing kind of,Procedural,Big O Notation,SYNTHETIC
+How do I compute Binary Trees step by step?,Calculation,Binary Trees,SYNTHETIC
+I understand Big O Notation but don't know when to apply it,Application,Big O Notation,SYNTHETIC
+I don't get why Recursion works that way,Conceptual,Recursion,SYNTHETIC
+My foundation in Loops is too weak for Pointer Arithmetic basically,Prerequisite,Pointer Arithmetic,SYNTHETIC
+I need a refresher on Basic Math to understand Dynamic Programming,Prerequisite,Dynamic Programming,SYNTHETIC
+The notation for Dynamic Programming is confusing,Terminology,Dynamic Programming,SYNTHETIC
+My math for Queue Implementation doesn't match the expected result,Calculation,Queue Implementation,SYNTHETIC
+What method should I use for Hash Tables?,Procedural,Hash Tables,SYNTHETIC
+The notation for Hash Tables is confusing sort of,Terminology,Hash Tables,SYNTHETIC
+What's the symbol for Binary Trees?,Terminology,Binary Trees,SYNTHETIC
+How do I write the code for Graph Traversal?,Procedural,Graph Traversal,SYNTHETIC
+I can't derive the formula for Dynamic Programming,Calculation,Dynamic Programming,SYNTHETIC
+I don't get why Hash Tables works that way,Conceptual,Hash Tables,SYNTHETIC
+I don't have the background for Big O Notation,Prerequisite,Big O Notation,SYNTHETIC
+What are the steps for Big O Notation?,Procedural,Big O Notation,SYNTHETIC
+The procedure for Binary Search is confusing also,Procedural,Binary Search,SYNTHETIC
+My math for Heap Sort doesn't match the expected result kind of,Calculation,Heap Sort,SYNTHETIC
+I can't derive the formula for Pointer Arithmetic sort of,Calculation,Pointer Arithmetic,SYNTHETIC
+I don't understand what Queue Implementation means,Conceptual,Queue Implementation,SYNTHETIC
+Too much jargon in the Sorting Algorithms section,Terminology,Sorting Algorithms,SYNTHETIC
+I forgot the basics needed for Queue Implementation,Prerequisite,Queue Implementation,SYNTHETIC
+When would I actually need Sorting Algorithms? kind of,Application,Sorting Algorithms,SYNTHETIC
+How is Heap Sort used in practice? kind of,Application,Heap Sort,SYNTHETIC
+I understand the steps but not why Queue Implementation is important,Conceptual,Queue Implementation,SYNTHETIC
+I don't get why Binary Search works that way,Conceptual,Binary Search,SYNTHETIC
+I know what Dynamic Programming is but can't do it also,Procedural,Dynamic Programming,SYNTHETIC
+What's the difference between Hash Tables and Probability?,Conceptual,Hash Tables,SYNTHETIC
+The theory behind Linked Lists makes no sense to me,Conceptual,Linked Lists,SYNTHETIC
+What does the term Queue Implementation mean?,Terminology,Queue Implementation,SYNTHETIC
+I can't figure out the process for Queue Implementation,Procedural,Queue Implementation,SYNTHETIC
+I don't have the background for Pointer Arithmetic,Prerequisite,Pointer Arithmetic,SYNTHETIC
+I'm confused about the concept of Binary Trees,Conceptual,Binary Trees,SYNTHETIC
+I keep mixing up the terminology for Dynamic Programming,Terminology,Dynamic Programming,SYNTHETIC
+What are the steps for Heap Sort?,Procedural,Heap Sort,SYNTHETIC
+When should I use Big O Notation vs Logic Gates?,Application,Big O Notation,SYNTHETIC
+I can't derive the formula for Linked Lists,Calculation,Linked Lists,SYNTHETIC
+I think I need to learn Probability before Pointer Arithmetic kind of,Prerequisite,Pointer Arithmetic,SYNTHETIC
+I forgot the basics needed for Pointer Arithmetic,Prerequisite,Pointer Arithmetic,SYNTHETIC
+What's the difference between Queue Implementation and Conditions?,Conceptual,Queue Implementation,SYNTHETIC
+I need a refresher on Variables to understand Heap Sort also,Prerequisite,Heap Sort,SYNTHETIC
+I'm confused about the concept of Pointer Arithmetic,Conceptual,Pointer Arithmetic,SYNTHETIC
+I can't derive the formula for Stack Operations,Calculation,Stack Operations,SYNTHETIC
+What does the term Binary Trees mean? sort of,Terminology,Binary Trees,SYNTHETIC
+My math for Graph Traversal doesn't match the expected result basically,Calculation,Graph Traversal,SYNTHETIC
+Give me a real-world example of Big O Notation,Application,Big O Notation,SYNTHETIC
+Give me a real-world example of Queue Implementation,Application,Queue Implementation,SYNTHETIC
+I keep mixing up the terminology for Binary Search,Terminology,Binary Search,SYNTHETIC
+How is Heap Sort used in practice?,Application,Heap Sort,SYNTHETIC
+I don't know how to implement Binary Search,Procedural,Binary Search,SYNTHETIC
+I can solve textbook problems but not real Sorting Algorithms problems,Application,Sorting Algorithms,SYNTHETIC
+Too much jargon in the Recursion section,Terminology,Recursion,SYNTHETIC
+Give me a real-world example of Dynamic Programming,Application,Dynamic Programming,SYNTHETIC
+The procedure for Pointer Arithmetic is confusing,Procedural,Pointer Arithmetic,SYNTHETIC
+I don't get why Recursion works that way,Conceptual,Recursion,SYNTHETIC
+The computation for Queue Implementation is confusing,Calculation,Queue Implementation,SYNTHETIC
+The computation for Binary Trees is confusing,Calculation,Binary Trees,SYNTHETIC
+I never learned Functions properly,Prerequisite,Binary Trees,SYNTHETIC
+I know what Heap Sort is but can't do it,Procedural,Heap Sort,SYNTHETIC
+My foundation in Logic Gates is too weak for Big O Notation,Prerequisite,Big O Notation,SYNTHETIC
+I'm confused about the concept of Pointer Arithmetic,Conceptual,Pointer Arithmetic,SYNTHETIC
+Can someone explain SQL Joins differently?,Conceptual,SQL Joins,SYNTHETIC
+When would I actually need Stack Operations? kind of,Application,Stack Operations,SYNTHETIC
+I don't have the background for Dynamic Programming,Prerequisite,Dynamic Programming,SYNTHETIC
+Too much jargon in the Graph Traversal section,Terminology,Graph Traversal,SYNTHETIC
+What does the term Normalization mean?,Terminology,Normalization,SYNTHETIC
+The procedure for Linked Lists is confusing,Procedural,Linked Lists,SYNTHETIC
+My foundation in Logic Gates is too weak for Big O Notation kind of,Prerequisite,Big O Notation,SYNTHETIC
+What does the term SQL Joins mean? sort of,Terminology,SQL Joins,SYNTHETIC
+How is Big O Notation used in practice?,Application,Big O Notation,SYNTHETIC
+I can't derive the formula for Stack Operations,Calculation,Stack Operations,SYNTHETIC
+What is the purpose of Recursion? sort of,Conceptual,Recursion,SYNTHETIC
+I can solve textbook problems but not real Dynamic Programming problems sort of,Application,Dynamic Programming,SYNTHETIC
+I make errors when calculating Heap Sort,Calculation,Heap Sort,SYNTHETIC
+Too much jargon in the Heap Sort section,Terminology,Heap Sort,SYNTHETIC
+My math for Graph Traversal doesn't match the expected result,Calculation,Graph Traversal,SYNTHETIC
+When would I actually need Heap Sort?,Application,Heap Sort,SYNTHETIC
+The procedure for Graph Traversal is confusing,Procedural,Graph Traversal,SYNTHETIC
+How do I compute Recursion step by step?,Calculation,Recursion,SYNTHETIC
+I'm confused about the concept of Big O Notation,Conceptual,Big O Notation,SYNTHETIC
+I keep getting the wrong answer for Hash Tables calculations,Calculation,Hash Tables,SYNTHETIC
+I can solve textbook problems but not real Pointer Arithmetic problems,Application,Pointer Arithmetic,SYNTHETIC
+I don't get why Linked Lists works that way,Conceptual,Linked Lists,SYNTHETIC
+What method should I use for SQL Joins?,Procedural,SQL Joins,SYNTHETIC
+I forgot the basics needed for Pointer Arithmetic,Prerequisite,Pointer Arithmetic,SYNTHETIC
+I'm confused about the concept of Stack Operations,Conceptual,Stack Operations,SYNTHETIC
+I think I need to learn Basic Math before Linked Lists,Prerequisite,Linked Lists,SYNTHETIC
+I think I need to learn Probability before Dynamic Programming,Prerequisite,Dynamic Programming,SYNTHETIC
+My math for Binary Search doesn't match the expected result sort of,Calculation,Binary Search,SYNTHETIC
+How do I write the code for Recursion?,Procedural,Recursion,SYNTHETIC
+How is Queue Implementation used in practice? kind of,Application,Queue Implementation,SYNTHETIC
+What's the symbol for Dynamic Programming?,Terminology,Dynamic Programming,SYNTHETIC
+I can't derive the formula for Binary Search,Calculation,Binary Search,SYNTHETIC
+How do I write the code for Graph Traversal? also,Procedural,Graph Traversal,SYNTHETIC
+I don't know how to implement Graph Traversal kind of,Procedural,Graph Traversal,SYNTHETIC
+How do I compute Dynamic Programming step by step?,Calculation,Dynamic Programming,SYNTHETIC
+I understand Normalization but don't know when to apply it,Application,Normalization,SYNTHETIC
+My math for Linked Lists doesn't match the expected result,Calculation,Linked Lists,SYNTHETIC
+When would I actually need Stack Operations?,Application,Stack Operations,SYNTHETIC
+I understand Binary Search but don't know when to apply it really,Application,Binary Search,SYNTHETIC
+When should I use Graph Traversal vs Arrays? really,Application,Graph Traversal,SYNTHETIC
+How is Pointer Arithmetic used in practice?,Application,Pointer Arithmetic,SYNTHETIC
+What's the difference between Linked Lists and Functions?,Conceptual,Linked Lists,SYNTHETIC
+Give me a real-world example of Normalization,Application,Normalization,SYNTHETIC
+My foundation in Loops is too weak for Graph Traversal,Prerequisite,Graph Traversal,SYNTHETIC
+What's the symbol for Normalization?,Terminology,Normalization,SYNTHETIC
+I keep mixing up the terminology for Binary Search kind of,Terminology,Binary Search,SYNTHETIC
+I can't derive the formula for Big O Notation,Calculation,Big O Notation,SYNTHETIC
+What's the symbol for Queue Implementation?,Terminology,Queue Implementation,SYNTHETIC
+I know what Pointer Arithmetic is but can't do it,Procedural,Pointer Arithmetic,SYNTHETIC
+Too much jargon in the Linked Lists section also,Terminology,Linked Lists,SYNTHETIC
+I need a refresher on Probability to understand Hash Tables,Prerequisite,Hash Tables,SYNTHETIC
+I don't know how to implement SQL Joins also,Procedural,SQL Joins,SYNTHETIC
+I keep getting the wrong answer for Sorting Algorithms calculations,Calculation,Sorting Algorithms,SYNTHETIC
+I think I need to learn Variables before Pointer Arithmetic,Prerequisite,Pointer Arithmetic,SYNTHETIC
+My foundation in Functions is too weak for Big O Notation,Prerequisite,Big O Notation,SYNTHETIC
+I keep getting the wrong answer for Sorting Algorithms calculations,Calculation,Sorting Algorithms,SYNTHETIC
+I understand Graph Traversal but don't know when to apply it also,Application,Graph Traversal,SYNTHETIC
+The computation for Binary Search is confusing,Calculation,Binary Search,SYNTHETIC
+When should I use Pointer Arithmetic vs Loops?,Application,Pointer Arithmetic,SYNTHETIC
+How do I compute Stack Operations step by step?,Calculation,Stack Operations,SYNTHETIC
+I can't derive the formula for Hash Tables,Calculation,Hash Tables,SYNTHETIC
+How is Binary Trees used in practice?,Application,Binary Trees,SYNTHETIC
+My math for Pointer Arithmetic doesn't match the expected result really,Calculation,Pointer Arithmetic,SYNTHETIC
+I can't derive the formula for Binary Search,Calculation,Binary Search,SYNTHETIC
+Too much jargon in the Recursion section,Terminology,Recursion,SYNTHETIC
+I understand the steps but not why Big O Notation is important,Conceptual,Big O Notation,SYNTHETIC
+How is Normalization used in practice?,Application,Normalization,SYNTHETIC
+The notation for Dynamic Programming is confusing,Terminology,Dynamic Programming,SYNTHETIC
+How do I write the code for Queue Implementation?,Procedural,Queue Implementation,SYNTHETIC
+The procedure for SQL Joins is confusing,Procedural,SQL Joins,SYNTHETIC
+I don't know how to implement Binary Trees,Procedural,Binary Trees,SYNTHETIC
+I can't derive the formula for Big O Notation sort of,Calculation,Big O Notation,SYNTHETIC
+I don't get why SQL Joins works that way,Conceptual,SQL Joins,SYNTHETIC
+My math for Pointer Arithmetic doesn't match the expected result kind of,Calculation,Pointer Arithmetic,SYNTHETIC
+What are the steps for Dynamic Programming?,Procedural,Dynamic Programming,SYNTHETIC
+What is the purpose of Hash Tables?,Conceptual,Hash Tables,SYNTHETIC
+What's the symbol for Hash Tables?,Terminology,Hash Tables,SYNTHETIC
+I keep getting the wrong answer for Big O Notation calculations,Calculation,Big O Notation,SYNTHETIC
+I'm stuck on the algorithm for Sorting Algorithms,Procedural,Sorting Algorithms,SYNTHETIC
+What are the steps for Big O Notation?,Procedural,Big O Notation,SYNTHETIC
+What's the symbol for Linked Lists? really,Terminology,Linked Lists,SYNTHETIC
+What are the steps for Binary Search?,Procedural,Binary Search,SYNTHETIC
+I understand Graph Traversal but don't know when to apply it kind of,Application,Graph Traversal,SYNTHETIC
+When would I actually need Queue Implementation?,Application,Queue Implementation,SYNTHETIC
+I need a refresher on Set Theory to understand Graph Traversal,Prerequisite,Graph Traversal,SYNTHETIC
+I don't understand what SQL Joins means,Conceptual,SQL Joins,SYNTHETIC
+I don't understand what SQL Joins means,Conceptual,SQL Joins,SYNTHETIC
+The computation for SQL Joins is confusing,Calculation,SQL Joins,SYNTHETIC
+I keep getting the wrong answer for Recursion calculations basically,Calculation,Recursion,SYNTHETIC
+I'm stuck on the algorithm for SQL Joins kind of,Procedural,SQL Joins,SYNTHETIC
+The abbreviations in Graph Traversal are confusing,Terminology,Graph Traversal,SYNTHETIC
+The computation for SQL Joins is confusing,Calculation,SQL Joins,SYNTHETIC
+I never learned Conditions properly,Prerequisite,Linked Lists,SYNTHETIC
+I understand Big O Notation but don't know when to apply it,Application,Big O Notation,SYNTHETIC
+My foundation in Conditions is too weak for Heap Sort,Prerequisite,Heap Sort,SYNTHETIC
+I can't derive the formula for Dynamic Programming,Calculation,Dynamic Programming,SYNTHETIC
+What does the term Binary Trees mean?,Terminology,Binary Trees,SYNTHETIC
+Too much jargon in the Queue Implementation section,Terminology,Queue Implementation,SYNTHETIC
+My foundation in Basic Math is too weak for Binary Trees,Prerequisite,Binary Trees,SYNTHETIC
+My foundation in Set Theory is too weak for Stack Operations,Prerequisite,Stack Operations,SYNTHETIC
+Too much jargon in the Dynamic Programming section,Terminology,Dynamic Programming,SYNTHETIC
+How do I write the code for Normalization? also,Procedural,Normalization,SYNTHETIC
+I need a refresher on Logic Gates to understand Graph Traversal,Prerequisite,Graph Traversal,SYNTHETIC
+I don't have the background for Binary Search,Prerequisite,Binary Search,SYNTHETIC
+What does the term Pointer Arithmetic mean? kind of,Terminology,Pointer Arithmetic,SYNTHETIC
+I'm confused about the concept of Binary Trees,Conceptual,Binary Trees,SYNTHETIC
+My math for Normalization doesn't match the expected result,Calculation,Normalization,SYNTHETIC
+I understand Binary Search but don't know when to apply it,Application,Binary Search,SYNTHETIC
+The notation for Linked Lists is confusing,Terminology,Linked Lists,SYNTHETIC
+How do I compute Binary Search step by step?,Calculation,Binary Search,SYNTHETIC
+How do I compute SQL Joins step by step?,Calculation,SQL Joins,SYNTHETIC
+I think I need to learn Arrays before Binary Trees,Prerequisite,Binary Trees,SYNTHETIC
+I'm stuck on the algorithm for Normalization also,Procedural,Normalization,SYNTHETIC
+How is Sorting Algorithms used in practice?,Application,Sorting Algorithms,SYNTHETIC
+How do I compute Recursion step by step?,Calculation,Recursion,SYNTHETIC
+I need a refresher on Arrays to understand Linked Lists,Prerequisite,Linked Lists,SYNTHETIC
+I'm stuck on the algorithm for Big O Notation really,Procedural,Big O Notation,SYNTHETIC
+My foundation in Logic Gates is too weak for Stack Operations,Prerequisite,Stack Operations,SYNTHETIC
+My foundation in Logic Gates is too weak for Sorting Algorithms basically,Prerequisite,Sorting Algorithms,SYNTHETIC
+Too much jargon in the Big O Notation section,Terminology,Big O Notation,SYNTHETIC
+I keep getting the wrong answer for Heap Sort calculations sort of,Calculation,Heap Sort,SYNTHETIC
+I forgot the basics needed for Stack Operations,Prerequisite,Stack Operations,SYNTHETIC
+The notation for Binary Trees is confusing,Terminology,Binary Trees,SYNTHETIC
+I'm stuck on the algorithm for Hash Tables,Procedural,Hash Tables,SYNTHETIC
+I make errors when calculating Binary Search,Calculation,Binary Search,SYNTHETIC
+The computation for Pointer Arithmetic is confusing sort of,Calculation,Pointer Arithmetic,SYNTHETIC
+What's the difference between Dynamic Programming and Probability?,Conceptual,Dynamic Programming,SYNTHETIC
+When would I actually need Binary Trees?,Application,Binary Trees,SYNTHETIC
+The abbreviations in Binary Search are confusing,Terminology,Binary Search,SYNTHETIC
+What's the symbol for Heap Sort?,Terminology,Heap Sort,SYNTHETIC
+The notation for Hash Tables is confusing basically,Terminology,Hash Tables,SYNTHETIC
+What's the symbol for Sorting Algorithms?,Terminology,Sorting Algorithms,SYNTHETIC
+The abbreviations in Sorting Algorithms are confusing,Terminology,Sorting Algorithms,SYNTHETIC
+I keep getting the wrong answer for Dynamic Programming calculations,Calculation,Dynamic Programming,SYNTHETIC
+I don't understand what Linked Lists means,Conceptual,Linked Lists,SYNTHETIC
+How is Binary Search used in practice?,Application,Binary Search,SYNTHETIC
+I don't know how to implement Recursion,Procedural,Recursion,SYNTHETIC
+I don't get why Binary Search works that way,Conceptual,Binary Search,SYNTHETIC
+The theory behind Heap Sort makes no sense to me,Conceptual,Heap Sort,SYNTHETIC
+I understand the steps but not why Sorting Algorithms is important,Conceptual,Sorting Algorithms,SYNTHETIC
+I think I need to learn Variables before Normalization,Prerequisite,Normalization,SYNTHETIC
+How is Recursion used in practice? basically,Application,Recursion,SYNTHETIC
+The computation for Binary Trees is confusing,Calculation,Binary Trees,SYNTHETIC
+I don't understand what Sorting Algorithms means basically,Conceptual,Sorting Algorithms,SYNTHETIC
+When should I use Stack Operations vs Basic Math?,Application,Stack Operations,SYNTHETIC
+Can someone explain Binary Trees differently?,Conceptual,Binary Trees,SYNTHETIC
+What method should I use for Graph Traversal? also,Procedural,Graph Traversal,SYNTHETIC
+How do I compute Linked Lists step by step?,Calculation,Linked Lists,SYNTHETIC
+My math for Heap Sort doesn't match the expected result,Calculation,Heap Sort,SYNTHETIC
+The abbreviations in Big O Notation are confusing kind of,Terminology,Big O Notation,SYNTHETIC
+Too much jargon in the Stack Operations section,Terminology,Stack Operations,SYNTHETIC
+The notation for Queue Implementation is confusing,Terminology,Queue Implementation,SYNTHETIC
+The notation for Sorting Algorithms is confusing,Terminology,Sorting Algorithms,SYNTHETIC
+The abbreviations in Binary Search are confusing,Terminology,Binary Search,SYNTHETIC
+I keep getting the wrong answer for Binary Search calculations,Calculation,Binary Search,SYNTHETIC
+I don't get why Binary Trees works that way,Conceptual,Binary Trees,SYNTHETIC
+I never learned Arrays properly also,Prerequisite,SQL Joins,SYNTHETIC
+I make errors when calculating Normalization,Calculation,Normalization,SYNTHETIC
+I never learned Probability properly,Prerequisite,Binary Search,SYNTHETIC
+I never learned Arrays properly basically,Prerequisite,Binary Trees,SYNTHETIC
+How do I write the code for Binary Trees?,Procedural,Binary Trees,SYNTHETIC
+The computation for Heap Sort is confusing,Calculation,Heap Sort,SYNTHETIC
+I need a refresher on Variables to understand Stack Operations,Prerequisite,Stack Operations,SYNTHETIC
+My foundation in Set Theory is too weak for Recursion,Prerequisite,Recursion,SYNTHETIC
+How is Graph Traversal used in practice?,Application,Graph Traversal,SYNTHETIC
+I keep mixing up the terminology for Dynamic Programming basically,Terminology,Dynamic Programming,SYNTHETIC
+I understand the steps but not why Linked Lists is important,Conceptual,Linked Lists,SYNTHETIC
+When should I use Graph Traversal vs Loops?,Application,Graph Traversal,SYNTHETIC
+I can solve textbook problems but not real Binary Search problems,Application,Binary Search,SYNTHETIC
+I don't understand what Big O Notation means,Conceptual,Big O Notation,SYNTHETIC
+The procedure for Binary Search is confusing sort of,Procedural,Binary Search,SYNTHETIC
+I never learned Basic Math properly,Prerequisite,Queue Implementation,SYNTHETIC
+I understand Binary Search but don't know when to apply it,Application,Binary Search,SYNTHETIC
+My foundation in Variables is too weak for Normalization basically,Prerequisite,Normalization,SYNTHETIC
+How do I compute Binary Search step by step?,Calculation,Binary Search,SYNTHETIC
+I can't derive the formula for Stack Operations,Calculation,Stack Operations,SYNTHETIC
+How do I compute Binary Search step by step?,Calculation,Binary Search,SYNTHETIC
+The notation for Hash Tables is confusing,Terminology,Hash Tables,SYNTHETIC
+I don't have the background for Big O Notation basically,Prerequisite,Big O Notation,SYNTHETIC
+I don't know how to implement Stack Operations also,Procedural,Stack Operations,SYNTHETIC
+I don't have the background for Normalization,Prerequisite,Normalization,SYNTHETIC
+I understand the steps but not why Normalization is important,Conceptual,Normalization,SYNTHETIC
+What's the difference between Queue Implementation and Conditions?,Conceptual,Queue Implementation,SYNTHETIC
+Can someone explain Binary Search differently? basically,Conceptual,Binary Search,SYNTHETIC
+How do I write the code for Queue Implementation?,Procedural,Queue Implementation,SYNTHETIC
+I can solve textbook problems but not real Normalization problems,Application,Normalization,SYNTHETIC
+I understand Stack Operations but don't know when to apply it really,Application,Stack Operations,SYNTHETIC
+I don't have the background for Recursion,Prerequisite,Recursion,SYNTHETIC
+My math for Binary Trees doesn't match the expected result,Calculation,Binary Trees,SYNTHETIC
+I can't derive the formula for Big O Notation,Calculation,Big O Notation,SYNTHETIC
+I think I need to learn Basic Math before Binary Trees,Prerequisite,Binary Trees,SYNTHETIC
+I don't have the background for Queue Implementation,Prerequisite,Queue Implementation,SYNTHETIC
+I make errors when calculating Pointer Arithmetic,Calculation,Pointer Arithmetic,SYNTHETIC
+Can someone explain Stack Operations differently?,Conceptual,Stack Operations,SYNTHETIC
+When should I use Normalization vs Loops?,Application,Normalization,SYNTHETIC
+The notation for Linked Lists is confusing,Terminology,Linked Lists,SYNTHETIC
+I can't derive the formula for Pointer Arithmetic really,Calculation,Pointer Arithmetic,SYNTHETIC
+I never learned Logic Gates properly,Prerequisite,Normalization,SYNTHETIC
+How is Pointer Arithmetic used in practice? really,Application,Pointer Arithmetic,SYNTHETIC
+Too much jargon in the Recursion section,Terminology,Recursion,SYNTHETIC
+Give me a real-world example of Queue Implementation,Application,Queue Implementation,SYNTHETIC
+The procedure for Graph Traversal is confusing also,Procedural,Graph Traversal,SYNTHETIC
+What are the steps for Dynamic Programming? really,Procedural,Dynamic Programming,SYNTHETIC
+The computation for Heap Sort is confusing,Calculation,Heap Sort,SYNTHETIC
+I make errors when calculating Queue Implementation,Calculation,Queue Implementation,SYNTHETIC
+The computation for Pointer Arithmetic is confusing,Calculation,Pointer Arithmetic,SYNTHETIC
+I understand Stack Operations but don't know when to apply it,Application,Stack Operations,SYNTHETIC
+How do I write the code for Stack Operations? also,Procedural,Stack Operations,SYNTHETIC
+I don't have the background for Linked Lists really,Prerequisite,Linked Lists,SYNTHETIC
+My math for Recursion doesn't match the expected result,Calculation,Recursion,SYNTHETIC
+Give me a real-world example of Heap Sort,Application,Heap Sort,SYNTHETIC
+When would I actually need Heap Sort?,Application,Heap Sort,SYNTHETIC
+The procedure for Hash Tables is confusing,Procedural,Hash Tables,SYNTHETIC
+What's the symbol for Normalization? really,Terminology,Normalization,SYNTHETIC
+What's the symbol for Big O Notation?,Terminology,Big O Notation,SYNTHETIC
+My math for Graph Traversal doesn't match the expected result,Calculation,Graph Traversal,SYNTHETIC
+How do I write the code for Stack Operations?,Procedural,Stack Operations,SYNTHETIC
+I don't have the background for Stack Operations,Prerequisite,Stack Operations,SYNTHETIC
+I understand Dynamic Programming but don't know when to apply it,Application,Dynamic Programming,SYNTHETIC
+I need a refresher on Set Theory to understand Big O Notation,Prerequisite,Big O Notation,SYNTHETIC
+I understand the steps but not why Linked Lists is important,Conceptual,Linked Lists,SYNTHETIC
+I can't derive the formula for Heap Sort,Calculation,Heap Sort,SYNTHETIC
+The theory behind Binary Search makes no sense to me,Conceptual,Binary Search,SYNTHETIC
+I don't have the background for Binary Trees kind of,Prerequisite,Binary Trees,SYNTHETIC
+I'm stuck on the algorithm for Linked Lists,Procedural,Linked Lists,SYNTHETIC
+When would I actually need Dynamic Programming? kind of,Application,Dynamic Programming,SYNTHETIC
+I understand the steps but not why Dynamic Programming is important,Conceptual,Dynamic Programming,SYNTHETIC
+What's the difference between SQL Joins and Variables?,Conceptual,SQL Joins,SYNTHETIC
+I never learned Probability properly,Prerequisite,Binary Search,SYNTHETIC
+I keep mixing up the terminology for Binary Search,Terminology,Binary Search,SYNTHETIC
+I can't figure out the process for Pointer Arithmetic,Procedural,Pointer Arithmetic,SYNTHETIC
+The notation for Pointer Arithmetic is confusing,Terminology,Pointer Arithmetic,SYNTHETIC
+I keep getting the wrong answer for Hash Tables calculations,Calculation,Hash Tables,SYNTHETIC
+How do I write the code for Big O Notation?,Procedural,Big O Notation,SYNTHETIC
+I never learned Variables properly,Prerequisite,Binary Search,SYNTHETIC
+My foundation in Set Theory is too weak for Binary Trees,Prerequisite,Binary Trees,SYNTHETIC
+I make errors when calculating Linked Lists also,Calculation,Linked Lists,SYNTHETIC
+Too much jargon in the Normalization section,Terminology,Normalization,SYNTHETIC
+The notation for Normalization is confusing,Terminology,Normalization,SYNTHETIC
+How do I write the code for Sorting Algorithms?,Procedural,Sorting Algorithms,SYNTHETIC
+How do I write the code for Queue Implementation?,Procedural,Queue Implementation,SYNTHETIC
+What's the difference between Hash Tables and Loops?,Conceptual,Hash Tables,SYNTHETIC
+I make errors when calculating Sorting Algorithms,Calculation,Sorting Algorithms,SYNTHETIC
+I can solve textbook problems but not real Hash Tables problems,Application,Hash Tables,SYNTHETIC
+How do I compute Linked Lists step by step?,Calculation,Linked Lists,SYNTHETIC
+The abbreviations in Normalization are confusing,Terminology,Normalization,SYNTHETIC
+I think I need to learn Variables before Normalization,Prerequisite,Normalization,SYNTHETIC
+What are the steps for Heap Sort?,Procedural,Heap Sort,SYNTHETIC
+I understand Graph Traversal but don't know when to apply it sort of,Application,Graph Traversal,SYNTHETIC
+What are the steps for SQL Joins?,Procedural,SQL Joins,SYNTHETIC
+I keep getting the wrong answer for SQL Joins calculations,Calculation,SQL Joins,SYNTHETIC
+I forgot the basics needed for Pointer Arithmetic,Prerequisite,Pointer Arithmetic,SYNTHETIC
+How do I compute Big O Notation step by step?,Calculation,Big O Notation,SYNTHETIC
+Give me a real-world example of Linked Lists,Application,Linked Lists,SYNTHETIC
+Too much jargon in the Binary Trees section kind of,Terminology,Binary Trees,SYNTHETIC
+I keep getting the wrong answer for Recursion calculations,Calculation,Recursion,SYNTHETIC
+What is the purpose of Queue Implementation?,Conceptual,Queue Implementation,SYNTHETIC
+What's the symbol for Binary Trees?,Terminology,Binary Trees,SYNTHETIC
+I can't figure out the process for Stack Operations,Procedural,Stack Operations,SYNTHETIC
+Too much jargon in the Pointer Arithmetic section,Terminology,Pointer Arithmetic,SYNTHETIC
+What's the symbol for Normalization?,Terminology,Normalization,SYNTHETIC
+I forgot the basics needed for Sorting Algorithms basically,Prerequisite,Sorting Algorithms,SYNTHETIC
+The abbreviations in Big O Notation are confusing,Terminology,Big O Notation,SYNTHETIC
+My math for Dynamic Programming doesn't match the expected result,Calculation,Dynamic Programming,SYNTHETIC
+When should I use Binary Trees vs Conditions? kind of,Application,Binary Trees,SYNTHETIC
+My foundation in Loops is too weak for Hash Tables also,Prerequisite,Hash Tables,SYNTHETIC
+I don't have the background for Recursion kind of,Prerequisite,Recursion,SYNTHETIC
+The computation for Hash Tables is confusing,Calculation,Hash Tables,SYNTHETIC
+I need a refresher on Arrays to understand SQL Joins,Prerequisite,SQL Joins,SYNTHETIC
+My math for Linked Lists doesn't match the expected result,Calculation,Linked Lists,SYNTHETIC
+I don't have the background for SQL Joins,Prerequisite,SQL Joins,SYNTHETIC
+What's the symbol for Binary Search? also,Terminology,Binary Search,SYNTHETIC
+I make errors when calculating SQL Joins,Calculation,SQL Joins,SYNTHETIC
+How do I write the code for Recursion?,Procedural,Recursion,SYNTHETIC
+My math for SQL Joins doesn't match the expected result,Calculation,SQL Joins,SYNTHETIC
+I don't get why Hash Tables works that way,Conceptual,Hash Tables,SYNTHETIC
+Can someone explain Sorting Algorithms differently?,Conceptual,Sorting Algorithms,SYNTHETIC
+Too much jargon in the Binary Trees section,Terminology,Binary Trees,SYNTHETIC
+I think I need to learn Logic Gates before Pointer Arithmetic,Prerequisite,Pointer Arithmetic,SYNTHETIC
+How do I write the code for Recursion? sort of,Procedural,Recursion,SYNTHETIC
+I understand Recursion but don't know when to apply it,Application,Recursion,SYNTHETIC
+When would I actually need Graph Traversal?,Application,Graph Traversal,SYNTHETIC
+My foundation in Logic Gates is too weak for Binary Search,Prerequisite,Binary Search,SYNTHETIC
+My foundation in Probability is too weak for Graph Traversal,Prerequisite,Graph Traversal,SYNTHETIC
+My foundation in Variables is too weak for Pointer Arithmetic,Prerequisite,Pointer Arithmetic,SYNTHETIC
+What's the symbol for Graph Traversal?,Terminology,Graph Traversal,SYNTHETIC
+I never learned Conditions properly,Prerequisite,Recursion,SYNTHETIC
+How do I compute Graph Traversal step by step?,Calculation,Graph Traversal,SYNTHETIC
+What's the difference between Heap Sort and Arrays?,Conceptual,Heap Sort,SYNTHETIC
+The abbreviations in Dynamic Programming are confusing,Terminology,Dynamic Programming,SYNTHETIC
+I'm stuck on the algorithm for Stack Operations,Procedural,Stack Operations,SYNTHETIC
+I keep mixing up the terminology for SQL Joins,Terminology,SQL Joins,SYNTHETIC
+I think I need to learn Arrays before Binary Search,Prerequisite,Binary Search,SYNTHETIC
+What is the purpose of Normalization?,Conceptual,Normalization,SYNTHETIC
+The abbreviations in Graph Traversal are confusing also,Terminology,Graph Traversal,SYNTHETIC
+I can't derive the formula for Sorting Algorithms,Calculation,Sorting Algorithms,SYNTHETIC
+I can solve textbook problems but not real SQL Joins problems,Application,SQL Joins,SYNTHETIC
+Give me a real-world example of Dynamic Programming,Application,Dynamic Programming,SYNTHETIC
+I need a refresher on Basic Math to understand Big O Notation,Prerequisite,Big O Notation,SYNTHETIC
+I don't know how to implement Normalization basically,Procedural,Normalization,SYNTHETIC
+When would I actually need Hash Tables?,Application,Hash Tables,SYNTHETIC
+I don't understand what Normalization means,Conceptual,Normalization,SYNTHETIC
+I keep mixing up the terminology for Linked Lists,Terminology,Linked Lists,SYNTHETIC
+The abbreviations in Big O Notation are confusing,Terminology,Big O Notation,SYNTHETIC
+What does the term Binary Search mean? also,Terminology,Binary Search,SYNTHETIC
+I don't know how to implement Sorting Algorithms,Procedural,Sorting Algorithms,SYNTHETIC
+How do I write the code for Big O Notation? also,Procedural,Big O Notation,SYNTHETIC
+The procedure for Binary Trees is confusing basically,Procedural,Binary Trees,SYNTHETIC
+I'm confused about the concept of Binary Search,Conceptual,Binary Search,SYNTHETIC
+When would I actually need Queue Implementation?,Application,Queue Implementation,SYNTHETIC
+How do I compute Linked Lists step by step?,Calculation,Linked Lists,SYNTHETIC
+The computation for Binary Trees is confusing kind of,Calculation,Binary Trees,SYNTHETIC
+I make errors when calculating Binary Search,Calculation,Binary Search,SYNTHETIC
+When would I actually need Pointer Arithmetic?,Application,Pointer Arithmetic,SYNTHETIC
+The computation for Recursion is confusing,Calculation,Recursion,SYNTHETIC
+The computation for Graph Traversal is confusing basically,Calculation,Graph Traversal,SYNTHETIC
+How do I write the code for Graph Traversal?,Procedural,Graph Traversal,SYNTHETIC
+The notation for Heap Sort is confusing,Terminology,Heap Sort,SYNTHETIC
+Give me a real-world example of Binary Trees,Application,Binary Trees,SYNTHETIC
+I don't have the background for Normalization,Prerequisite,Normalization,SYNTHETIC
+I don't know how to implement Heap Sort,Procedural,Heap Sort,SYNTHETIC
+I forgot the basics needed for Linked Lists,Prerequisite,Linked Lists,SYNTHETIC
+I make errors when calculating SQL Joins,Calculation,SQL Joins,SYNTHETIC
+I can't derive the formula for Normalization,Calculation,Normalization,SYNTHETIC
+I keep getting the wrong answer for Sorting Algorithms calculations,Calculation,Sorting Algorithms,SYNTHETIC
+I keep getting the wrong answer for Graph Traversal calculations,Calculation,Graph Traversal,SYNTHETIC
+I don't know how to implement SQL Joins,Procedural,SQL Joins,SYNTHETIC
+When would I actually need Sorting Algorithms?,Application,Sorting Algorithms,SYNTHETIC
+How do I compute Recursion step by step?,Calculation,Recursion,SYNTHETIC
+I don't get why Recursion works that way,Conceptual,Recursion,SYNTHETIC
+I think I need to learn Loops before Dynamic Programming,Prerequisite,Dynamic Programming,SYNTHETIC
+When would I actually need Binary Search?,Application,Binary Search,SYNTHETIC
+I can't figure out the process for Hash Tables,Procedural,Hash Tables,SYNTHETIC
+I forgot the basics needed for Linked Lists also,Prerequisite,Linked Lists,SYNTHETIC
+I need a refresher on Logic Gates to understand Binary Search,Prerequisite,Binary Search,SYNTHETIC
+I think I need to learn Logic Gates before Binary Search,Prerequisite,Binary Search,SYNTHETIC
+I keep mixing up the terminology for Normalization,Terminology,Normalization,SYNTHETIC
+I understand Graph Traversal but don't know when to apply it,Application,Graph Traversal,SYNTHETIC
+What is the purpose of Heap Sort?,Conceptual,Heap Sort,SYNTHETIC
+I don't get why Recursion works that way,Conceptual,Recursion,SYNTHETIC
+The procedure for SQL Joins is confusing,Procedural,SQL Joins,SYNTHETIC
+When would I actually need Queue Implementation?,Application,Queue Implementation,SYNTHETIC
+How do I compute Binary Search step by step?,Calculation,Binary Search,SYNTHETIC
+The abbreviations in Big O Notation are confusing,Terminology,Big O Notation,SYNTHETIC
+I'm stuck on the algorithm for Hash Tables,Procedural,Hash Tables,SYNTHETIC
+What are the steps for Queue Implementation?,Procedural,Queue Implementation,SYNTHETIC
+I think I need to learn Basic Math before Big O Notation,Prerequisite,Big O Notation,SYNTHETIC
+I keep mixing up the terminology for Dynamic Programming,Terminology,Dynamic Programming,SYNTHETIC
+What is the purpose of Queue Implementation?,Conceptual,Queue Implementation,SYNTHETIC
+What is the purpose of Binary Trees?,Conceptual,Binary Trees,SYNTHETIC
+The theory behind Pointer Arithmetic makes no sense to me,Conceptual,Pointer Arithmetic,SYNTHETIC
+The theory behind Binary Search makes no sense to me,Conceptual,Binary Search,SYNTHETIC
+The procedure for Linked Lists is confusing,Procedural,Linked Lists,SYNTHETIC
+How do I compute Binary Trees step by step?,Calculation,Binary Trees,SYNTHETIC
+My foundation in Set Theory is too weak for SQL Joins,Prerequisite,SQL Joins,SYNTHETIC
+I understand the steps but not why Hash Tables is important,Conceptual,Hash Tables,SYNTHETIC
+I don't know how to implement Pointer Arithmetic also,Procedural,Pointer Arithmetic,SYNTHETIC
+I'm confused about the concept of Sorting Algorithms,Conceptual,Sorting Algorithms,SYNTHETIC
+My foundation in Conditions is too weak for Normalization kind of,Prerequisite,Normalization,SYNTHETIC
+What are the steps for Recursion? really,Procedural,Recursion,SYNTHETIC
+What's the difference between Normalization and Basic Math?,Conceptual,Normalization,SYNTHETIC
+My foundation in Functions is too weak for Big O Notation,Prerequisite,Big O Notation,SYNTHETIC
+I understand Binary Trees but don't know when to apply it basically,Application,Binary Trees,SYNTHETIC
+When should I use Big O Notation vs Probability?,Application,Big O Notation,SYNTHETIC
+I keep mixing up the terminology for Stack Operations,Terminology,Stack Operations,SYNTHETIC
+I don't understand what Queue Implementation means,Conceptual,Queue Implementation,SYNTHETIC
+I think I need to learn Conditions before Binary Search,Prerequisite,Binary Search,SYNTHETIC
+What does the term Linked Lists mean?,Terminology,Linked Lists,SYNTHETIC
+My foundation in Set Theory is too weak for Heap Sort really,Prerequisite,Heap Sort,SYNTHETIC
+I keep getting the wrong answer for Linked Lists calculations,Calculation,Linked Lists,SYNTHETIC
+The theory behind Linked Lists makes no sense to me sort of,Conceptual,Linked Lists,SYNTHETIC
+The notation for Pointer Arithmetic is confusing,Terminology,Pointer Arithmetic,SYNTHETIC
+I can't derive the formula for Queue Implementation,Calculation,Queue Implementation,SYNTHETIC
+I think I need to learn Logic Gates before Linked Lists,Prerequisite,Linked Lists,SYNTHETIC
+I can solve textbook problems but not real Normalization problems,Application,Normalization,SYNTHETIC
+I don't understand what Heap Sort means kind of,Conceptual,Heap Sort,SYNTHETIC
+Give me a real-world example of Hash Tables,Application,Hash Tables,SYNTHETIC
+Too much jargon in the Sorting Algorithms section,Terminology,Sorting Algorithms,SYNTHETIC
+I don't get why SQL Joins works that way,Conceptual,SQL Joins,SYNTHETIC
+I keep mixing up the terminology for Binary Trees,Terminology,Binary Trees,SYNTHETIC
+I'm confused about the concept of Sorting Algorithms sort of,Conceptual,Sorting Algorithms,SYNTHETIC
+I don't have the background for Binary Search,Prerequisite,Binary Search,SYNTHETIC
+I know what Binary Search is but can't do it,Procedural,Binary Search,SYNTHETIC
+Too much jargon in the Heap Sort section,Terminology,Heap Sort,SYNTHETIC
+How do I compute Recursion step by step?,Calculation,Recursion,SYNTHETIC
+I think I need to learn Logic Gates before Pointer Arithmetic,Prerequisite,Pointer Arithmetic,SYNTHETIC
+I understand the steps but not why Sorting Algorithms is important,Conceptual,Sorting Algorithms,SYNTHETIC
+What's the difference between Graph Traversal and Variables?,Conceptual,Graph Traversal,SYNTHETIC
+When would I actually need Linked Lists? really,Application,Linked Lists,SYNTHETIC
+I understand Graph Traversal but don't know when to apply it,Application,Graph Traversal,SYNTHETIC
+What method should I use for Stack Operations?,Procedural,Stack Operations,SYNTHETIC
+I don't get why Dynamic Programming works that way really,Conceptual,Dynamic Programming,SYNTHETIC
+When would I actually need Heap Sort?,Application,Heap Sort,SYNTHETIC
+How do I compute Binary Trees step by step?,Calculation,Binary Trees,SYNTHETIC
+I can solve textbook problems but not real Stack Operations problems,Application,Stack Operations,SYNTHETIC
+I keep getting the wrong answer for Heap Sort calculations,Calculation,Heap Sort,SYNTHETIC
+The abbreviations in Recursion are confusing,Terminology,Recursion,SYNTHETIC
+I don't get why Linked Lists works that way,Conceptual,Linked Lists,SYNTHETIC
+My math for Linked Lists doesn't match the expected result,Calculation,Linked Lists,SYNTHETIC
+What does the term Heap Sort mean?,Terminology,Heap Sort,SYNTHETIC
+I'm confused about the concept of Binary Trees,Conceptual,Binary Trees,SYNTHETIC
+My foundation in Basic Math is too weak for Dynamic Programming,Prerequisite,Dynamic Programming,SYNTHETIC
+What method should I use for Recursion?,Procedural,Recursion,SYNTHETIC
+What method should I use for Hash Tables?,Procedural,Hash Tables,SYNTHETIC
+The procedure for Binary Search is confusing,Procedural,Binary Search,SYNTHETIC
+What is the purpose of Sorting Algorithms?,Conceptual,Sorting Algorithms,SYNTHETIC
+When should I use Dynamic Programming vs Functions?,Application,Dynamic Programming,SYNTHETIC
+Can someone explain Sorting Algorithms differently?,Conceptual,Sorting Algorithms,SYNTHETIC
+What's the symbol for Binary Search?,Terminology,Binary Search,SYNTHETIC
+Give me a real-world example of SQL Joins,Application,SQL Joins,SYNTHETIC
+The notation for Linked Lists is confusing,Terminology,Linked Lists,SYNTHETIC
+My math for Recursion doesn't match the expected result,Calculation,Recursion,SYNTHETIC
+How is Binary Trees used in practice?,Application,Binary Trees,SYNTHETIC
+I never learned Set Theory properly,Prerequisite,Big O Notation,SYNTHETIC
+My math for Stack Operations doesn't match the expected result sort of,Calculation,Stack Operations,SYNTHETIC
+I never learned Set Theory properly,Prerequisite,Stack Operations,SYNTHETIC
+What's the difference between Recursion and Set Theory?,Conceptual,Recursion,SYNTHETIC
+The procedure for Big O Notation is confusing,Procedural,Big O Notation,SYNTHETIC
+I can't derive the formula for Heap Sort,Calculation,Heap Sort,SYNTHETIC
+I know what Graph Traversal is but can't do it,Procedural,Graph Traversal,SYNTHETIC
+How do I compute Stack Operations step by step?,Calculation,Stack Operations,SYNTHETIC
+When would I actually need Heap Sort?,Application,Heap Sort,SYNTHETIC
+I know what Graph Traversal is but can't do it,Procedural,Graph Traversal,SYNTHETIC
+My foundation in Variables is too weak for Normalization,Prerequisite,Normalization,SYNTHETIC
+Give me a real-world example of Heap Sort,Application,Heap Sort,SYNTHETIC
+The abbreviations in Hash Tables are confusing,Terminology,Hash Tables,SYNTHETIC
+When would I actually need Pointer Arithmetic?,Application,Pointer Arithmetic,SYNTHETIC
+I can solve textbook problems but not real Normalization problems,Application,Normalization,SYNTHETIC
+I don't have the background for Hash Tables,Prerequisite,Hash Tables,SYNTHETIC
+I forgot the basics needed for Pointer Arithmetic also,Prerequisite,Pointer Arithmetic,SYNTHETIC
+I can't figure out the process for Normalization basically,Procedural,Normalization,SYNTHETIC
+I need a refresher on Basic Math to understand Binary Trees,Prerequisite,Binary Trees,SYNTHETIC
+I need a refresher on Variables to understand Hash Tables,Prerequisite,Hash Tables,SYNTHETIC
+My foundation in Arrays is too weak for Normalization,Prerequisite,Normalization,SYNTHETIC
+Too much jargon in the Binary Trees section sort of,Terminology,Binary Trees,SYNTHETIC
+How is Binary Search used in practice?,Application,Binary Search,SYNTHETIC
+The procedure for Heap Sort is confusing,Procedural,Heap Sort,SYNTHETIC
+My foundation in Conditions is too weak for Pointer Arithmetic,Prerequisite,Pointer Arithmetic,SYNTHETIC
+What does the term Big O Notation mean?,Terminology,Big O Notation,SYNTHETIC
+Too much jargon in the Hash Tables section,Terminology,Hash Tables,SYNTHETIC
+Too much jargon in the Heap Sort section,Terminology,Heap Sort,SYNTHETIC
+Too much jargon in the Big O Notation section,Terminology,Big O Notation,SYNTHETIC
+Can someone explain Hash Tables differently?,Conceptual,Hash Tables,SYNTHETIC
+Can someone explain Pointer Arithmetic differently?,Conceptual,Pointer Arithmetic,SYNTHETIC
+When would I actually need Normalization?,Application,Normalization,SYNTHETIC
+I'm stuck on the algorithm for SQL Joins,Procedural,SQL Joins,SYNTHETIC
+I can solve textbook problems but not real Linked Lists problems sort of,Application,Linked Lists,SYNTHETIC
+I can't derive the formula for Stack Operations,Calculation,Stack Operations,SYNTHETIC
+What method should I use for Sorting Algorithms?,Procedural,Sorting Algorithms,SYNTHETIC
+I can solve textbook problems but not real Binary Trees problems,Application,Binary Trees,SYNTHETIC
+I keep mixing up the terminology for Graph Traversal,Terminology,Graph Traversal,SYNTHETIC
+I can't derive the formula for Sorting Algorithms,Calculation,Sorting Algorithms,SYNTHETIC
+I keep mixing up the terminology for Binary Trees,Terminology,Binary Trees,SYNTHETIC
+I don't know how to implement Heap Sort,Procedural,Heap Sort,SYNTHETIC
+The computation for Hash Tables is confusing,Calculation,Hash Tables,SYNTHETIC
+What is the purpose of Normalization?,Conceptual,Normalization,SYNTHETIC
+I think I need to learn Variables before Sorting Algorithms,Prerequisite,Sorting Algorithms,SYNTHETIC
+What method should I use for Binary Trees?,Procedural,Binary Trees,SYNTHETIC
+I think I need to learn Logic Gates before Graph Traversal kind of,Prerequisite,Graph Traversal,SYNTHETIC
+The theory behind Hash Tables makes no sense to me,Conceptual,Hash Tables,SYNTHETIC
+I think I need to learn Logic Gates before Normalization,Prerequisite,Normalization,SYNTHETIC
+I can solve textbook problems but not real Recursion problems,Application,Recursion,SYNTHETIC
+I understand the steps but not why Hash Tables is important also,Conceptual,Hash Tables,SYNTHETIC
+I'm confused about the concept of Pointer Arithmetic,Conceptual,Pointer Arithmetic,SYNTHETIC
+What does the term Heap Sort mean?,Terminology,Heap Sort,SYNTHETIC
+I keep getting the wrong answer for Big O Notation calculations,Calculation,Big O Notation,SYNTHETIC
+I think I need to learn Set Theory before Queue Implementation,Prerequisite,Queue Implementation,SYNTHETIC
+What method should I use for SQL Joins?,Procedural,SQL Joins,SYNTHETIC
+I can solve textbook problems but not real Binary Trees problems,Application,Binary Trees,SYNTHETIC
+I think I need to learn Functions before SQL Joins,Prerequisite,SQL Joins,SYNTHETIC
+I can solve textbook problems but not real SQL Joins problems,Application,SQL Joins,SYNTHETIC
+The notation for Sorting Algorithms is confusing,Terminology,Sorting Algorithms,SYNTHETIC
+The abbreviations in Dynamic Programming are confusing,Terminology,Dynamic Programming,SYNTHETIC
+I don't get why Linked Lists works that way,Conceptual,Linked Lists,SYNTHETIC
+My foundation in Set Theory is too weak for Graph Traversal,Prerequisite,Graph Traversal,SYNTHETIC
+The theory behind Sorting Algorithms makes no sense to me,Conceptual,Sorting Algorithms,SYNTHETIC
+How is Binary Trees used in practice?,Application,Binary Trees,SYNTHETIC
+The abbreviations in Recursion are confusing also,Terminology,Recursion,SYNTHETIC
+Can someone explain SQL Joins differently? sort of,Conceptual,SQL Joins,SYNTHETIC
+The abbreviations in Graph Traversal are confusing kind of,Terminology,Graph Traversal,SYNTHETIC
+My foundation in Set Theory is too weak for Hash Tables,Prerequisite,Hash Tables,SYNTHETIC
+I'm stuck on the algorithm for Pointer Arithmetic sort of,Procedural,Pointer Arithmetic,SYNTHETIC
+How do I compute Binary Trees step by step?,Calculation,Binary Trees,SYNTHETIC
+How is Recursion used in practice?,Application,Recursion,SYNTHETIC
+I'm stuck on the algorithm for Big O Notation,Procedural,Big O Notation,SYNTHETIC
+How do I write the code for Graph Traversal?,Procedural,Graph Traversal,SYNTHETIC
+The procedure for Hash Tables is confusing,Procedural,Hash Tables,SYNTHETIC
+I think I need to learn Set Theory before Graph Traversal,Prerequisite,Graph Traversal,SYNTHETIC
+My foundation in Variables is too weak for Linked Lists also,Prerequisite,Linked Lists,SYNTHETIC
+I keep mixing up the terminology for SQL Joins,Terminology,SQL Joins,SYNTHETIC
+I don't know how to implement Linked Lists basically,Procedural,Linked Lists,SYNTHETIC
+The procedure for Dynamic Programming is confusing,Procedural,Dynamic Programming,SYNTHETIC
+The computation for Hash Tables is confusing,Calculation,Hash Tables,SYNTHETIC
+I never learned Variables properly really,Prerequisite,Normalization,SYNTHETIC
+How do I compute Normalization step by step?,Calculation,Normalization,SYNTHETIC
+I think I need to learn Logic Gates before Graph Traversal,Prerequisite,Graph Traversal,SYNTHETIC
+The abbreviations in Heap Sort are confusing,Terminology,Heap Sort,SYNTHETIC
+The notation for Stack Operations is confusing,Terminology,Stack Operations,SYNTHETIC
+I make errors when calculating Big O Notation,Calculation,Big O Notation,SYNTHETIC
+I can solve textbook problems but not real Heap Sort problems basically,Application,Heap Sort,SYNTHETIC
+Too much jargon in the Dynamic Programming section,Terminology,Dynamic Programming,SYNTHETIC
+The notation for Binary Trees is confusing sort of,Terminology,Binary Trees,SYNTHETIC
+I don't understand what Normalization means,Conceptual,Normalization,SYNTHETIC
+I can solve textbook problems but not real Heap Sort problems,Application,Heap Sort,SYNTHETIC
+What are the steps for SQL Joins?,Procedural,SQL Joins,SYNTHETIC
+I never learned Conditions properly,Prerequisite,SQL Joins,SYNTHETIC
+I don't have the background for Pointer Arithmetic kind of,Prerequisite,Pointer Arithmetic,SYNTHETIC
+The procedure for Pointer Arithmetic is confusing,Procedural,Pointer Arithmetic,SYNTHETIC
+I can't derive the formula for Binary Search really,Calculation,Binary Search,SYNTHETIC
+The computation for SQL Joins is confusing,Calculation,SQL Joins,SYNTHETIC
+I make errors when calculating Sorting Algorithms,Calculation,Sorting Algorithms,SYNTHETIC
+I can't derive the formula for Dynamic Programming,Calculation,Dynamic Programming,SYNTHETIC
+The abbreviations in Big O Notation are confusing,Terminology,Big O Notation,SYNTHETIC
+I can't derive the formula for Heap Sort,Calculation,Heap Sort,SYNTHETIC
+I make errors when calculating Binary Trees,Calculation,Binary Trees,SYNTHETIC
+Too much jargon in the Queue Implementation section,Terminology,Queue Implementation,SYNTHETIC
+The procedure for Heap Sort is confusing,Procedural,Heap Sort,SYNTHETIC
+Too much jargon in the Graph Traversal section really,Terminology,Graph Traversal,SYNTHETIC
+I forgot the basics needed for Hash Tables,Prerequisite,Hash Tables,SYNTHETIC
+The abbreviations in Big O Notation are confusing,Terminology,Big O Notation,SYNTHETIC
+What's the symbol for Stack Operations?,Terminology,Stack Operations,SYNTHETIC
+When should I use Hash Tables vs Loops?,Application,Hash Tables,SYNTHETIC
+I never learned Conditions properly,Prerequisite,Stack Operations,SYNTHETIC
+I'm stuck on the algorithm for Queue Implementation,Procedural,Queue Implementation,SYNTHETIC
+I can't derive the formula for Graph Traversal,Calculation,Graph Traversal,SYNTHETIC
+I need a refresher on Arrays to understand Heap Sort,Prerequisite,Heap Sort,SYNTHETIC
+My math for Queue Implementation doesn't match the expected result,Calculation,Queue Implementation,SYNTHETIC
+What does the term Recursion mean?,Terminology,Recursion,SYNTHETIC
+What is the purpose of Pointer Arithmetic?,Conceptual,Pointer Arithmetic,SYNTHETIC
+I keep getting the wrong answer for Dynamic Programming calculations,Calculation,Dynamic Programming,SYNTHETIC
+How do I write the code for Dynamic Programming? sort of,Procedural,Dynamic Programming,SYNTHETIC
+My math for Queue Implementation doesn't match the expected result,Calculation,Queue Implementation,SYNTHETIC
+How do I compute Recursion step by step? basically,Calculation,Recursion,SYNTHETIC
+I can solve textbook problems but not real Linked Lists problems,Application,Linked Lists,SYNTHETIC
+My math for Stack Operations doesn't match the expected result,Calculation,Stack Operations,SYNTHETIC
+I need a refresher on Arrays to understand Sorting Algorithms,Prerequisite,Sorting Algorithms,SYNTHETIC
+I'm stuck on the algorithm for Big O Notation,Procedural,Big O Notation,SYNTHETIC
+I make errors when calculating Graph Traversal basically,Calculation,Graph Traversal,SYNTHETIC
+How do I compute Linked Lists step by step? basically,Calculation,Linked Lists,SYNTHETIC
+My foundation in Conditions is too weak for Normalization,Prerequisite,Normalization,SYNTHETIC
+My foundation in Arrays is too weak for Linked Lists,Prerequisite,Linked Lists,SYNTHETIC
+Too much jargon in the Linked Lists section,Terminology,Linked Lists,SYNTHETIC
+My math for Normalization doesn't match the expected result,Calculation,Normalization,SYNTHETIC
+How is Stack Operations used in practice? basically,Application,Stack Operations,SYNTHETIC
+I keep getting the wrong answer for Dynamic Programming calculations really,Calculation,Dynamic Programming,SYNTHETIC
+What are the steps for Big O Notation? really,Procedural,Big O Notation,SYNTHETIC
+What does the term Hash Tables mean? also,Terminology,Hash Tables,SYNTHETIC
+What's the difference between Queue Implementation and Logic Gates?,Conceptual,Queue Implementation,SYNTHETIC
+What are the steps for Stack Operations?,Procedural,Stack Operations,SYNTHETIC
+I don't know how to implement Queue Implementation kind of,Procedural,Queue Implementation,SYNTHETIC
+My foundation in Set Theory is too weak for SQL Joins,Prerequisite,SQL Joins,SYNTHETIC
+Give me a real-world example of Queue Implementation,Application,Queue Implementation,SYNTHETIC
+I never learned Logic Gates properly,Prerequisite,Recursion,SYNTHETIC
+When would I actually need Binary Trees?,Application,Binary Trees,SYNTHETIC
+I'm stuck on the algorithm for Sorting Algorithms really,Procedural,Sorting Algorithms,SYNTHETIC
+How do I write the code for Normalization?,Procedural,Normalization,SYNTHETIC
+I understand the steps but not why Heap Sort is important,Conceptual,Heap Sort,SYNTHETIC
+The theory behind Queue Implementation makes no sense to me,Conceptual,Queue Implementation,SYNTHETIC
+I know what Binary Search is but can't do it,Procedural,Binary Search,SYNTHETIC
+How do I write the code for Binary Trees? kind of,Procedural,Binary Trees,SYNTHETIC
+What is the purpose of SQL Joins?,Conceptual,SQL Joins,SYNTHETIC
+I understand Heap Sort but don't know when to apply it also,Application,Heap Sort,SYNTHETIC
+How do I compute Queue Implementation step by step?,Calculation,Queue Implementation,SYNTHETIC
+I can solve textbook problems but not real Binary Trees problems,Application,Binary Trees,SYNTHETIC
+I'm stuck on the algorithm for Sorting Algorithms,Procedural,Sorting Algorithms,SYNTHETIC
+I understand the steps but not why Queue Implementation is important,Conceptual,Queue Implementation,SYNTHETIC
+I understand SQL Joins but don't know when to apply it,Application,SQL Joins,SYNTHETIC
+I don't know how to implement Linked Lists,Procedural,Linked Lists,SYNTHETIC
+When would I actually need Heap Sort? also,Application,Heap Sort,SYNTHETIC
+I think I need to learn Conditions before Dynamic Programming,Prerequisite,Dynamic Programming,SYNTHETIC
+How is Binary Search used in practice?,Application,Binary Search,SYNTHETIC
+My math for Pointer Arithmetic doesn't match the expected result,Calculation,Pointer Arithmetic,SYNTHETIC
+What does the term Graph Traversal mean? kind of,Terminology,Graph Traversal,SYNTHETIC
+How do I compute Hash Tables step by step?,Calculation,Hash Tables,SYNTHETIC
+I can solve textbook problems but not real Graph Traversal problems,Application,Graph Traversal,SYNTHETIC
+I don't have the background for Queue Implementation basically,Prerequisite,Queue Implementation,SYNTHETIC
+I never learned Conditions properly,Prerequisite,SQL Joins,SYNTHETIC
+How is Linked Lists used in practice?,Application,Linked Lists,SYNTHETIC
+I don't have the background for Linked Lists,Prerequisite,Linked Lists,SYNTHETIC
+What are the steps for Big O Notation? kind of,Procedural,Big O Notation,SYNTHETIC
+Too much jargon in the SQL Joins section,Terminology,SQL Joins,SYNTHETIC
+What are the steps for Linked Lists? also,Procedural,Linked Lists,SYNTHETIC
+I don't understand what SQL Joins means sort of,Conceptual,SQL Joins,SYNTHETIC
+I keep mixing up the terminology for Stack Operations,Terminology,Stack Operations,SYNTHETIC
+I don't understand what Recursion means,Conceptual,Recursion,SYNTHETIC
+I understand Recursion but don't know when to apply it,Application,Recursion,SYNTHETIC
+What are the steps for Stack Operations? sort of,Procedural,Stack Operations,SYNTHETIC
+What's the symbol for Big O Notation?,Terminology,Big O Notation,SYNTHETIC
+How do I compute Pointer Arithmetic step by step?,Calculation,Pointer Arithmetic,SYNTHETIC
+I never learned Set Theory properly sort of,Prerequisite,Binary Trees,SYNTHETIC
+When should I use Sorting Algorithms vs Loops?,Application,Sorting Algorithms,SYNTHETIC
+The abbreviations in Dynamic Programming are confusing,Terminology,Dynamic Programming,SYNTHETIC
+When should I use Recursion vs Functions?,Application,Recursion,SYNTHETIC
+What does the term Normalization mean?,Terminology,Normalization,SYNTHETIC
+What are the steps for Stack Operations?,Procedural,Stack Operations,SYNTHETIC
+I need a refresher on Probability to understand Binary Search,Prerequisite,Binary Search,SYNTHETIC
+I can't derive the formula for Dynamic Programming,Calculation,Dynamic Programming,SYNTHETIC
+I forgot the basics needed for Big O Notation,Prerequisite,Big O Notation,SYNTHETIC
+I can solve textbook problems but not real Graph Traversal problems basically,Application,Graph Traversal,SYNTHETIC
+What's the difference between Binary Search and Loops?,Conceptual,Binary Search,SYNTHETIC
+When should I use Queue Implementation vs Set Theory? kind of,Application,Queue Implementation,SYNTHETIC
+The notation for Sorting Algorithms is confusing also,Terminology,Sorting Algorithms,SYNTHETIC
+What does the term Pointer Arithmetic mean?,Terminology,Pointer Arithmetic,SYNTHETIC
+What are the steps for Pointer Arithmetic? kind of,Procedural,Pointer Arithmetic,SYNTHETIC
+The procedure for Binary Search is confusing,Procedural,Binary Search,SYNTHETIC
+I know what Binary Search is but can't do it kind of,Procedural,Binary Search,SYNTHETIC
+I don't get why Stack Operations works that way,Conceptual,Stack Operations,SYNTHETIC
+I understand Pointer Arithmetic but don't know when to apply it basically,Application,Pointer Arithmetic,SYNTHETIC
+I can't derive the formula for SQL Joins,Calculation,SQL Joins,SYNTHETIC
+When would I actually need Big O Notation?,Application,Big O Notation,SYNTHETIC
+How do I compute SQL Joins step by step? really,Calculation,SQL Joins,SYNTHETIC
+I don't know how to implement Big O Notation sort of,Procedural,Big O Notation,SYNTHETIC
+I need a refresher on Logic Gates to understand Heap Sort also,Prerequisite,Heap Sort,SYNTHETIC
+I forgot the basics needed for Stack Operations,Prerequisite,Stack Operations,SYNTHETIC
+I know what Dynamic Programming is but can't do it,Procedural,Dynamic Programming,SYNTHETIC
+How do I compute Stack Operations step by step? also,Calculation,Stack Operations,SYNTHETIC
+Too much jargon in the Big O Notation section,Terminology,Big O Notation,SYNTHETIC
+How is Stack Operations used in practice?,Application,Stack Operations,SYNTHETIC
+I'm confused about the concept of Binary Trees,Conceptual,Binary Trees,SYNTHETIC
+When would I actually need Pointer Arithmetic?,Application,Pointer Arithmetic,SYNTHETIC
+I don't understand what Recursion means,Conceptual,Recursion,SYNTHETIC
+I never learned Probability properly,Prerequisite,Hash Tables,SYNTHETIC
+How is Pointer Arithmetic used in practice?,Application,Pointer Arithmetic,SYNTHETIC
+My foundation in Functions is too weak for Binary Search,Prerequisite,Binary Search,SYNTHETIC
+I'm stuck on the algorithm for Heap Sort,Procedural,Heap Sort,SYNTHETIC
+I keep getting the wrong answer for SQL Joins calculations,Calculation,SQL Joins,SYNTHETIC
+Give me a real-world example of Sorting Algorithms,Application,Sorting Algorithms,SYNTHETIC
+I know what Dynamic Programming is but can't do it,Procedural,Dynamic Programming,SYNTHETIC
+What is the purpose of Binary Trees?,Conceptual,Binary Trees,SYNTHETIC
+I can't figure out the process for Hash Tables,Procedural,Hash Tables,SYNTHETIC
+I never learned Logic Gates properly,Prerequisite,SQL Joins,SYNTHETIC
+The notation for Heap Sort is confusing,Terminology,Heap Sort,SYNTHETIC
+I keep getting the wrong answer for Queue Implementation calculations,Calculation,Queue Implementation,SYNTHETIC
+I make errors when calculating Pointer Arithmetic,Calculation,Pointer Arithmetic,SYNTHETIC
+When should I use Recursion vs Arrays?,Application,Recursion,SYNTHETIC
+The notation for Queue Implementation is confusing,Terminology,Queue Implementation,SYNTHETIC
+I think I need to learn Conditions before Pointer Arithmetic,Prerequisite,Pointer Arithmetic,SYNTHETIC
+I can solve textbook problems but not real Big O Notation problems,Application,Big O Notation,SYNTHETIC
+I know what Binary Search is but can't do it sort of,Procedural,Binary Search,SYNTHETIC
+I understand the steps but not why Stack Operations is important,Conceptual,Stack Operations,SYNTHETIC
+How do I write the code for Linked Lists?,Procedural,Linked Lists,SYNTHETIC
+My foundation in Logic Gates is too weak for Recursion really,Prerequisite,Recursion,SYNTHETIC
+I'm stuck on the algorithm for Normalization,Procedural,Normalization,SYNTHETIC
+I need a refresher on Conditions to understand Recursion,Prerequisite,Recursion,SYNTHETIC
+How do I write the code for SQL Joins?,Procedural,SQL Joins,SYNTHETIC
+I keep mixing up the terminology for Hash Tables really,Terminology,Hash Tables,SYNTHETIC
+Give me a real-world example of Heap Sort,Application,Heap Sort,SYNTHETIC
+I keep mixing up the terminology for Recursion,Terminology,Recursion,SYNTHETIC
+What are the steps for Big O Notation?,Procedural,Big O Notation,SYNTHETIC
+The computation for Graph Traversal is confusing,Calculation,Graph Traversal,SYNTHETIC
+What's the difference between Stack Operations and Set Theory? kind of,Conceptual,Stack Operations,SYNTHETIC
+What does the term Hash Tables mean? sort of,Terminology,Hash Tables,SYNTHETIC
+I keep getting the wrong answer for Sorting Algorithms calculations basically,Calculation,Sorting Algorithms,SYNTHETIC
+I'm stuck on the algorithm for Big O Notation,Procedural,Big O Notation,SYNTHETIC
+I understand Linked Lists but don't know when to apply it,Application,Linked Lists,SYNTHETIC
+Can someone explain Binary Search differently?,Conceptual,Binary Search,SYNTHETIC
+I'm confused about the concept of Hash Tables,Conceptual,Hash Tables,SYNTHETIC
+I understand Binary Search but don't know when to apply it really,Application,Binary Search,SYNTHETIC
+I can't derive the formula for Dynamic Programming,Calculation,Dynamic Programming,SYNTHETIC
+What are the steps for Big O Notation?,Procedural,Big O Notation,SYNTHETIC
+I'm stuck on the algorithm for Binary Search,Procedural,Binary Search,SYNTHETIC
+What method should I use for Binary Search?,Procedural,Binary Search,SYNTHETIC
+I'm stuck on the algorithm for Dynamic Programming,Procedural,Dynamic Programming,SYNTHETIC
+The theory behind Binary Search makes no sense to me,Conceptual,Binary Search,SYNTHETIC
+Give me a real-world example of Big O Notation,Application,Big O Notation,SYNTHETIC
+I don't have the background for Binary Search,Prerequisite,Binary Search,SYNTHETIC
+The theory behind Binary Search makes no sense to me,Conceptual,Binary Search,SYNTHETIC
+I'm confused about the concept of Pointer Arithmetic,Conceptual,Pointer Arithmetic,SYNTHETIC
+I keep mixing up the terminology for Hash Tables,Terminology,Hash Tables,SYNTHETIC
+The notation for Normalization is confusing,Terminology,Normalization,SYNTHETIC
+When would I actually need Stack Operations?,Application,Stack Operations,SYNTHETIC
+I understand the steps but not why Linked Lists is important,Conceptual,Linked Lists,SYNTHETIC
+How do I write the code for Heap Sort? kind of,Procedural,Heap Sort,SYNTHETIC
+The procedure for Linked Lists is confusing,Procedural,Linked Lists,SYNTHETIC
+I understand the steps but not why Linked Lists is important,Conceptual,Linked Lists,SYNTHETIC
+What's the difference between SQL Joins and Arrays?,Conceptual,SQL Joins,SYNTHETIC
+I need a refresher on Variables to understand Hash Tables,Prerequisite,Hash Tables,SYNTHETIC
+What does the term Normalization mean?,Terminology,Normalization,SYNTHETIC
+When should I use Normalization vs Probability?,Application,Normalization,SYNTHETIC
+I keep mixing up the terminology for Dynamic Programming,Terminology,Dynamic Programming,SYNTHETIC
+Can someone explain Binary Trees differently?,Conceptual,Binary Trees,SYNTHETIC
+What's the symbol for Recursion?,Terminology,Recursion,SYNTHETIC
+I'm stuck on the algorithm for Pointer Arithmetic,Procedural,Pointer Arithmetic,SYNTHETIC
+I know what Hash Tables is but can't do it basically,Procedural,Hash Tables,SYNTHETIC
+I can't derive the formula for Pointer Arithmetic,Calculation,Pointer Arithmetic,SYNTHETIC
+The theory behind Normalization makes no sense to me,Conceptual,Normalization,SYNTHETIC
+The abbreviations in SQL Joins are confusing,Terminology,SQL Joins,SYNTHETIC
+How is Recursion used in practice?,Application,Recursion,SYNTHETIC
+How do I compute Pointer Arithmetic step by step?,Calculation,Pointer Arithmetic,SYNTHETIC
+I'm confused about the concept of Dynamic Programming,Conceptual,Dynamic Programming,SYNTHETIC
+What's the symbol for Binary Search?,Terminology,Binary Search,SYNTHETIC
+What is the purpose of Recursion?,Conceptual,Recursion,SYNTHETIC
+The computation for Stack Operations is confusing,Calculation,Stack Operations,SYNTHETIC
+How do I write the code for Sorting Algorithms? really,Procedural,Sorting Algorithms,SYNTHETIC
+I can solve textbook problems but not real Binary Trees problems basically,Application,Binary Trees,SYNTHETIC
+My math for Normalization doesn't match the expected result,Calculation,Normalization,SYNTHETIC
+I keep mixing up the terminology for Graph Traversal,Terminology,Graph Traversal,SYNTHETIC
+When should I use Binary Search vs Variables? basically,Application,Binary Search,SYNTHETIC
+Can someone explain Binary Trees differently? kind of,Conceptual,Binary Trees,SYNTHETIC
+I need a refresher on Loops to understand Linked Lists,Prerequisite,Linked Lists,SYNTHETIC
+I'm stuck on the algorithm for Binary Trees also,Procedural,Binary Trees,SYNTHETIC
+I never learned Arrays properly,Prerequisite,SQL Joins,SYNTHETIC
+The notation for Graph Traversal is confusing,Terminology,Graph Traversal,SYNTHETIC
+I don't understand what Binary Search means,Conceptual,Binary Search,SYNTHETIC
+My foundation in Variables is too weak for Pointer Arithmetic basically,Prerequisite,Pointer Arithmetic,SYNTHETIC
+What's the difference between Dynamic Programming and Arrays?,Conceptual,Dynamic Programming,SYNTHETIC
+I keep mixing up the terminology for Binary Trees really,Terminology,Binary Trees,SYNTHETIC
+I'm confused about the concept of Big O Notation,Conceptual,Big O Notation,SYNTHETIC
+I'm confused about the concept of Binary Search,Conceptual,Binary Search,SYNTHETIC
+What are the steps for Recursion? also,Procedural,Recursion,SYNTHETIC
+I can't figure out the process for Hash Tables,Procedural,Hash Tables,SYNTHETIC
+What method should I use for Big O Notation?,Procedural,Big O Notation,SYNTHETIC
+I never learned Functions properly,Prerequisite,Big O Notation,SYNTHETIC
+I think I need to learn Basic Math before Dynamic Programming,Prerequisite,Dynamic Programming,SYNTHETIC
+How is Queue Implementation used in practice?,Application,Queue Implementation,SYNTHETIC
+I need a refresher on Functions to understand Hash Tables,Prerequisite,Hash Tables,SYNTHETIC
+How do I compute Queue Implementation step by step?,Calculation,Queue Implementation,SYNTHETIC
+I can solve textbook problems but not real Big O Notation problems,Application,Big O Notation,SYNTHETIC
+The procedure for Stack Operations is confusing,Procedural,Stack Operations,SYNTHETIC
+The abbreviations in Dynamic Programming are confusing,Terminology,Dynamic Programming,SYNTHETIC
+What does the term Pointer Arithmetic mean?,Terminology,Pointer Arithmetic,SYNTHETIC
+Give me a real-world example of Hash Tables,Application,Hash Tables,SYNTHETIC
+The computation for Big O Notation is confusing,Calculation,Big O Notation,SYNTHETIC
+The theory behind Heap Sort makes no sense to me,Conceptual,Heap Sort,SYNTHETIC
+I'm confused about the concept of Heap Sort,Conceptual,Heap Sort,SYNTHETIC
+I think I need to learn Conditions before Recursion also,Prerequisite,Recursion,SYNTHETIC
+Can someone explain Recursion differently?,Conceptual,Recursion,SYNTHETIC
+My foundation in Logic Gates is too weak for Recursion,Prerequisite,Recursion,SYNTHETIC
+The abbreviations in Pointer Arithmetic are confusing,Terminology,Pointer Arithmetic,SYNTHETIC
+I think I need to learn Logic Gates before Sorting Algorithms,Prerequisite,Sorting Algorithms,SYNTHETIC

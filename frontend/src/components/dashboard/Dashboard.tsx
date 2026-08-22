@@ -1,68 +1,262 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { fadeUp, staggerContainer, fadeUpChild, premiumEase } from '../../utils/animation';
+import Loading from '../ui/Loading';
+import ConfusionButton from './ConfusionButton';
+import ConceptGraph from '../concepts/ConceptGraph';
+import ProgressTracker from './ProgressTracker';
+import AIStudyAssistant from './AIStudyAssistant';
+import { useMemo } from 'react';
+
+const AnimatedNumber = ({ value, duration = 1 }: { value: number; duration?: number }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  
+  useEffect(() => {
+    let startTime: number;
+    let animationFrameId: number;
+
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
+      setDisplayValue(Math.floor(progress * value));
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+    
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [value, duration]);
+
+  return <>{displayValue}</>;
+};
 
 export default function Dashboard() {
   const api = useApi();
   const { user } = useAuth();
   
+  const [analytics, setAnalytics] = useState<any>(null);
   const [courses, setCourses] = useState<any[]>([]);
-  const [revisionPlan, setRevisionPlan] = useState<any[]>([]);
   const [pulse, setPulse] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+
+  // Compute a real flat list of concepts from the courses to power the knowledge graph
+  const graphConcepts = useMemo(() => {
+    return courses.flatMap(course => 
+      (course.lessons || []).flatMap((lesson: any) => 
+        (lesson.concepts || []).map((concept: any, index: number, arr: any[]) => ({
+          ...concept,
+          // Link to the previous concept in the lesson for a logical learning path
+          prerequisites: index > 0 ? [{ id: arr[index - 1].id }] : []
+        }))
+      )
+    );
+  }, [courses]);
+
+  const loadData = useCallback(async (showRefreshing = false) => {
+    try {
+      if (showRefreshing) setRefreshing(true);
+      
+      const [analyticsData, coursesData, pulseData, notifData] = await Promise.all([
+        api.get('/analytics/student'),
+        api.get('/courses'),
+        api.get('/confusion/pulse'),
+        api.get('/notifications'),
+      ]);
+      
+      setAnalytics(analyticsData);
+      setCourses(coursesData);
+      setPulse(pulseData);
+      setNotifications(notifData);
+      setError(null);
+    } catch (err: any) {
+      console.error('Failed to load dashboard data', err);
+      setError(err.message || 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [api]);
+
+  const fetchProfile = useCallback(async () => {
+    setLoadingProfile(true);
+    try {
+      const features = {
+        avg_practice_accuracy: 0.65,
+        avg_confusion_frequency: 0.2,
+        session_frequency: 4,
+        revision_completion: 0.8,
+        tutor_usage: 2,
+        avg_mastery_progression: 0.7,
+        total_practice_attempts: 12
+      }; // Example features as dictionary
+      const response = await api.post('/ml/student-profile', { studentId: user?.id || 'demo', features });
+      if (response && response.success) {
+        setProfile(response);
+      }
+    } catch (err) {
+      console.error('Failed to fetch ML profile:', err);
+    } finally {
+      setLoadingProfile(false);
+    }
+  }, [api, user]);
+
+  const [mlRecommendation, setMlRecommendation] = useState<any>(null);
+  
+  const fetchMlRecommendation = useCallback(async () => {
+    try {
+      const response = await api.post('/ml/recommendation', { 
+        studentId: user?.id || 'demo',
+        current_concept: 'c1-con1',
+        history: []
+      });
+      if (response && response.success) {
+        setMlRecommendation(response);
+      }
+    } catch (err) {
+      console.error('Failed to fetch ML recommendation:', err);
+    }
+  }, [api, user]);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [coursesData, revisionData, pulseData] = await Promise.all([
-          api.get('/courses'),
-          api.get('/revision/plan'),
-          api.get('/confusion/pulse'),
-        ]);
-        setCourses(coursesData);
-        setRevisionPlan(revisionData);
-        setPulse(pulseData);
-      } catch (err) {
-        console.error('Failed to load dashboard data', err);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
+    fetchProfile();
     
-    // Trigger SVG animation after mount
-    setTimeout(() => {
-      const circle = document.querySelector('circle.dash-circle') as SVGCircleElement;
-      if(circle) {
-        circle.style.strokeDashoffset = '60.288';
-      }
-    }, 500);
-  }, []);
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      loadData(false);
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [loadData, fetchProfile]);
 
-  if (loading) return <div className="p-8 animate-pulse text-white/50">Loading dashboard data...</div>;
-
-  const learningScore = 76; 
-  const masteredCount = 12;
-  const needsAttention = revisionPlan.length;
+  if (loading) return <Loading variant="dashboard" />;
+  
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface p-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-surface-container rounded-2xl p-8 max-w-md w-full text-center border border-error/20"
+        >
+          <span className="material-symbols-outlined text-error text-[48px] mb-4">error</span>
+          <h2 className="font-headline-md text-headline-md text-on-surface mb-2">Connection Error</h2>
+          <p className="font-body-md text-on-surface-variant mb-6">{error}</p>
+          <button
+            onClick={() => {
+              setLoading(true);
+              setError(null);
+              loadData();
+            }}
+            className="bg-primary text-on-primary px-6 py-3 rounded-xl font-label-md uppercase tracking-widest hover:opacity-90 transition-opacity"
+          >
+            Try Again
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+  
+  if (!analytics) return <div>Error loading dashboard</div>;
 
   return (
-    <div className="flex flex-col w-full px-8 pb-12 gap-y-stack-lg max-w-container-max mx-auto overflow-y-auto">
-      {/* Header Section */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm pt-stack-xl relative">
-        <div className="flex flex-col">
-          <span className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">Student Dashboard</span>
-          <h1 className="font-headline-xl text-headline-xl text-on-background m-0">Welcome back, <br/>{user?.name.split(' ')[0]}</h1>
-        </div>
-        <div className="flex items-center gap-stack-sm bg-surface-container-high px-6 py-3 rounded-xl border border-outline-variant/20 shadow-md">
-          <span className="material-symbols-outlined text-primary text-[28px]">workspace_premium</span>
-          <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-widest">Current Rank</span>
-            <span className="font-body-md text-body-md text-on-surface-variant font-medium">Pro Scholar</span>
+    <div className="page-shell">
+      {/* Confusion Button - Fixed Position */}
+      <ConfusionButton onSignalCreated={loadData} />
+
+      {/* AI Study Assistant - Floating */}
+      <AIStudyAssistant />
+
+      {/* Intervention Banner */}
+      {notifications.filter(n => !n.read && n.type === 'intervention').map(notif => (
+        <motion.div 
+          key={notif.id}
+          initial={{ opacity: 0, y: -20, scale: 0.95 }} 
+          animate={{ opacity: 1, y: 0, scale: 1 }} 
+          className="mb-8 p-4 bg-error/10 border border-error/20 rounded-2xl relative overflow-hidden flex items-center justify-between"
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-error"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-error/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none"></div>
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-12 h-12 rounded-xl bg-error/20 flex items-center justify-center border border-error/30 shrink-0">
+              <span className="material-symbols-outlined text-error text-[24px]">school</span>
+            </div>
+            <div>
+              <h3 className="font-headline-sm text-error m-0">Educator Intervention</h3>
+              <p className="font-body-sm text-on-surface/90 mt-1">{notif.message}</p>
+              {notif.topic && <p className="font-label-sm text-outline uppercase tracking-wider mt-2">Targeted Topic: {notif.topic}</p>}
+            </div>
           </div>
-        </div>
+          <div className="flex items-center gap-3 relative z-10 shrink-0 ml-4">
+            <button 
+              onClick={async () => {
+                await api.post(`/notifications/${notif.id}/read`, {});
+                loadData();
+              }}
+              className="px-4 py-2 bg-surface-container border border-outline-variant/10 text-on-surface rounded-xl font-label-sm uppercase hover:bg-surface-bright transition-colors"
+            >
+              Dismiss
+            </button>
+            <Link 
+              to="/revision" 
+              className="px-4 py-2 bg-error text-on-error rounded-xl font-label-sm uppercase shadow-[0_0_15px_rgba(255,94,94,0.3)] hover:opacity-90 transition-opacity flex items-center gap-2"
+            >
+              View Study Guide <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </Link>
+          </div>
+        </motion.div>
+      ))}
+
+      {/* Header Section */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm relative mb-8">
+        <motion.div variants={fadeUp(0)} initial="hidden" animate="visible" className="flex flex-col">
+          <span className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">Student Dashboard</span>
+          <h1 className="font-headline-xl text-3xl leading-tight sm:text-headline-xl text-on-background m-0">
+            Welcome back, <br/>{user?.name.split(' ')[0]}
+          </h1>
+        </motion.div>
         
-        {/* Decorative Glow */}
+        <motion.div variants={fadeUp(0.1)} initial="hidden" animate="visible" className="flex items-center gap-4">
+          {/* Refresh Button */}
+          <motion.button
+            onClick={() => loadData(true)}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-container hover:bg-surface-container-high rounded-xl border border-outline-variant/20 transition-all disabled:opacity-50"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <motion.span
+              className="material-symbols-outlined text-on-surface-variant text-[20px]"
+              animate={{ rotate: refreshing ? 360 : 0 }}
+              transition={{ duration: 1, repeat: refreshing ? Infinity : 0, ease: 'linear' }}
+            >
+              refresh
+            </motion.span>
+            <span className="font-label-sm text-on-surface-variant">
+              {refreshing ? 'Updating...' : 'Refresh'}
+            </span>
+          </motion.button>
+          
+          {/* Rank Badge */}
+          <div className="flex items-center gap-stack-sm bg-surface-container-high px-6 py-3 rounded-xl border border-outline-variant/20 shadow-md">
+            <span className="material-symbols-outlined text-primary text-[28px]">workspace_premium</span>
+            <div className="flex flex-col">
+              <span className="font-label-sm text-label-sm text-outline uppercase tracking-widest">Current Rank</span>
+              <span className="font-body-md text-body-md text-on-surface-variant font-medium">{analytics.rank}</span>
+            </div>
+          </div>
+        </motion.div>
+        
         <div className="absolute top-0 right-10 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none"></div>
       </header>
 
@@ -73,39 +267,76 @@ export default function Dashboard() {
         <div className="lg:col-span-4 flex flex-col gap-y-gutter">
           
           {/* Learning Score Card */}
-          <section className="bg-surface-container rounded-2xl p-6 shadow-lg border border-outline-variant/10 relative overflow-hidden group">
+          <motion.section variants={fadeUp(0.1)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-6 shadow-lg border border-outline-variant/10 relative overflow-hidden group">
             <div className="absolute -right-12 -top-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity duration-700"></div>
             <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-lg relative z-10">Cogniva Learning Score</h2>
             <div className="flex flex-col items-center justify-center relative z-10 mt-4 mb-8">
               <div className="relative w-48 h-48 flex items-center justify-center">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <svg className="w-full h-full transform -rotate-90 drop-shadow-xl" viewBox="0 0 100 100">
+                  <defs>
+                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#2AD4AE" />
+                      <stop offset="100%" stopColor="#2A9DD4" />
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
                   <circle className="text-surface-bright" cx="50" cy="50" fill="transparent" r="40" stroke="currentColor" strokeDasharray="251.2" strokeDashoffset="0" strokeWidth="8"></circle>
-                  <circle className="text-primary drop-shadow-[0_0_8px_rgba(255,184,0,0.4)] dash-circle" cx="50" cy="50" fill="transparent" r="40" stroke="currentColor" strokeDasharray="251.2" strokeDashoffset="251.2" strokeLinecap="round" strokeWidth="8" style={{transition: 'stroke-dashoffset 1.5s ease-out'}}></circle>
+                  <motion.circle
+                    stroke="url(#scoreGradient)"
+                    filter="url(#glow)"
+                    cx="50" cy="50" fill="transparent" r="40" strokeDasharray="251.2"
+                    strokeLinecap="round" strokeWidth="8"
+                    initial={{ strokeDashoffset: 251.2 }}
+                    animate={{ strokeDashoffset: 251.2 - (251.2 * (analytics.learningScore || 0)) / 100 }}
+                    transition={{ duration: 1.5, ease: premiumEase, delay: 0.2 }}
+                  />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="font-headline-xl text-headline-xl text-on-surface">{learningScore}<span className="text-[24px]">%</span></span>
+                  <span className="font-headline-xl text-headline-xl text-transparent bg-clip-text bg-gradient-to-br from-[#2AD4AE] to-[#2A9DD4]">
+                    <AnimatedNumber value={analytics.learningScore || 0} duration={1.5} /><span className="text-[24px]">%</span>
+                  </span>
                 </div>
               </div>
               <div className="mt-stack-sm flex items-center gap-2 bg-surface-bright/50 px-4 py-1.5 rounded-full">
                 <span className="material-symbols-outlined text-[16px] text-primary">trending_up</span>
-                <span className="font-label-sm text-label-sm text-primary">+4% this week</span>
+                <span className="font-label-sm text-label-sm text-primary">+{analytics.weeklyChange}% this week</span>
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4 mt-stack-md pt-stack-md border-t border-outline-variant/10 relative z-10">
               <div className="flex flex-col">
-                <span className="font-headline-md text-headline-md text-on-surface">{masteredCount}</span>
+                <span className="font-headline-md text-headline-md text-on-surface"><AnimatedNumber value={analytics.masteredCount} /></span>
                 <span className="font-label-sm text-label-sm text-outline uppercase">Mastered</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-headline-md text-headline-md text-error">{needsAttention}</span>
+                <span className="font-headline-md text-headline-md text-error"><AnimatedNumber value={analytics.needsAttentionCount} /></span>
                 <span className="font-label-sm text-label-sm text-outline uppercase">Needs Attention</span>
               </div>
             </div>
-          </section>
+          </motion.section>
+
+          {/* Learning Streak */}
+          <motion.section variants={fadeUp(0.15)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
+            <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-md">Learning Streak</h2>
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="material-symbols-outlined text-primary text-[32px]">local_fire_department</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-headline-lg text-headline-lg text-on-surface">{analytics.streak} days</span>
+                <span className="font-body-sm text-body-sm text-on-surface-variant">Keep it going!</span>
+              </div>
+            </div>
+          </motion.section>
 
           {/* Recommended Next Action */}
-          <section className="bg-primary-container text-on-primary-container rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+          <motion.section variants={fadeUp(0.2)} initial="hidden" animate="visible" className="bg-primary-container text-on-primary-container rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
             <svg className="absolute inset-0 w-full h-full opacity-10 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <pattern height="20" id="gridPattern" patternUnits="userSpaceOnUse" width="20">
@@ -121,72 +352,139 @@ export default function Dashboard() {
                   <span className="material-symbols-outlined text-[18px]">psychology</span>
                   <span className="font-label-md text-label-md uppercase tracking-widest font-bold">Recommended Next</span>
                 </div>
-                {/* Find the highest priority concept */}
-                {revisionPlan.length > 0 ? (
-                  <>
-                    <h3 className="font-headline-lg text-headline-lg m-0 leading-tight">{revisionPlan[0].concepts.name}</h3>
-                    <p className="font-body-sm text-body-sm mt-2 opacity-90">Your recent test data suggests a conceptual gap in analyzing this concept.</p>
-                  </>
-                ) : (
-                  <>
-                     <h3 className="font-headline-lg text-headline-lg m-0 leading-tight">All Caught Up!</h3>
-                     <p className="font-body-sm text-body-sm mt-2 opacity-90">You have no concepts in your revision queue right now.</p>
-                  </>
+                <h3 className="font-headline-lg text-headline-lg m-0 leading-tight">{analytics.recommendedNext}</h3>
+                {analytics.needsAttentionCount > 0 && (
+                  <p className="font-body-sm text-body-sm mt-2 opacity-90">Focus on strengthening your foundation in this area.</p>
                 )}
               </div>
               
-              {courses.length > 0 && (
-                <Link to={`/course/${courses[0].id}`} className="mt-stack-sm self-start bg-on-primary-container text-primary-container px-6 py-3 rounded-xl font-label-md tracking-widest uppercase hover:opacity-90 transition-opacity flex items-center gap-2 group-hover:gap-3">
+              {analytics.revisionPlan && analytics.revisionPlan.length > 0 && (
+                <Link to={`/tutor?concept=${analytics.revisionPlan[0].concept_id}`} className="mt-stack-sm self-start bg-on-primary-container text-primary-container px-6 py-3 rounded-xl font-label-md tracking-widest uppercase hover:opacity-90 transition-opacity flex items-center gap-2 group-hover:gap-3">
                   Start Learning <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </Link>
               )}
             </div>
-          </section>
+          </motion.section>
+
+          {/* ML Insights Link Card */}
+          <motion.section variants={fadeUp(0.25)} initial="hidden" animate="visible">
+            <Link to="/ml-insights" className="block rounded-2xl overflow-hidden relative group transition-all duration-300 hover:shadow-[0_0_30px_rgba(42,212,174,0.15)] hover:-translate-y-1" style={{ background: 'linear-gradient(145deg, #0D1117 0%, #161B22 100%)', border: '1px solid rgba(42,212,174,0.3)' }}>
+              <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-[60px] pointer-events-none group-hover:scale-110 transition-transform duration-700" style={{ background: 'rgba(42,212,174,0.15)' }} />
+              <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full blur-[60px] pointer-events-none group-hover:scale-110 transition-transform duration-700" style={{ background: 'rgba(42,157,212,0.1)' }} />
+              <div className="p-6 relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'rgba(42,212,174,0.15)', border: '1px solid rgba(42,212,174,0.4)', boxShadow: '0 0 15px rgba(42,212,174,0.2) inset' }}>
+                      <span className="material-symbols-outlined text-[24px]" style={{ color: '#2AD4AE' }}>memory</span>
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">ML Insights Lab</h3>
+                      <p className="text-xs text-gray-400 mt-1">6 models analyzing your learning</p>
+                    </div>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#2AD4AE]/20 transition-colors">
+                    <span className="material-symbols-outlined text-gray-500 group-hover:text-[#2AD4AE] transition-colors text-[18px]">arrow_forward</span>
+                  </div>
+                </div>
+                
+                {/* Quick ML Status Preview */}
+                {profile && (
+                  <div className="mt-3 pt-3 border-t border-gray-800">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="material-symbols-outlined text-sm" style={{ color: '#2AD4AE' }}>psychology</span>
+                      <span className="text-gray-400">Profile:</span>
+                      <span className="text-white font-bold">{profile.cluster}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {!profile && !loadingProfile && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      fetchProfile();
+                      fetchMlRecommendation();
+                    }}
+                    className="mt-3 text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+                  >
+                    <span>Click to analyze</span>
+                    <span className="material-symbols-outlined text-sm">play_arrow</span>
+                  </button>
+                )}
+                
+                {loadingProfile && (
+                  <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
+                    <div className="w-3 h-3 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                    <span>Analyzing...</span>
+                  </div>
+                )}
+              </div>
+            </Link>
+          </motion.section>
+
         </div>
 
         {/* Right Column: Plans and Activity */}
         <div className="lg:col-span-8 flex flex-col gap-y-gutter">
           
           {/* Clarity Plan */}
-          <section className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
+          <motion.section variants={fadeUp(0.3)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
             <div className="flex items-center justify-between mb-stack-md">
               <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest">Today's Clarity Plan</h2>
-              <span className="font-body-sm text-body-sm text-on-surface-variant bg-surface-bright px-3 py-1 rounded-full">{revisionPlan.length} Focus Areas</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant bg-surface-bright px-3 py-1 rounded-full">
+                {analytics.revisionPlan.length} Focus Areas
+              </span>
             </div>
             
-            <div className="flex flex-col gap-y-4">
-              {revisionPlan.map((plan) => (
-                <div key={plan.id} className="group flex items-center justify-between p-4 bg-surface rounded-xl hover:bg-surface-bright transition-colors border border-transparent hover:border-outline-variant/20">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-surface-bright flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <motion.div variants={staggerContainer(0.05)} initial="hidden" animate="visible" className="flex flex-col gap-y-4">
+              {analytics.revisionPlan.map((plan: any) => (
+                <motion.div variants={fadeUpChild} key={plan.id || plan.concept_id} className="group flex items-center justify-between p-4 bg-surface rounded-xl hover:bg-surface-container-high transition-all duration-300 border border-outline-variant/10 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(232,166,52,0.15)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-primary/0 group-hover:bg-primary transition-colors"></div>
+                  <div className="flex items-center gap-4 pl-2">
+                    <div className="w-12 h-12 rounded-full bg-surface-bright flex items-center justify-center group-hover:bg-primary/20 transition-colors border border-transparent group-hover:border-primary/30">
                       <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">functions</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-body-md text-body-md text-on-surface font-medium">{plan.concepts.name}</span>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant">{plan.priority} Priority • {plan.minutes} min</span>
+                      <span className="font-body-md text-body-md text-on-surface font-medium">{plan.concept_name || (plan.concepts && plan.concepts.name) || 'Concept'}</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full font-bold ${plan.priority === 'High' ? 'bg-error/20 text-error' : plan.priority === 'Medium' ? 'bg-[#E8A634]/20 text-[#E8A634]' : 'bg-primary/20 text-primary'}`}>
+                          {plan.priority} Priority
+                        </span>
+                        <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">schedule</span> {plan.minutes || 15} min
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="hidden sm:flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-surface-bright"></div>
-                      <div className="w-1.5 h-1.5 rounded-full bg-surface-bright"></div>
-                    </div>
-                    <Link to={`/tutor?concept=${plan.concept_id}`} className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">play_arrow</span>
+                    <button 
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        if (plan.id) await api.post(`/revision/${plan.id}/complete`, {});
+                        loadData();
+                      }}
+                      className="px-4 py-2 bg-surface-container rounded-lg hover:bg-[#3DD68C]/20 hover:text-[#3DD68C] text-on-surface transition-colors font-label-sm border border-outline-variant/10 hover:border-[#3DD68C]/30 flex items-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">check</span> Complete
+                    </button>
+                    <Link to={`/tutor?concept=${plan.concept_id}`} className="w-10 h-10 rounded-full bg-surface-container border border-outline-variant/10 flex items-center justify-center text-on-surface hover:text-primary hover:bg-primary/20 hover:border-primary/30 transition-all hover:scale-110 hover:shadow-[0_0_10px_rgba(232,166,52,0.3)]">
+                      <span className="material-symbols-outlined text-[22px]">play_arrow</span>
                     </Link>
                   </div>
-                </div>
+                </motion.div>
               ))}
               
-              {revisionPlan.length === 0 && (
-                <div className="p-8 text-center text-on-surface-variant">Your revision queue is empty!</div>
+              {analytics.revisionPlan.length === 0 && (
+                <div className="p-8 text-center text-on-surface-variant">
+                  <span className="material-symbols-outlined text-[48px] opacity-20 mb-2">check_circle</span>
+                  <p className="font-body-md">Your revision queue is empty! Great work!</p>
+                </div>
               )}
-            </div>
-          </section>
+            </motion.div>
+          </motion.section>
 
-          {/* Confusion Signals & Analytics Split */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+          {/* Confusion Signals & Weekly Progress Split */}
+          <motion.div variants={fadeUp(0.4)} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
             {/* Confusion Log */}
             <section className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
               <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-md flex items-center gap-2">
@@ -197,28 +495,72 @@ export default function Dashboard() {
                 
                 {pulse.slice(0, 3).map((sig, i) => (
                   <div key={i} className="relative">
-                    <div className="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-error border-[3px] border-surface-container box-content"></div>
+                    <div className={`absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-[3px] border-surface-container box-content ${
+                      sig.status === 'HIGH' ? 'bg-error' : sig.status === 'MEDIUM' ? 'bg-[#E8A634]' : 'bg-[#3DD68C]'
+                    }`}></div>
                     <div className="flex flex-col">
-                      <span className="font-label-sm text-label-sm text-error uppercase tracking-wider mb-1">Recent Signal</span>
-                      <span className="font-body-md text-body-md text-on-surface">Struggled with {sig.name}</span>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant mt-1">Status: {sig.status}</span>
+                      <span className={`font-label-sm text-label-sm uppercase tracking-wider mb-1 ${
+                        sig.status === 'HIGH' ? 'text-error' : sig.status === 'MEDIUM' ? 'text-[#E8A634]' : 'text-[#3DD68C]'
+                      }`}>
+                        {sig.status} Confusion
+                      </span>
+                      <span className="font-body-md text-body-md text-on-surface">{sig.name}</span>
+                      <span className="font-body-sm text-body-sm text-on-surface-variant mt-1">{sig.confusion_percentage}% confusion rate</span>
                     </div>
                   </div>
                 ))}
 
+                {pulse.length === 0 && (
+                  <div className="py-4 text-center text-on-surface-variant">
+                    <p className="font-body-sm">No confusion signals yet.</p>
+                  </div>
+                )}
               </div>
             </section>
 
-            {/* AI Insights Graphic */}
-            <section className="bg-surface-container rounded-2xl shadow-md border border-outline-variant/10 overflow-hidden relative min-h-[300px]">
-              <div className="absolute inset-0 bg-cover bg-center opacity-60 mix-blend-luminosity" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAv2nqOj8TTupeaSMID11befmiso_pT5HwMLTfGEYEzqDSF5hT4K7q2zdxQ8UIpjNtmHAj9OWlbPs1HRnZ35BUtm_oPiqzi_SJDtL85SBTFXjeyD0xskbhKvrRYYJdkVOhThdRrhvgdVwcQZedGJd0BfDmNbR-tIJcd1CTm9esPOmakl01aT2QDBdKX8yQ7MB1z1NINNNGz18NgPJwBR3TQOzLpqeFsV2awVA2fbmopVDKPjzszZykV')"}}></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-surface-container via-surface-container/80 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 p-6 right-0 z-10 flex flex-col">
-                <span className="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-2 drop-shadow-md">AI Insights</span>
-                <p className="font-body-md text-body-md text-on-surface font-medium drop-shadow-md">Your learning pattern shows high retention when combining visual diagrams with abstract theory.</p>
+            {/* Enhanced Progress Tracker */}
+            <ProgressTracker 
+              weeklySessionCount={analytics.weeklySessionCount}
+              practiceAccuracy={analytics.practiceAccuracy}
+              masteredCount={analytics.masteredCount}
+              streak={analytics.streak}
+              weeklyChange={analytics.weeklyChange}
+            />
+          </motion.div>
+
+          {/* Notifications */}
+          {notifications.filter(n => !n.read).length > 0 && (
+            <motion.section variants={fadeUp(0.5)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
+              <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-md">Notifications</h2>
+              <div className="flex flex-col gap-3">
+                {notifications.filter(n => !n.read).slice(0, 3).map((notif: any) => (
+                  <div key={notif.id} className="flex items-start gap-3 p-3 bg-surface rounded-lg hover:bg-surface-bright transition-colors">
+                    <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">notifications</span>
+                    <div className="flex-1">
+                      <p className="font-body-sm text-body-sm text-on-surface">{notif.message}</p>
+                      <span className="font-body-xs text-on-surface-variant text-xs">{new Date(notif.created_at).toLocaleString()}</span>
+                    </div>
+                    <button 
+                      onClick={async () => {
+                        await api.post(`/notifications/${notif.id}/read`, {});
+                        loadData();
+                      }}
+                      className="text-on-surface-variant hover:text-primary transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                  </div>
+                ))}
               </div>
-            </section>
-          </div>
+            </motion.section>
+          )}
+
+          {/* Concept Knowledge Graph */}
+          <motion.section variants={fadeUp(0.6)} initial="hidden" animate="visible" className="lg:col-span-12">
+            <div className="h-[700px]">
+              <ConceptGraph concepts={graphConcepts.length > 0 ? graphConcepts : undefined} />
+            </div>
+          </motion.section>
         </div>
       </div>
     </div>

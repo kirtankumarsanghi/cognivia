@@ -9,6 +9,24 @@ const data = [
   { time: '11:15', value: 15 },
 ];
 
+const MotionBar = (props: any) => {
+  const { fill, x, y, width, height, index } = props;
+  return (
+    <motion.rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      fill={fill}
+      rx={4}
+      ry={4}
+      initial={{ height: 0, y: y + height }}
+      animate={{ height, y }}
+      transition={{ duration: 0.8, delay: 1.3 + index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+    />
+  );
+};
+
 export default function LiveSignalCard() {
   return (
     <motion.div 
@@ -47,24 +65,17 @@ export default function LiveSignalCard() {
               <Tooltip 
                 cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                 contentStyle={{ backgroundColor: '#111415', border: '1px solid rgba(143, 144, 151, 0.2)', borderRadius: '8px' }}
-                itemStyle={{ color: '#ffdfa0' }}
+                itemStyle={{ color: '#e8a634' }}
               />
-              <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: '#c5c6cd', fontSize: 12, fontFamily: 'Inter' }} />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+              <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: 'rgba(255,255,255,0.42)', fontSize: 12, fontFamily: 'JetBrains Mono' }} />
+              <Bar dataKey="value" shape={<MotionBar />}>
                 {data.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.active ? 'url(#colorTertiary)' : 'rgba(29, 32, 33, 0.8)'} 
-                    className={entry.active ? 'pulse-glow' : ''}
+                    fill={entry.active ? '#e8a634' : 'rgba(255, 255, 255, 0.1)'} 
                   />
                 ))}
               </Bar>
-              <defs>
-                <linearGradient id="colorTertiary" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#fbbc00" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#fbbc00" stopOpacity={0.2} />
-                </linearGradient>
-              </defs>
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
