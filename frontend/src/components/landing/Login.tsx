@@ -271,6 +271,29 @@ export default function Login() {
             </motion.div>
           </form>
 
+          {/* Demo Accounts */}
+          <motion.div custom={3.5} variants={fadeUp} className="mt-6 pt-6 border-t border-[rgba(255,255,255,0.05)]">
+            <p className="text-xs uppercase tracking-widest text-white/40 mb-3 font-mono text-center">Fast Demo Login</p>
+            <div className="flex gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => { setEmail('educator@cognivia.demo'); setPassword('password123'); }}
+                className="px-4 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[16px] text-primary">school</span>
+                Educator
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEmail('student@cognivia.demo'); setPassword('password123'); }}
+                className="px-4 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[16px] text-amber-400">person</span>
+                Student
+              </button>
+            </div>
+          </motion.div>
+
           {/* Footer */}
           <motion.div custom={4} variants={fadeUp} className="text-center mt-8">
             <p className="text-white/30 text-sm">
