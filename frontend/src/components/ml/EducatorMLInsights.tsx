@@ -4,12 +4,12 @@ import { useApi } from '../../hooks/useApi';
 import { fadeUp, staggerContainer, fadeUpChild } from '../../utils/animation';
 
 /* ── colour tokens ── */
-const ACCENT   = '#6366F1'; // indigo for educator
-const ACCENT2  = '#2AD4AE';
+const ACCENT   = 'var(--accent)';
+const ACCENT2  = 'var(--accent)'; // We'll use primary accent for both to match branding
 const WARN     = '#E8A634';
-const DANGER   = '#EF4444';
-const BG_DARK  = '#0D1117';
-const BG_CARD  = '#161B22';
+const DANGER   = 'var(--danger)';
+const BG_DARK  = 'var(--bg-elevated)';
+const BG_CARD  = 'var(--bg-card)';
 
 /* ── mock students for heatmap / clustering ── */
 const MOCK_STUDENTS = [

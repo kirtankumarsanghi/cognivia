@@ -5,12 +5,12 @@ import { useAuth } from '../../hooks/useAuth';
 import { fadeUp, staggerContainer, fadeUpChild } from '../../utils/animation';
 
 /* ── colour tokens ── */
-const ACCENT  = '#2AD4AE';
+const ACCENT  = 'var(--accent)';
 const WARN    = '#E8A634';
-const DANGER  = '#EF4444';
-const BG_DARK = '#0D1117';
-const BG_CARD = '#161B22';
-const BORDER  = 'rgba(42,212,174,0.15)';
+const DANGER  = 'var(--danger)';
+const BG_DARK = 'var(--bg-elevated)';
+const BG_CARD = 'var(--bg-card)';
+const BORDER  = 'var(--line)';
 
 /* ── model definitions ── */
 const MODELS = [
