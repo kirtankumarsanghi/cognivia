@@ -2,6 +2,58 @@ import React from 'react';
 import { useAuth } from './useAuth';
 import { mockData } from './mockData';
 import { authService } from '../services/authService';
+import { supabase } from '../lib/supabase';
+
+// ─── Initialize Realtime Broadcast for Demo Sync ────────
+const demoChannel = supabase.channel('demo-sync', {
+  config: { broadcast: { self: true } }
+});
+
+demoChannel.on('broadcast', { event: 'confusion_signal' }, (payload) => {
+  const { body, user } = payload.payload;
+  applyConfusionSignalToMockData(body, user);
+  window.dispatchEvent(new CustomEvent('mockDataUpdated'));
+}).subscribe();
+
+function applyConfusionSignalToMockData(body: any, user: any) {
+  const conceptName = body.concept || 'Newly Submitted Concept';
+  const courseId = body.courseId || 'cse2101';
+
+  mockData.pulse.unshift({
+    status: body.signal === 'Confused' ? 'HIGH' : body.signal === 'Partially Clear' ? 'MEDIUM' : 'LOW',
+    name: conceptName,
+    student_name: user?.name || 'Current Student',
+    time: 'Just now',
+    confusion_percentage: 100
+  });
+
+  // @ts-ignore
+  if (!mockData.courseAnalytics[courseId]) {
+    // @ts-ignore
+    mockData.courseAnalytics[courseId] = JSON.parse(JSON.stringify(mockData.educatorAnalytics));
+  }
+
+  // @ts-ignore
+  const analytics = mockData.courseAnalytics[courseId];
+  
+  const metric = analytics.confusionMetrics.find((m: any) => m.name === conceptName);
+  if (metric) {
+    metric.confusion_percentage = Math.min(100, metric.confusion_percentage + (body.signal === 'Confused' ? 15 : 5));
+  } else {
+    analytics.confusionMetrics.push({ name: conceptName, confusion_percentage: body.signal === 'Confused' ? 70 : 40 });
+  }
+
+  analytics.confusionMetrics.sort((a: any, b: any) => b.confusion_percentage - a.confusion_percentage);
+
+  const mostConfusing = analytics.confusionMetrics[0];
+  analytics.mostConfusing = {
+    concept_id: body.concept_id || 'auto-gen-id',
+    name: mostConfusing.name,
+    confusion_percentage: mostConfusing.confusion_percentage
+  };
+
+  analytics.aiRecommendation = `Alert: Spiking confusion detected! ${mostConfusing.confusion_percentage}% of your class is now struggling with ${mostConfusing.name}. A mini-lesson is highly recommended.`;
+}
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -63,46 +115,13 @@ export function useApi() {
     if (options.method === 'POST') {
       if (endpoint === '/confusion/signal') {
         const body = JSON.parse(options.body as string);
-        const conceptName = body.concept || 'Newly Submitted Concept';
-        const courseId = body.courseId || 'cse2101';
-
-        mockData.pulse.unshift({
-          status: body.signal === 'Confused' ? 'HIGH' : body.signal === 'Partially Clear' ? 'MEDIUM' : 'LOW',
-          name: conceptName,
-          student_name: user?.name || 'Current Student',
-          time: 'Just now',
-          confusion_percentage: 100
-        });
-
-        // Update educator analytics statefully
-        // @ts-ignore
-        if (!mockData.courseAnalytics[courseId]) {
-          // @ts-ignore
-          mockData.courseAnalytics[courseId] = JSON.parse(JSON.stringify(mockData.educatorAnalytics));
-        }
-
-        // @ts-ignore
-        const analytics = mockData.courseAnalytics[courseId];
         
-        const metric = analytics.confusionMetrics.find((m: any) => m.name === conceptName);
-        if (metric) {
-          metric.confusion_percentage = Math.min(100, metric.confusion_percentage + (body.signal === 'Confused' ? 15 : 5));
-        } else {
-          analytics.confusionMetrics.push({ name: conceptName, confusion_percentage: body.signal === 'Confused' ? 70 : 40 });
-        }
-
-        // Sort metrics by confusion percentage descending
-        analytics.confusionMetrics.sort((a: any, b: any) => b.confusion_percentage - a.confusion_percentage);
-
-        // Update most confusing concept
-        const mostConfusing = analytics.confusionMetrics[0];
-        analytics.mostConfusing = {
-          concept_id: body.concept_id || 'auto-gen-id',
-          name: mostConfusing.name,
-          confusion_percentage: mostConfusing.confusion_percentage
-        };
-
-        analytics.aiRecommendation = `Alert: Spiking confusion detected! ${mostConfusing.confusion_percentage}% of your class is now struggling with ${mostConfusing.name}. A mini-lesson is highly recommended.`;
+        // Broadcast the event to all connected clients (including ourselves, thanks to self: true)
+        demoChannel.send({
+          type: 'broadcast',
+          event: 'confusion_signal',
+          payload: { body, user }
+        });
 
         return { success: true };
       }

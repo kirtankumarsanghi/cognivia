@@ -46,7 +46,13 @@ export default function EducatorDashboard() {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => loadData(hoursAgo), 15000);
     
-    return () => clearInterval(intervalRef.current);
+    const handleMockDataUpdated = () => loadData(hoursAgo);
+    window.addEventListener('mockDataUpdated', handleMockDataUpdated);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      window.removeEventListener('mockDataUpdated', handleMockDataUpdated);
+    };
   }, [hoursAgo, selectedCourseId]); // Re-fetch when course or timeframe changes
 
   const handleGenerateLesson = async () => {
