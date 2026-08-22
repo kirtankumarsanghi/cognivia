@@ -128,65 +128,103 @@ export const authService = {
     role: 'student' | 'educator'
   ): Promise<AuthResult<Profile>> {
     try {
-      // Step 1: Create user directly with Supabase, passing name and role as metadata.
-      // The Supabase Database Trigger (handle_new_user) will automatically create the profile.
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            role,
-          },
+      console.log('[authService.signUp] Starting signUp for:', email);
+      
+      const SUPABASE_URL = 'https://cbqswhmpdbojubljyinv.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_AqQ0AZb6gH2AmWyLlN3_Zw_TFSQ1Qzf';
+      
+      // Step 1: Create user via direct REST API
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          email,
+          password,
+          data: { name, role },
+        }),
       });
-
-      if (authError) {
-        throw authError; // handled by catch block below
+      
+      console.log('[authService.signUp] Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({ message: 'Signup failed' }));
+        console.error('[authService.signUp] Auth error:', errorBody);
+        const msg = (errorBody.message || errorBody.msg || '').toLowerCase();
+        if (msg.includes('already registered') || msg.includes('already been registered')) {
+          return { success: false, error: 'An account with this email already exists. Try logging in instead.', code: 'user_already_exists' };
+        }
+        const mapped = mapAuthError({ message: errorBody.message || 'Signup failed', name: 'AuthApiError' } as any);
+        return { success: false, error: mapped.message, code: mapped.code, retryAfter: mapped.retryAfter };
       }
-
+      
+      const authData = await response.json();
+      console.log('[authService.signUp] Signup success, user:', authData.user?.email);
+      
       if (!authData.user) {
         return { success: false, error: 'Signup failed. Please try again.', code: 'no_user_returned' };
       }
-
-      // Step 2: The trigger handles creating the profile, but there can be a slight sub-second delay.
-      // We will poll for the profile to be created.
-      let profileResult = await this.getProfile(authData.user.id);
-      let retries = 5;
-      while (!profileResult.success && retries > 0) {
-        await new Promise(r => setTimeout(r, 400));
-        profileResult = await this.getProfile(authData.user.id);
-        retries--;
-      }
-
-      if (profileResult.success) {
-        return { success: true, data: profileResult.data };
-      }
-
-      // Fallback: if the trigger was slow or failed, self-heal by creating it from the frontend
-      const { error: insertError } = await supabase.from('profiles').insert({
-        id: authData.user.id,
-        name,
-        email: email,
-        role
-      });
       
-      if (insertError) {
-        console.error('Failed to auto-heal profile on signup:', insertError);
+      // If we got an access_token, the user is auto-confirmed
+      if (authData.access_token) {
+        // Store session
+        try {
+          localStorage.setItem('cogniva-session', JSON.stringify({
+            access_token: authData.access_token,
+            refresh_token: authData.refresh_token,
+            expires_at: authData.expires_at,
+            user: authData.user,
+          }));
+        } catch (e) {
+          console.warn('[authService.signUp] Could not store session:', e);
+        }
+        
+        // Wait for the profile trigger to create the profile
+        await new Promise(r => setTimeout(r, 1000));
+        
+        // Fetch profile
+        const profileResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/profiles?id=eq.${authData.user.id}&select=*`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${authData.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        
+        if (profileResponse.ok) {
+          const profiles = await profileResponse.json();
+          if (profiles && profiles.length > 0) {
+            return { success: true, data: profiles[0] as Profile };
+          }
+        }
+        
+        // Self-heal: create profile if trigger didn't
+        await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${authData.access_token}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({ id: authData.user.id, name, email, role }),
+        }).catch(() => {});
+        
+        return { success: true, data: { id: authData.user.id, name, email, role, avatar: null } };
       }
-
-      return { 
-        success: true, 
-        data: { id: authData.user.id, name, email, role, avatar: null } 
-      };
+      
+      // No access_token means email confirmation is required
+      // In this case we auto-sign-in immediately using the password
+      const signInResult = await this.signIn(email, password);
+      return signInResult;
       
     } catch (err: any) {
-      if (err.isApiError) {
-        if (err.code === 'user_already_exists' || (err.message && err.message.toLowerCase().includes('already registered'))) {
-          return { success: false, error: 'An account with this email already exists. Try logging in instead.', code: 'user_already_exists' };
-        }
-        return { success: false, error: err.message, code: err.code || 'signup_failed' };
-      }
+      console.error('[authService.signUp] CATCH:', err);
       const mapped = mapAuthError(err);
       return { success: false, error: mapped.message, code: mapped.code, retryAfter: mapped.retryAfter };
     }
@@ -198,47 +236,109 @@ export const authService = {
    */
   async signIn(email: string, password: string): Promise<AuthResult<Profile>> {
     try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      console.log('[authService.signIn] Starting signIn for:', email);
+      
+      // IMPORTANT: The Supabase JS client's signInWithPassword() AND setSession() both hang
+      // in the browser due to internal session/lock handling issues. We bypass the Supabase JS 
+      // client entirely and use direct REST API calls + manual localStorage session storage.
+      
+      const SUPABASE_URL = 'https://cbqswhmpdbojubljyinv.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_AqQ0AZb6gH2AmWyLlN3_Zw_TFSQ1Qzf';
+      
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
-
-      if (authError) {
-        const mapped = mapAuthError(authError);
+      
+      console.log('[authService.signIn] Fetch response status:', response.status);
+      
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({ message: 'Login failed' }));
+        console.error('[authService.signIn] Auth error:', errorBody);
+        const mapped = mapAuthError({ message: errorBody.message || errorBody.error_description || 'Invalid login credentials', name: 'AuthApiError' } as any);
         return { success: false, error: mapped.message, code: mapped.code, retryAfter: mapped.retryAfter };
       }
-
-      if (!authData.user) {
-        return { success: false, error: 'Login succeeded but no user was returned. Please try again.', code: 'no_user_returned' };
+      
+      const authData = await response.json();
+      console.log('[authService.signIn] Auth success, user:', authData.user?.email);
+      
+      if (!authData.access_token || !authData.user) {
+        return { success: false, error: 'Login succeeded but no session was returned.', code: 'no_user_returned' };
       }
+      
+      // Store session tokens in localStorage for subsequent API calls
+      // (We skip supabase.auth.setSession() because it hangs in the browser)
+      try {
+        const sessionData = {
+          access_token: authData.access_token,
+          refresh_token: authData.refresh_token,
+          expires_at: authData.expires_at,
+          user: authData.user,
+        };
+        localStorage.setItem('cogniva-session', JSON.stringify(sessionData));
+        console.log('[authService.signIn] Session stored in localStorage');
+      } catch (e) {
+        console.warn('[authService.signIn] Could not store session in localStorage:', e);
+      }
+      
+      console.log('[authService.signIn] Fetching profile...');
 
-      // Fetch profile
-      const profileResult = await this.getProfile(authData.user.id);
-      if (!profileResult.success) {
-        // Auth succeeded but profile is missing. Attempt to self-heal.
-        const name = authData.user.user_metadata?.name || 'User';
-        const role = authData.user.user_metadata?.role || 'student';
-        
-        const { error: insertError } = await supabase.from('profiles').insert({
+      // Fetch profile using the access token directly via REST
+      const profileResponse = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${authData.user.id}&select=*`, {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${authData.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (profileResponse.ok) {
+        const profiles = await profileResponse.json();
+        if (profiles && profiles.length > 0) {
+          const p = profiles[0] as Profile;
+          console.log('[authService.signIn] Profile found:', p.name, p.role);
+          return { success: true, data: p };
+        }
+      }
+      
+      // Profile not found — self-heal from user metadata
+      const name = authData.user.user_metadata?.name || 'User';
+      const role = authData.user.user_metadata?.role || 'student';
+      console.log('[authService.signIn] Profile not found, self-healing with:', { name, role });
+      
+      // Try to create the profile
+      await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${authData.access_token}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({
           id: authData.user.id,
           name,
           email: authData.user.email || email,
-          role
-        });
-
-        if (!insertError) {
-          return { success: true, data: { id: authData.user.id, name, email: authData.user.email || email, role, avatar: null } };
-        }
-
-        return {
-          success: false,
-          error: 'Your account exists but your profile data is missing. Please contact support or try signing up again.',
-          code: 'profile_not_found',
-        };
-      }
-
-      return { success: true, data: profileResult.data };
+          role,
+        }),
+      }).catch(() => {}); // Ignore insert errors
+      
+      return { 
+        success: true, 
+        data: { 
+          id: authData.user.id, 
+          name, 
+          email: authData.user.email || email, 
+          role, 
+          avatar: null 
+        } 
+      };
     } catch (err) {
+      console.error('[authService.signIn] CATCH:', err);
       const mapped = mapAuthError(err);
       return { success: false, error: mapped.message, code: mapped.code, retryAfter: mapped.retryAfter };
     }

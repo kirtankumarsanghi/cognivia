@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { supabase } from '../lib/supabase';
 import { authService, type Profile } from '../services/authService';
-import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -44,31 +42,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     role: p.role,
   });
 
-  // Fetch profile for a given user ID and update state
-  const loadProfile = useCallback(async (userId: string) => {
-    const result = await authService.getProfile(userId);
-    if (result.success) {
-      const p = result.data;
-      setProfile(p);
-      setUser(profileToUser(p));
-      setProfileIncomplete(false);
-    } else {
-      // Auth session exists but no profile — flag it
-      setProfileIncomplete(true);
-      setProfile(null);
-      // Set a minimal user from the session so we know WHO is incomplete
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        setUser({
-          id: data.user.id,
-          name: data.user.user_metadata?.name || 'Unknown',
-          email: data.user.email || '',
-          role: data.user.user_metadata?.role || 'student',
-        });
-      }
-    }
-  }, []);
-
   // Clear all auth state
   const clearState = useCallback(() => {
     setUser(null);
@@ -76,26 +49,88 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfileIncomplete(false);
   }, []);
 
-  // ─── Initialize: resolve real session before anything renders ──────
+  // ─── Initialize: check for existing session in localStorage ────────
 
   useEffect(() => {
     let mounted = true;
 
     const initializeAuth = async () => {
       try {
-        const { session, error } = await authService.getSession();
-
-        if (!mounted) return;
-
-        if (error || !session) {
-          clearState();
-          setIsLoading(false);
+        console.log('[AuthProvider] Initializing auth...');
+        
+        // Check for our custom session in localStorage
+        // (We use this instead of supabase.auth.getSession() because the Supabase JS client hangs)
+        const storedSession = localStorage.getItem('cogniva-session');
+        
+        if (!storedSession) {
+          console.log('[AuthProvider] No stored session found');
+          if (mounted) {
+            clearState();
+            setIsLoading(false);
+          }
           return;
         }
 
-        // Valid session — fetch profile
-        await loadProfile(session.user.id);
-      } catch {
+        const session = JSON.parse(storedSession);
+        console.log('[AuthProvider] Found stored session for:', session.user?.email);
+        
+        // Check if session is expired
+        if (session.expires_at && session.expires_at * 1000 < Date.now()) {
+          console.log('[AuthProvider] Session expired, clearing');
+          localStorage.removeItem('cogniva-session');
+          if (mounted) {
+            clearState();
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        // Fetch the profile using the stored access token
+        const SUPABASE_URL = 'https://cbqswhmpdbojubljyinv.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_AqQ0AZb6gH2AmWyLlN3_Zw_TFSQ1Qzf';
+        
+        const profileResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/profiles?id=eq.${session.user.id}&select=*`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!mounted) return;
+
+        if (profileResponse.ok) {
+          const profiles = await profileResponse.json();
+          if (profiles && profiles.length > 0) {
+            const p = profiles[0] as Profile;
+            console.log('[AuthProvider] Profile loaded:', p.name, p.role);
+            setProfile(p);
+            setUser(profileToUser(p));
+            setProfileIncomplete(false);
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Profile not found but we have a user session — use metadata
+        if (session.user) {
+          console.log('[AuthProvider] Profile not found, using user metadata');
+          const u: User = {
+            id: session.user.id,
+            name: session.user.user_metadata?.name || 'User',
+            email: session.user.email || '',
+            role: session.user.user_metadata?.role || 'student',
+          };
+          setUser(u);
+          setProfileIncomplete(true);
+        } else {
+          clearState();
+        }
+      } catch (err) {
+        console.error('[AuthProvider] Init error:', err);
         if (mounted) clearState();
       } finally {
         if (mounted) setIsLoading(false);
@@ -104,36 +139,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     initializeAuth();
 
-    // ─── Listen for auth state changes (handles multi-tab, expiry) ──
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session: Session | null) => {
-        if (!mounted) return;
-
-        switch (event) {
-          case 'SIGNED_IN':
-          case 'TOKEN_REFRESHED':
-          case 'USER_UPDATED':
-            if (session?.user) {
-              await loadProfile(session.user.id);
-            }
-            break;
-
-          case 'SIGNED_OUT':
-            clearState();
-            break;
-
-          default:
-            break;
-        }
-      }
-    );
-
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
-  }, [loadProfile, clearState]);
+  }, [clearState]);
 
   // ─── Login ─────────────────────────────────────────────────────────
 
@@ -147,22 +156,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(profileToUser(p));
       setProfileIncomplete(false);
       return { success: true };
-    }
-
-    // If profile not found but auth succeeded, mark as incomplete
-    if (result.code === 'profile_not_found') {
-      setProfileIncomplete(true);
-      // Still need to set user from session
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        setUser({
-          id: data.user.id,
-          name: data.user.user_metadata?.name || 'Unknown',
-          email: data.user.email || '',
-          role: data.user.user_metadata?.role || 'student',
-        });
-      }
-      return { success: false, error: result.error };
     }
 
     return { success: false, error: result.error };
@@ -193,7 +186,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ─── Logout ────────────────────────────────────────────────────────
 
   const logout = useCallback(async () => {
-    await authService.signOut();
+    // Clear our custom session
+    localStorage.removeItem('cogniva-session');
+    
+    // Also try to sign out from Supabase (fire-and-forget, don't await)
+    authService.signOut().catch(() => {});
+    
     clearState();
     setSessionError(null);
   }, [clearState]);
@@ -203,8 +201,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const retryProfileFetch = useCallback(async () => {
     if (!user) return;
     setProfileIncomplete(false);
-    await loadProfile(user.id);
-  }, [user, loadProfile]);
+    
+    const SUPABASE_URL = 'https://cbqswhmpdbojubljyinv.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_AqQ0AZb6gH2AmWyLlN3_Zw_TFSQ1Qzf';
+    
+    const storedSession = localStorage.getItem('cogniva-session');
+    if (!storedSession) {
+      setProfileIncomplete(true);
+      return;
+    }
+    
+    const session = JSON.parse(storedSession);
+    const profileResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=*`,
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    if (profileResponse.ok) {
+      const profiles = await profileResponse.json();
+      if (profiles && profiles.length > 0) {
+        const p = profiles[0] as Profile;
+        setProfile(p);
+        setUser(profileToUser(p));
+        setProfileIncomplete(false);
+        return;
+      }
+    }
+    
+    setProfileIncomplete(true);
+  }, [user]);
 
   // ─── Clear Session Error ──────────────────────────────────────────
 

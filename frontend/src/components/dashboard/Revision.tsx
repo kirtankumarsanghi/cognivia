@@ -21,6 +21,7 @@ export default function Revision() {
   const [revisionPlan, setRevisionPlan] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
   const [practiceMode, setPracticeMode] = useState(false);
   const [currentConcept, setCurrentConcept] = useState<any>(null);
   const [practiceQuestions, setPracticeQuestions] = useState<PracticeQuestion[]>([]);
@@ -39,6 +40,20 @@ export default function Revision() {
       console.error('Failed to load revision data', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateSmartPlan = async () => {
+    setGenerating(true);
+    try {
+      const result = await api.post('/revision/generate-smart-plan', {});
+      showToast(result.message || 'Smart revision plan generated!', 'success');
+      await loadData(); // Reload the plan
+    } catch (err: any) {
+      console.error('Failed to generate smart plan', err);
+      showToast('Failed to generate revision plan. Please try again.', 'error');
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -428,18 +443,43 @@ export default function Revision() {
                 <p className="font-body-sm text-on-surface-variant">Prioritized by AI for maximum impact</p>
               </div>
             </div>
-            <motion.div 
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 200, delay: 0.4 }}
-              className="relative"
-            >
-              <div className="absolute inset-0 bg-primary blur-xl opacity-40 rounded-full animate-pulse"></div>
-              <span className="relative font-label-lg text-lg text-on-primary bg-gradient-to-br from-primary to-error px-5 py-2.5 rounded-full uppercase tracking-widest font-bold shadow-lg flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px]">pending_actions</span>
-                {revisionPlan.length} Topics
-              </span>
-            </motion.div>
+            <div className="flex items-center gap-3">
+              {revisionPlan.length === 0 && !loading && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={generateSmartPlan}
+                  disabled={generating}
+                  className="bg-gradient-to-r from-primary to-error text-white px-6 py-3 rounded-xl font-label-md uppercase tracking-widest hover:shadow-[0_0_30px_rgba(232,64,64,0.4)] transition-all flex items-center gap-2 disabled:opacity-50"
+                >
+                  {generating ? (
+                    <>
+                      <span className="material-symbols-outlined text-[20px] animate-spin">sync</span>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
+                      Generate Smart Plan
+                    </>
+                  )}
+                </motion.button>
+              )}
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, delay: 0.4 }}
+                className="relative"
+              >
+                <div className="absolute inset-0 bg-primary blur-xl opacity-40 rounded-full animate-pulse"></div>
+                <span className="relative font-label-lg text-lg text-on-primary bg-gradient-to-br from-primary to-error px-5 py-2.5 rounded-full uppercase tracking-widest font-bold shadow-lg flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[20px]">pending_actions</span>
+                  {revisionPlan.length} Topics
+                </span>
+              </motion.div>
+            </div>
           </div>
           
           <motion.div 
@@ -592,9 +632,28 @@ export default function Revision() {
                 <h3 className="font-headline-lg text-3xl text-on-surface mb-3 font-bold">
                   You're All Caught Up!
                 </h3>
-                <p className="font-body-md text-lg text-on-surface-variant max-w-md">
+                <p className="font-body-md text-lg text-on-surface-variant max-w-md mb-6">
                   Your revision queue is empty. Keep up the great work in your courses.
                 </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={generateSmartPlan}
+                  disabled={generating}
+                  className="bg-gradient-to-r from-primary to-error text-white px-8 py-4 rounded-xl font-label-md uppercase tracking-widest hover:shadow-[0_0_30px_rgba(232,64,64,0.4)] transition-all flex items-center gap-3 disabled:opacity-50 mx-auto mb-4"
+                >
+                  {generating ? (
+                    <>
+                      <span className="material-symbols-outlined text-[24px] animate-spin">sync</span>
+                      Analyzing Your Progress...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[24px]">auto_awesome</span>
+                      Generate Smart Revision Plan
+                    </>
+                  )}
+                </motion.button>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
