@@ -168,7 +168,13 @@ function MessageCard({
 
   const handleClear = async () => {
     setCelebrating(true);
-    onClear(message.id);
+    await onClear(message.id);
+    // After celebration animation completes (600ms)
+    setTimeout(() => {
+      setShowConfirmation(false);
+      setCelebrating(false);
+      // Optionally show a success message or toast
+    }, 700);
   };
 
   if (message.isLoading) {
@@ -372,9 +378,7 @@ function MessageCard({
                   </button>
                   {celebrating && (
                     <CelebrateBurst onComplete={() => {
-                      if (conceptId) {
-                        navigate('/dashboard');
-                      }
+                      // Celebration complete
                     }} />
                   )}
                 </div>
@@ -601,6 +605,7 @@ export default function Tutor() {
     if (conceptId) {
       try {
         await api.post('/confusion/signal', { concept_id: conceptId, signal: 'Clear' });
+        console.log('Clarity signal sent successfully for message:', messageId);
       } catch (err) {
         console.error('Failed to signal clarity:', err);
       }
