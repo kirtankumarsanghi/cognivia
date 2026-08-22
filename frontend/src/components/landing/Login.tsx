@@ -80,7 +80,10 @@ export default function Login() {
     e.preventDefault();
 
     // Double-submit guard
-    if (submittingRef.current) return;
+    if (submittingRef.current) {
+      console.log('[Login] Already submitting, prevented double submit');
+      return;
+    }
 
     // Client-side validation
     let hasError = false;
@@ -107,17 +110,33 @@ export default function Login() {
     submittingRef.current = true;
     setIsSubmitting(true);
 
+    // Add timeout to reset stuck state after 10 seconds
+    const timeoutId = setTimeout(() => {
+      console.error('[Login] Login timeout after 10 seconds');
+      submittingRef.current = false;
+      setIsSubmitting(false);
+      setServerError('Login is taking too long. Please refresh the page and try again.');
+    }, 10000);
+
     try {
+      console.log('[Login] Starting login for:', email);
       const result = await login(email.toLowerCase().trim(), password);
+      clearTimeout(timeoutId);
+      console.log('[Login] Login result:', result);
 
       if (!result.success) {
         setServerError(result.error || 'Something went wrong. Please try again.');
+      } else {
+        console.log('[Login] Login successful, redirect should happen automatically');
       }
-    } catch {
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.error('[Login] Exception during login:', err);
       setServerError('An unexpected error occurred. Please try again.');
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
+      console.log('[Login] Login process completed');
     }
   };
 
@@ -277,44 +296,94 @@ export default function Login() {
             <div className="flex gap-3 justify-center">
               <button
                 type="button"
+                disabled={isSubmitting}
                 onClick={async () => {
-                  setEmail('educator@cognivia.demo');
-                  setPassword('password123');
-                  if (submittingRef.current) return;
+                  if (submittingRef.current || isSubmitting) {
+                    console.log('[Demo Login] Already submitting, ignoring click');
+                    return;
+                  }
+                  
+                  console.log('[Demo Login] Starting educator login...');
+                  setServerError(null);
+                  setEmail('educator_demo@cognivia.com');
+                  setPassword('password123!');
+                  
                   submittingRef.current = true;
                   setIsSubmitting(true);
+                  
                   try {
-                    const res = await login('educator@cognivia.demo', 'password123');
-                    if (!res.success) setServerError(res.error || 'Something went wrong.');
+                    console.log('[Demo Login] Calling login function...');
+                    const res = await login('educator_demo@cognivia.com', 'password123!');
+                    console.log('[Demo Login] Login result:', res);
+                    
+                    if (!res.success) {
+                      console.error('[Demo Login] Login failed:', res.error);
+                      setServerError(res.error || 'Demo login failed. Please try again.');
+                    } else {
+                      console.log('[Demo Login] Login successful, should redirect...');
+                    }
+                  } catch (err) {
+                    console.error('[Demo Login] Exception during login:', err);
+                    setServerError('An unexpected error occurred. Please try again.');
                   } finally {
                     submittingRef.current = false;
                     setIsSubmitting(false);
+                    console.log('[Demo Login] Completed, isSubmitting reset');
                   }
                 }}
-                className="px-4 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm flex items-center gap-2"
+                className="px-4 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className="material-symbols-outlined text-[16px] text-primary">school</span>
+                {isSubmitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-[16px] text-primary">school</span>
+                )}
                 Educator
               </button>
               <button
                 type="button"
+                disabled={isSubmitting}
                 onClick={async () => {
-                  setEmail('student@cognivia.demo');
-                  setPassword('password123');
-                  if (submittingRef.current) return;
+                  if (submittingRef.current || isSubmitting) {
+                    console.log('[Demo Login] Already submitting, ignoring click');
+                    return;
+                  }
+                  
+                  console.log('[Demo Login] Starting student login...');
+                  setServerError(null);
+                  setEmail('student_demo@cognivia.com');
+                  setPassword('password123!');
+                  
                   submittingRef.current = true;
                   setIsSubmitting(true);
+                  
                   try {
-                    const res = await login('student@cognivia.demo', 'password123');
-                    if (!res.success) setServerError(res.error || 'Something went wrong.');
+                    console.log('[Demo Login] Calling login function...');
+                    const res = await login('student_demo@cognivia.com', 'password123!');
+                    console.log('[Demo Login] Login result:', res);
+                    
+                    if (!res.success) {
+                      console.error('[Demo Login] Login failed:', res.error);
+                      setServerError(res.error || 'Demo login failed. Please try again.');
+                    } else {
+                      console.log('[Demo Login] Login successful, should redirect...');
+                    }
+                  } catch (err) {
+                    console.error('[Demo Login] Exception during login:', err);
+                    setServerError('An unexpected error occurred. Please try again.');
                   } finally {
                     submittingRef.current = false;
                     setIsSubmitting(false);
+                    console.log('[Demo Login] Completed, isSubmitting reset');
                   }
                 }}
-                className="px-4 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm flex items-center gap-2"
+                className="px-4 py-2 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)] text-white/70 hover:text-white hover:bg-[rgba(255,255,255,0.08)] transition-colors text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span className="material-symbols-outlined text-[16px] text-amber-400">person</span>
+                {isSubmitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined text-[16px] text-amber-400">person</span>
+                )}
                 Student
               </button>
             </div>
