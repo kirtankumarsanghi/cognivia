@@ -9,8 +9,8 @@ const app = express();
 
 // CORS: allow Authorization header for JWT-based auth
 app.use(cors({
-  origin: env.frontendUrl,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
