@@ -11,24 +11,7 @@ const DANGER   = 'var(--danger)';
 const BG_DARK  = 'var(--bg-elevated)';
 const BG_CARD  = 'var(--bg-card)';
 
-/* ── mock students for heatmap / clustering ── */
-const MOCK_STUDENTS = [
-  { id: 's1', name: 'Alex Smith', initials: 'AS', score: 62, risk: 0.84, cluster: 'Struggling', lastActive: '2h ago' },
-  { id: 's2', name: 'Sam Johnson', initials: 'SJ', score: 58, risk: 0.78, cluster: 'Struggling', lastActive: '1d ago' },
-  { id: 's3', name: 'Maria Kim', initials: 'MK', score: 85, risk: 0.22, cluster: 'Steady Learner', lastActive: '15m ago' },
-  { id: 's4', name: 'Emma Jones', initials: 'EJ', score: 45, risk: 0.91, cluster: 'At Risk', lastActive: '3d ago' },
-  { id: 's5', name: 'Liam Chen', initials: 'LC', score: 92, risk: 0.12, cluster: 'Fast Sprinter', lastActive: '5m ago' },
-  { id: 's6', name: 'Priya Patel', initials: 'PP', score: 74, risk: 0.38, cluster: 'Steady Learner', lastActive: '30m ago' },
-];
-
-/* ── mock concepts for difficulty map ── */
-const MOCK_CONCEPTS = [
-  { id: 'c1', name: 'Recursion', difficulty: 82, misconception: 'Confusing stack depth with time complexity', avgTime: 840 },
-  { id: 'c2', name: 'Big-O Notation', difficulty: 65, misconception: 'Mixing up O(n) and O(n log n)', avgTime: 540 },
-  { id: 'c3', name: 'Linked Lists', difficulty: 45, misconception: 'Forgetting to update next pointer', avgTime: 360 },
-  { id: 'c4', name: 'Binary Trees', difficulty: 71, misconception: 'Mixing pre-order and in-order traversal', avgTime: 600 },
-  { id: 'c5', name: 'Hash Maps', difficulty: 35, misconception: 'Not understanding collision handling', avgTime: 280 },
-];
+// Dynamic data loaded from API instead of mock constants
 
 /* ── section definitions ── */
 const SECTIONS = [
@@ -102,13 +85,13 @@ function RiskCell({ value }: { value: number }) {
 }
 
 /* ── section renderers ── */
-function renderSection(id: string, api: any, sectionState: any, setSectionState: (fn: (prev: any) => any) => void) {
+function renderSection(id: string, api: any, sectionState: any, setSectionState: (fn: (prev: any) => any) => void, students: any[], concepts: any[]) {
   switch (id) {
     case 'heatmap':
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-            {MOCK_STUDENTS.map(s => (
+            {students.map(s => (
               <div key={s.id} className="flex flex-col items-center gap-1.5">
                 <RiskCell value={s.risk} />
                 <span className="text-[10px] text-gray-500 text-center truncate w-full">{s.name.split(' ')[0]}</span>
@@ -121,14 +104,14 @@ function renderSection(id: string, api: any, sectionState: any, setSectionState:
             <div className="flex items-center gap-1.5 text-[10px] text-gray-500"><span className="w-3 h-3 rounded" style={{ background: `${DANGER}30` }} />High Risk</div>
           </div>
           <p className="text-xs text-gray-500 text-center">
-            <strong style={{ color: DANGER }}>{MOCK_STUDENTS.filter(s => s.risk > 0.7).length}</strong> students flagged as high-risk. <strong style={{ color: WARN }}>{MOCK_STUDENTS.filter(s => s.risk > 0.4 && s.risk <= 0.7).length}</strong> at medium risk.
+            <strong style={{ color: DANGER }}>{students.filter(s => s.risk > 0.7).length}</strong> students flagged as high-risk. <strong style={{ color: WARN }}>{students.filter(s => s.risk > 0.4 && s.risk <= 0.7).length}</strong> at medium risk.
           </p>
         </div>
       );
 
     case 'clustering':
-      const clusters: Record<string, typeof MOCK_STUDENTS> = {};
-      MOCK_STUDENTS.forEach(s => {
+      const clusters: Record<string, any[]> = {};
+      students.forEach(s => {
         if (!clusters[s.cluster]) clusters[s.cluster] = [];
         clusters[s.cluster].push(s);
       });
@@ -164,7 +147,7 @@ function renderSection(id: string, api: any, sectionState: any, setSectionState:
     case 'difficulty-map':
       return (
         <div className="space-y-3">
-          {MOCK_CONCEPTS.map(c => {
+          {concepts.map(c => {
             const color = c.difficulty > 70 ? DANGER : c.difficulty > 40 ? WARN : ACCENT2;
             return (
               <div key={c.id} className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -193,11 +176,7 @@ function renderSection(id: string, api: any, sectionState: any, setSectionState:
 
     case 'nlp-analysis': {
       const nlpState = sectionState?.nlp || {};
-      const doubts = [
-        { id: 'd1', student: 'Alex S.', text: "I keep getting the wrong answer for recursion. The base case confuses me every time.", time: '2m ago' },
-        { id: 'd2', student: 'Emma J.', text: "Why does Big-O matter? It feels arbitrary.", time: '8m ago' },
-        { id: 'd3', student: 'Sam J.', text: "I can't tell the difference between a stack and a queue.", time: '15m ago' },
-      ];
+      const doubts: any[] = sectionState?.doubts || [];
 
       const analyzeDoubt = async (doubt: typeof doubts[0]) => {
         setSectionState((prev: any) => ({ ...prev, nlp: { ...prev?.nlp, [`loading_${doubt.id}`]: true } }));
@@ -263,7 +242,7 @@ function renderSection(id: string, api: any, sectionState: any, setSectionState:
     case 'decay-monitor':
       return (
         <div className="space-y-3">
-          {MOCK_STUDENTS.filter(s => s.risk > 0.35).map(s => {
+          {students.filter(s => s.risk > 0.35).map(s => {
             const color = s.risk > 0.7 ? DANGER : WARN;
             return (
               <div key={s.id} className="flex items-center gap-4 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -364,8 +343,71 @@ export default function EducatorMLInsights() {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     heatmap: true, clustering: true, 'difficulty-map': true, 'nlp-analysis': true, 'decay-monitor': true, controls: true,
   });
+  const [students, setStudents] = useState<any[]>([]);
+  const [concepts, setConcepts] = useState<any[]>([]);
   const [sectionState, setSectionState] = useState<any>({});
   const [streamLines, setStreamLines] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [studentData, analyticsData] = await Promise.all([
+          api.get('/analytics/educator/students'),
+          api.get('/analytics/educator?courseId=1')
+        ]);
+        
+        if (Array.isArray(studentData)) {
+          setStudents(studentData.map((d: any) => {
+            const mastery = d.avg_mastery || 0;
+            const accuracy = d.practice_accuracy || 0;
+            const score = Math.round((mastery + accuracy) / 2);
+            let risk = 0;
+            let cluster = 'Steady Learner';
+            
+            if (score < 50) { risk = 0.8; cluster = 'Struggling'; }
+            else if (score < 70) { risk = 0.5; cluster = 'At Risk'; }
+            else if (score > 85) { risk = 0.1; cluster = 'Fast Sprinter'; }
+            else { risk = 0.3; }
+
+            return {
+              id: d.student_id,
+              name: d.student_name,
+              initials: d.student_name.substring(0, 2).toUpperCase(),
+              score,
+              risk,
+              cluster,
+              lastActive: d.last_session?.created_at ? new Date(d.last_session.created_at).toLocaleTimeString() : 'Unknown'
+            };
+          }));
+        }
+
+        if (analyticsData && Array.isArray(analyticsData.confusionMetrics)) {
+          setConcepts(analyticsData.confusionMetrics.map((c: any, i: number) => ({
+            id: `c${i}`,
+            name: c.topic,
+            difficulty: c.percentage,
+            misconception: 'Needs review based on high confusion signals',
+            avgTime: 300
+          })));
+        }
+
+        if (analyticsData && analyticsData.recentSignals) {
+          const doubts = analyticsData.recentSignals
+            .filter((s: any) => s.signal !== 'Clear' && s.concepts && s.students)
+            .map((s: any) => ({
+              id: s.id,
+              student: s.students.name,
+              time: new Date(s.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+              text: `I'm struggling with ${s.concepts.name}`
+            }));
+          setSectionState((prev: any) => ({ ...prev, doubts }));
+        }
+      } catch (err) {
+        console.error('Failed to load ML insights data', err);
+      }
+    };
+    fetchData();
+  }, [api]);
 
   useEffect(() => {
     const metrics = [
@@ -409,7 +451,7 @@ export default function EducatorMLInsights() {
         <div className="flex items-center gap-2 mb-3" style={{ color: `${ACCENT}99` }}>
           <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: ACCENT }} />
           <span>COGNIVA ML CORE — EDUCATOR MODE</span>
-          <span className="ml-auto text-gray-600">{MOCK_STUDENTS.length} students monitored</span>
+          <span className="ml-auto text-gray-600">{students.length} students monitored</span>
         </div>
         <div className="space-y-1">
           {streamLines.map((line, i) => (
@@ -476,7 +518,7 @@ export default function EducatorMLInsights() {
                   >
                     <div className="px-5 pb-5" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                       <div className="pt-4">
-                        {renderSection(section.id, api, sectionState, setSectionState)}
+                        {renderSection(section.id, api, sectionState, setSectionState, students, concepts)}
                       </div>
                     </div>
                   </motion.div>

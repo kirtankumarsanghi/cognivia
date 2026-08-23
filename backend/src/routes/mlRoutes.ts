@@ -55,8 +55,13 @@ router.post('/api/ml/early-warning', requireAuth, async (req: Request, res: Resp
   try {
     const userId = (req as any).user.id;
     const { features } = req.body;
+    // If no features provided, calculate from student data
+    let riskFeatures = features;
+    if (!riskFeatures) {
+      riskFeatures = await calculateEarlyWarningFeatures(userId);
+    }
 
-    const result = await mlService.predictEarlyWarning(features);
+    const result = await mlService.predictEarlyWarning(riskFeatures);
     
     if (result) {
       await supabaseAdmin.from('ml_insights').insert({
@@ -145,7 +150,12 @@ router.post('/api/ml/learning-risk', requireAuth, async (req: Request, res: Resp
     const userId = (req as any).user.id;
     const { model_outputs, history, current_features } = req.body;
 
-    const result = await mlService.calculateLearningRisk(model_outputs);
+    let riskOutputs = model_outputs;
+    if (!riskOutputs) {
+      riskOutputs = await calculateLearningRiskOutputs(userId);
+    }
+
+    const result = await mlService.calculateLearningRisk(riskOutputs);
     
     if (result) {
       await supabaseAdmin.from('ml_insights').insert({
@@ -329,6 +339,119 @@ async function checkMLAchievement(userId: string, achievementType: string) {
       p_achievement_code: 'profile_discovered'
     });
   }
+}
+
+async function calculateEarlyWarningFeatures(userId: string) {
+  // Get recent practice attempts
+  const { data: attempts } = await supabaseAdmin
+    .from('practice_attempts')
+    .select('correct, created_at')
+    .eq('student_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  const total = attempts?.length || 0;
+  const recentIncorrect = attempts?.filter(a => !a.correct).length || 0;
+  const previousAccuracy = total > 0 ? (total - recentIncorrect) / total : 0.5;
+
+  // Get confusion signals
+  const { data: signals } = await supabaseAdmin
+    .from('confusion_signals')
+    .select('signal, created_at')
+    .eq('student_id', userId)
+    .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()); // last 7 days
+
+  const recentConfusionCount = signals?.filter(s => s.signal === 'Confused').length || 0;
+
+  // Get revision completion
+  const { data: revisions } = await supabaseAdmin
+    .from('revision_plans')
+    .select('completed')
+    .eq('student_id', userId);
+
+  const completedRevisions = revisions?.filter(r => r.completed).length || 0;
+  const revisionCompletion = revisions && revisions.length > 0 ? completedRevisions / revisions.length : 0.5;
+
+  // Time gap hours (since last session)
+  const { data: session } = await supabaseAdmin
+    .from('learning_sessions')
+    .select('created_at')
+    .eq('student_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  let timeGapHours = 24;
+  if (session) {
+    const diff = Date.now() - new Date(session.created_at).getTime();
+    timeGapHours = diff / (1000 * 60 * 60);
+  }
+
+  // Get mastery scores for prerequisite info
+  const { data: masteries } = await supabaseAdmin
+    .from('mastery_scores')
+    .select('score')
+    .eq('student_id', userId);
+
+  const scores = masteries?.map(m => m.score) || [];
+  const prereqAvg = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length / 100 : 0.5;
+  const prereqMin = scores.length > 0 ? Math.min(...scores) / 100 : 0.5;
+
+  return {
+    prerequisite_avg: prereqAvg,
+    prerequisite_min: prereqMin,
+    previous_accuracy: previousAccuracy,
+    recent_incorrect: recentIncorrect,
+    learning_velocity: previousAccuracy > 0.6 ? 0.05 : -0.05,
+    recent_confusion_count: recentConfusionCount,
+    time_gap_hours: Math.min(timeGapHours, 168), // cap at 1 week
+    revision_completion: revisionCompletion,
+    concept_difficulty: 50 // default baseline
+  };
+}
+
+async function calculateLearningRiskOutputs(userId: string) {
+  // Get latest mastery
+  const { data: masteries } = await supabaseAdmin
+    .from('mastery_scores')
+    .select('score')
+    .eq('student_id', userId)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .single();
+    
+  const masteryProb = masteries ? masteries.score / 100 : 0.5;
+  
+  // Time since last practice
+  const { data: attempts } = await supabaseAdmin
+    .from('practice_attempts')
+    .select('created_at')
+    .eq('student_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  let daysSincePractice = 3;
+  if (attempts) {
+    const diff = Date.now() - new Date(attempts.created_at).getTime();
+    daysSincePractice = diff / (1000 * 60 * 60 * 24);
+  }
+  
+  // Confusion risk proxy based on recent signals
+  const { data: signals } = await supabaseAdmin
+    .from('confusion_signals')
+    .select('signal')
+    .eq('student_id', userId)
+    .gte('created_at', new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()); // 3 days
+    
+  const confusionRisk = (signals?.filter(s => s.signal === 'Confused').length || 0) > 2 ? 0.8 : 0.2;
+
+  return {
+    mastery_probability: masteryProb,
+    confusion_risk: confusionRisk,
+    early_warning: confusionRisk > 0.5 ? 0.7 : 0.3,
+    days_since_practice: daysSincePractice
+  };
 }
 
 export default router;

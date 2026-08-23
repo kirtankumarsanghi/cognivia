@@ -183,95 +183,95 @@ export default function Dashboard() {
           key={notif.id}
           initial={{ opacity: 0, y: -20, scale: 0.95 }} 
           animate={{ opacity: 1, y: 0, scale: 1 }} 
-          className="mb-8 p-4 bg-error/10 border border-error/20 rounded-2xl relative overflow-hidden flex items-center justify-between"
+          className="mb-6 md:mb-8 p-4 md:p-6 bg-error/10 border border-error/20 rounded-2xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
         >
           <div className="absolute top-0 left-0 w-1 h-full bg-error"></div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-error/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none"></div>
-          <div className="flex items-center gap-4 relative z-10">
-            <div className="w-12 h-12 rounded-xl bg-error/20 flex items-center justify-center border border-error/30 shrink-0">
-              <span className="material-symbols-outlined text-error text-[24px]">school</span>
+          <div className="flex items-start md:items-center gap-3 md:gap-4 relative z-10 w-full md:w-auto">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-error/20 flex items-center justify-center border border-error/30 shrink-0">
+              <span className="material-symbols-outlined text-error text-[20px] md:text-[24px]">school</span>
             </div>
-            <div>
-              <h3 className="font-headline-sm text-error m-0">Educator Intervention</h3>
-              <p className="font-body-sm text-on-surface/90 mt-1">{notif.message}</p>
-              {notif.topic && <p className="font-label-sm text-outline uppercase tracking-wider mt-2">Targeted Topic: {notif.topic}</p>}
+            <div className="flex-1">
+              <h3 className="font-headline-sm text-error m-0 text-base md:text-lg">Educator Intervention</h3>
+              <p className="font-body-sm text-on-surface/90 mt-1 text-sm">{notif.message}</p>
+              {notif.topic && <p className="font-label-sm text-outline uppercase tracking-wider mt-2 text-xs">Targeted Topic: {notif.topic}</p>}
             </div>
           </div>
-          <div className="flex items-center gap-3 relative z-10 shrink-0 ml-4">
+          <div className="flex flex-row md:flex-row items-center gap-2 md:gap-3 relative z-10 w-full md:w-auto">
             <button 
               onClick={async () => {
                 await api.post(`/notifications/${notif.id}/read`, {});
                 loadData();
               }}
-              className="px-4 py-2 bg-surface-container border border-outline-variant/10 text-on-surface rounded-xl font-label-sm uppercase hover:bg-surface-bright transition-colors"
+              className="flex-1 md:flex-none px-4 py-2 bg-surface-container border border-outline-variant/10 text-on-surface rounded-xl font-label-sm uppercase hover:bg-surface-bright active:bg-surface-bright transition-colors text-xs"
             >
               Dismiss
             </button>
             <Link 
               to="/revision" 
-              className="px-4 py-2 bg-error text-on-error rounded-xl font-label-sm uppercase shadow-[0_0_15px_rgba(255,94,94,0.3)] hover:opacity-90 transition-opacity flex items-center gap-2"
+              className="flex-1 md:flex-none px-4 py-2 bg-error text-on-error rounded-xl font-label-sm uppercase shadow-[0_0_15px_rgba(255,94,94,0.3)] hover:opacity-90 active:opacity-90 transition-opacity flex items-center justify-center gap-2 text-xs"
             >
-              View Study Guide <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+              View Study Guide <span className="material-symbols-outlined text-[16px] md:text-[18px]">arrow_forward</span>
             </Link>
           </div>
         </motion.div>
       ))}
 
       {/* Header Section */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm relative mb-8">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-y-stack-sm relative mb-6 md:mb-8">
         <motion.div variants={fadeUp(0)} initial="hidden" animate="visible" className="flex flex-col">
-          <span className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">Student Dashboard</span>
-          <h1 className="font-headline-xl text-3xl leading-tight sm:text-headline-xl text-on-background m-0">
-            Welcome back, <br/>{user?.name.split(' ')[0]}
+          <span className="font-label-sm md:font-label-md text-label-sm md:text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">Student Dashboard</span>
+          <h1 className="font-headline-lg md:font-headline-xl text-2xl md:text-3xl leading-tight md:text-headline-xl text-on-background m-0">
+            Welcome back, <br className="hidden sm:block"/>{user?.name.split(' ')[0]}
           </h1>
         </motion.div>
         
-        <motion.div variants={fadeUp(0.1)} initial="hidden" animate="visible" className="flex items-center gap-4">
+        <motion.div variants={fadeUp(0.1)} initial="hidden" animate="visible" className="flex flex-wrap items-center gap-3 md:gap-4 w-full md:w-auto">
           {/* Refresh Button */}
           <motion.button
             onClick={() => loadData(true)}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-surface-container hover:bg-surface-container-high rounded-xl border border-outline-variant/20 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-surface-container hover:bg-surface-container-high active:bg-surface-container-high rounded-xl border border-outline-variant/20 transition-all disabled:opacity-50 text-sm"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <motion.span
-              className="material-symbols-outlined text-on-surface-variant text-[20px]"
+              className="material-symbols-outlined text-on-surface-variant text-[18px] md:text-[20px]"
               animate={{ rotate: refreshing ? 360 : 0 }}
               transition={{ duration: 1, repeat: refreshing ? Infinity : 0, ease: 'linear' }}
             >
               refresh
             </motion.span>
-            <span className="font-label-sm text-on-surface-variant">
+            <span className="font-label-sm text-on-surface-variant hidden sm:inline">
               {refreshing ? 'Updating...' : 'Refresh'}
             </span>
           </motion.button>
           
           {/* Rank Badge */}
-          <div className="flex items-center gap-stack-sm bg-surface-container-high px-6 py-3 rounded-xl border border-outline-variant/20 shadow-md">
-            <span className="material-symbols-outlined text-primary text-[28px]">workspace_premium</span>
+          <div className="flex items-center gap-2 md:gap-stack-sm bg-surface-container-high px-4 md:px-6 py-2 md:py-3 rounded-xl border border-outline-variant/20 shadow-md flex-1 md:flex-none">
+            <span className="material-symbols-outlined text-primary text-[24px] md:text-[28px]">workspace_premium</span>
             <div className="flex flex-col">
-              <span className="font-label-sm text-label-sm text-outline uppercase tracking-widest">Current Rank</span>
-              <span className="font-body-md text-body-md text-on-surface-variant font-medium">{analytics.rank}</span>
+              <span className="font-label-sm text-label-sm text-outline uppercase tracking-widest text-[10px] md:text-xs">Current Rank</span>
+              <span className="font-body-sm md:font-body-md text-body-sm md:text-body-md text-on-surface-variant font-medium">{analytics.rank}</span>
             </div>
           </div>
         </motion.div>
         
-        <div className="absolute top-0 right-10 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none"></div>
+        <div className="absolute top-0 right-10 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none hidden md:block"></div>
       </header>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter relative z-10">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-gutter relative z-10">
         
         {/* Left Column: Primary Metrics */}
-        <div className="lg:col-span-4 flex flex-col gap-y-gutter">
+        <div className="lg:col-span-4 flex flex-col gap-4 md:gap-y-gutter">
           
           {/* Learning Score Card */}
-          <motion.section variants={fadeUp(0.1)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-6 shadow-lg border border-outline-variant/10 relative overflow-hidden group">
+          <motion.section variants={fadeUp(0.1)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-4 md:p-6 shadow-lg border border-outline-variant/10 relative overflow-hidden group">
             <div className="absolute -right-12 -top-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity duration-700"></div>
-            <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-lg relative z-10">Cogniva Learning Score</h2>
-            <div className="flex flex-col items-center justify-center relative z-10 mt-4 mb-8">
-              <div className="relative w-48 h-48 flex items-center justify-center">
+            <h2 className="font-label-sm md:font-label-md text-label-sm md:text-label-md text-outline uppercase tracking-widest mb-4 md:mb-stack-lg relative z-10">Cogniva Learning Score</h2>
+            <div className="flex flex-col items-center justify-center relative z-10 mt-2 md:mt-4 mb-4 md:mb-8">
+              <div className="relative w-36 h-36 md:w-48 md:h-48 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90 drop-shadow-xl" viewBox="0 0 100 100">
                   <defs>
                     <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -298,45 +298,45 @@ export default function Dashboard() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="font-headline-xl text-headline-xl text-transparent bg-clip-text bg-gradient-to-br from-[#2AD4AE] to-[#2A9DD4]">
-                    <AnimatedNumber value={analytics.learningScore || 0} duration={1.5} /><span className="text-[24px]">%</span>
+                  <span className="font-headline-lg md:font-headline-xl text-headline-lg md:text-headline-xl text-transparent bg-clip-text bg-gradient-to-br from-[#2AD4AE] to-[#2A9DD4]">
+                    <AnimatedNumber value={analytics.learningScore || 0} duration={1.5} /><span className="text-[18px] md:text-[24px]">%</span>
                   </span>
                 </div>
               </div>
-              <div className="mt-stack-sm flex items-center gap-2 bg-surface-bright/50 px-4 py-1.5 rounded-full">
-                <span className="material-symbols-outlined text-[16px] text-primary">trending_up</span>
-                <span className="font-label-sm text-label-sm text-primary">+{analytics.weeklyChange}% this week</span>
+              <div className="mt-2 md:mt-stack-sm flex items-center gap-2 bg-surface-bright/50 px-3 md:px-4 py-1 md:py-1.5 rounded-full">
+                <span className="material-symbols-outlined text-[14px] md:text-[16px] text-primary">trending_up</span>
+                <span className="font-label-sm text-label-sm text-primary text-xs md:text-sm">+{analytics.weeklyChange}% this week</span>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4 mt-stack-md pt-stack-md border-t border-outline-variant/10 relative z-10">
+            <div className="grid grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-stack-md pt-3 md:pt-stack-md border-t border-outline-variant/10 relative z-10">
               <div className="flex flex-col">
                 <span className="font-headline-md text-headline-md text-on-surface"><AnimatedNumber value={analytics.masteredCount} /></span>
-                <span className="font-label-sm text-label-sm text-outline uppercase">Mastered</span>
+                <span className="font-label-sm text-label-sm text-outline uppercase text-[10px] md:text-xs">Mastered</span>
               </div>
               <div className="flex flex-col">
                 <span className="font-headline-md text-headline-md text-error"><AnimatedNumber value={analytics.needsAttentionCount} /></span>
-                <span className="font-label-sm text-label-sm text-outline uppercase">Needs Attention</span>
+                <span className="font-label-sm text-label-sm text-outline uppercase text-[10px] md:text-xs">Needs Attention</span>
               </div>
             </div>
           </motion.section>
 
           {/* Learning Streak */}
-          <motion.section variants={fadeUp(0.15)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
-            <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-md">Learning Streak</h2>
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-[32px]">local_fire_department</span>
+          <motion.section variants={fadeUp(0.15)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-4 md:p-6 shadow-md border border-outline-variant/10">
+            <h2 className="font-label-sm md:font-label-md text-label-sm md:text-label-md text-outline uppercase tracking-widest mb-3 md:mb-stack-md">Learning Streak</h2>
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="material-symbols-outlined text-primary text-[24px] md:text-[32px]">local_fire_department</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-headline-lg text-headline-lg text-on-surface">{analytics.streak} days</span>
+                <span className="font-headline-md md:font-headline-lg text-headline-md md:text-headline-lg text-on-surface">{analytics.streak} days</span>
                 <span className="font-body-sm text-body-sm text-on-surface-variant">Keep it going!</span>
               </div>
             </div>
           </motion.section>
 
           {/* Recommended Next Action */}
-          <motion.section variants={fadeUp(0.2)} initial="hidden" animate="visible" className="bg-primary-container text-on-primary-container rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+          <motion.section variants={fadeUp(0.2)} initial="hidden" animate="visible" className="bg-primary-container text-on-primary-container rounded-2xl p-4 md:p-6 shadow-xl relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
             <svg className="absolute inset-0 w-full h-full opacity-10 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <pattern height="20" id="gridPattern" patternUnits="userSpaceOnUse" width="20">
@@ -346,21 +346,21 @@ export default function Dashboard() {
               </defs>
               <rect fill="url(#gridPattern)" height="100%" width="100%"></rect>
             </svg>
-            <div className="relative z-10 flex flex-col h-full justify-between gap-y-stack-md">
+            <div className="relative z-10 flex flex-col h-full justify-between gap-3 md:gap-y-stack-md">
               <div>
-                <div className="flex items-center gap-2 mb-stack-sm">
-                  <span className="material-symbols-outlined text-[18px]">psychology</span>
-                  <span className="font-label-md text-label-md uppercase tracking-widest font-bold">Recommended Next</span>
+                <div className="flex items-center gap-2 mb-2 md:mb-stack-sm">
+                  <span className="material-symbols-outlined text-[16px] md:text-[18px]">psychology</span>
+                  <span className="font-label-sm md:font-label-md text-label-sm md:text-label-md uppercase tracking-widest font-bold">Recommended Next</span>
                 </div>
-                <h3 className="font-headline-lg text-headline-lg m-0 leading-tight">{analytics.recommendedNext}</h3>
+                <h3 className="font-headline-md md:font-headline-lg text-headline-md md:text-headline-lg m-0 leading-tight">{analytics.recommendedNext}</h3>
                 {analytics.needsAttentionCount > 0 && (
-                  <p className="font-body-sm text-body-sm mt-2 opacity-90">Focus on strengthening your foundation in this area.</p>
+                  <p className="font-body-sm text-body-sm mt-2 opacity-90 text-sm">Focus on strengthening your foundation in this area.</p>
                 )}
               </div>
               
               {analytics.revisionPlan && analytics.revisionPlan.length > 0 && (
-                <Link to={`/tutor?concept=${analytics.revisionPlan[0].concept_id}`} className="mt-stack-sm self-start bg-on-primary-container text-primary-container px-6 py-3 rounded-xl font-label-md tracking-widest uppercase hover:opacity-90 transition-opacity flex items-center gap-2 group-hover:gap-3">
-                  Start Learning <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <Link to={`/tutor?concept=${analytics.revisionPlan[0].concept_id}`} className="mt-2 md:mt-stack-sm self-start bg-on-primary-container text-primary-container px-4 md:px-6 py-2 md:py-3 rounded-xl font-label-sm md:font-label-md tracking-widest uppercase hover:opacity-90 active:opacity-90 transition-opacity flex items-center gap-2 text-xs md:text-sm group-hover:gap-3">
+                  Start Learning <span className="material-symbols-outlined text-[16px] md:text-[18px]">arrow_forward</span>
                 </Link>
               )}
             </div>
@@ -425,73 +425,73 @@ export default function Dashboard() {
         </div>
 
         {/* Right Column: Plans and Activity */}
-        <div className="lg:col-span-8 flex flex-col gap-y-gutter">
+        <div className="lg:col-span-8 flex flex-col gap-4 md:gap-y-gutter">
           
           {/* Clarity Plan */}
-          <motion.section variants={fadeUp(0.3)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
-            <div className="flex items-center justify-between mb-stack-md">
-              <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest">Today's Clarity Plan</h2>
-              <span className="font-body-sm text-body-sm text-on-surface-variant bg-surface-bright px-3 py-1 rounded-full">
+          <motion.section variants={fadeUp(0.3)} initial="hidden" animate="visible" className="bg-surface-container rounded-2xl p-4 md:p-6 shadow-md border border-outline-variant/10">
+            <div className="flex items-center justify-between mb-3 md:mb-stack-md">
+              <h2 className="font-label-sm md:font-label-md text-label-sm md:text-label-md text-outline uppercase tracking-widest">Today's Clarity Plan</h2>
+              <span className="font-body-sm text-body-sm text-on-surface-variant bg-surface-bright px-2 md:px-3 py-1 rounded-full text-xs">
                 {analytics.revisionPlan.length} Focus Areas
               </span>
             </div>
             
-            <motion.div variants={staggerContainer(0.05)} initial="hidden" animate="visible" className="flex flex-col gap-y-4">
+            <motion.div variants={staggerContainer(0.05)} initial="hidden" animate="visible" className="flex flex-col gap-3 md:gap-y-4">
               {analytics.revisionPlan.map((plan: any) => (
-                <motion.div variants={fadeUpChild} key={plan.id || plan.concept_id} className="group flex items-center justify-between p-4 bg-surface rounded-xl hover:bg-surface-container-high transition-all duration-300 border border-outline-variant/10 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(232,166,52,0.15)] relative overflow-hidden">
+                <motion.div variants={fadeUpChild} key={plan.id || plan.concept_id} className="group flex flex-col md:flex-row items-start md:items-center justify-between p-3 md:p-4 bg-surface rounded-xl hover:bg-surface-container-high active:bg-surface-container-high transition-all duration-300 border border-outline-variant/10 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(232,166,52,0.15)] relative overflow-hidden gap-3 md:gap-0">
                   <div className="absolute top-0 left-0 w-1 h-full bg-primary/0 group-hover:bg-primary transition-colors"></div>
-                  <div className="flex items-center gap-4 pl-2">
-                    <div className="w-12 h-12 rounded-full bg-surface-bright flex items-center justify-center group-hover:bg-primary/20 transition-colors border border-transparent group-hover:border-primary/30">
-                      <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">functions</span>
+                  <div className="flex items-start md:items-center gap-3 md:gap-4 pl-2 w-full md:w-auto">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-surface-bright flex items-center justify-center group-hover:bg-primary/20 transition-colors border border-transparent group-hover:border-primary/30 shrink-0">
+                      <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors text-[20px] md:text-[24px]">functions</span>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="font-body-md text-body-md text-on-surface font-medium">{plan.concept_name || (plan.concepts && plan.concepts.name) || 'Concept'}</span>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full font-bold ${plan.priority === 'High' ? 'bg-error/20 text-error' : plan.priority === 'Medium' ? 'bg-[#E8A634]/20 text-[#E8A634]' : 'bg-primary/20 text-primary'}`}>
+                    <div className="flex flex-col flex-1">
+                      <span className="font-body-sm md:font-body-md text-body-sm md:text-body-md text-on-surface font-medium">{plan.concept_name || (plan.concepts && plan.concepts.name) || 'Concept'}</span>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <span className={`text-[9px] md:text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full font-bold ${plan.priority === 'High' ? 'bg-error/20 text-error' : plan.priority === 'Medium' ? 'bg-[#E8A634]/20 text-[#E8A634]' : 'bg-primary/20 text-primary'}`}>
                           {plan.priority} Priority
                         </span>
-                        <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[14px]">schedule</span> {plan.minutes || 15} min
+                        <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 text-xs">
+                          <span className="material-symbols-outlined text-[12px] md:text-[14px]">schedule</span> {plan.minutes || 15} min
                         </span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
                     <button 
                       onClick={async (e) => {
                         e.preventDefault();
                         if (plan.id) await api.post(`/revision/${plan.id}/complete`, {});
                         loadData();
                       }}
-                      className="px-4 py-2 bg-surface-container rounded-lg hover:bg-[#3DD68C]/20 hover:text-[#3DD68C] text-on-surface transition-colors font-label-sm border border-outline-variant/10 hover:border-[#3DD68C]/30 flex items-center gap-2"
+                      className="flex-1 md:flex-none px-3 md:px-4 py-2 bg-surface-container rounded-lg hover:bg-[#3DD68C]/20 active:bg-[#3DD68C]/20 hover:text-[#3DD68C] text-on-surface transition-colors font-label-sm border border-outline-variant/10 hover:border-[#3DD68C]/30 flex items-center justify-center gap-2 text-xs"
                     >
-                      <span className="material-symbols-outlined text-[16px]">check</span> Complete
+                      <span className="material-symbols-outlined text-[14px] md:text-[16px]">check</span> Complete
                     </button>
-                    <Link to={`/tutor?concept=${plan.concept_id}`} className="w-10 h-10 rounded-full bg-surface-container border border-outline-variant/10 flex items-center justify-center text-on-surface hover:text-primary hover:bg-primary/20 hover:border-primary/30 transition-all hover:scale-110 hover:shadow-[0_0_10px_rgba(232,166,52,0.3)]">
-                      <span className="material-symbols-outlined text-[22px]">play_arrow</span>
+                    <Link to={`/tutor?concept=${plan.concept_id}`} className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-surface-container border border-outline-variant/10 flex items-center justify-center text-on-surface hover:text-primary hover:bg-primary/20 active:bg-primary/20 hover:border-primary/30 transition-all hover:scale-110 hover:shadow-[0_0_10px_rgba(232,166,52,0.3)] shrink-0">
+                      <span className="material-symbols-outlined text-[20px] md:text-[22px]">play_arrow</span>
                     </Link>
                   </div>
                 </motion.div>
               ))}
               
               {analytics.revisionPlan.length === 0 && (
-                <div className="p-8 text-center text-on-surface-variant">
-                  <span className="material-symbols-outlined text-[48px] opacity-20 mb-2">check_circle</span>
-                  <p className="font-body-md">Your revision queue is empty! Great work!</p>
+                <div className="p-6 md:p-8 text-center text-on-surface-variant">
+                  <span className="material-symbols-outlined text-[40px] md:text-[48px] opacity-20 mb-2">check_circle</span>
+                  <p className="font-body-sm md:font-body-md text-sm">Your revision queue is empty! Great work!</p>
                 </div>
               )}
             </motion.div>
           </motion.section>
 
           {/* Confusion Signals & Weekly Progress Split */}
-          <motion.div variants={fadeUp(0.4)} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+          <motion.div variants={fadeUp(0.4)} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-gutter">
             {/* Confusion Log */}
-            <section className="bg-surface-container rounded-2xl p-6 shadow-md border border-outline-variant/10">
-              <h2 className="font-label-md text-label-md text-outline uppercase tracking-widest mb-stack-md flex items-center gap-2">
+            <section className="bg-surface-container rounded-2xl p-4 md:p-6 shadow-md border border-outline-variant/10">
+              <h2 className="font-label-sm md:font-label-md text-label-sm md:text-label-md text-outline uppercase tracking-widest mb-3 md:mb-stack-md flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-error animate-pulse"></span>
                 Recent Confusion Signals
               </h2>
-              <div className="relative pl-4 border-l border-outline-variant/20 flex flex-col gap-y-6 mt-6">
+              <div className="relative pl-3 md:pl-4 border-l border-outline-variant/20 flex flex-col gap-4 md:gap-y-6 mt-4 md:mt-6">
                 
                 {pulse.slice(0, 3).map((sig, i) => (
                   <div key={i} className="relative">

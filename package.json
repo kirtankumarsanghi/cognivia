@@ -7,5 +7,20 @@
   ],
   "overrides": {
     "rollup": "npm:@rollup/wasm-node@^4.62.5"
+  },
+  "scripts": {
+    "dev": "concurrently \"npm:dev:frontend\" \"npm:dev:backend\" \"npm:dev:ml\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:ml": "cd backend/ml && python app.py",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "clean": "rm -rf node_modules frontend/node_modules backend/node_modules frontend/dist backend/dist",
+    "test:mobile": "echo 'Open http://localhost:5173 in mobile browser or use Chrome DevTools device mode'",
+    "postinstall": "echo '✅ Installation complete! Run npm run dev to start all services.'"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

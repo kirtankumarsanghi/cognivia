@@ -96,13 +96,9 @@ export default function EducatorDashboard() {
     
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => loadData(hoursAgo), 15000);
-    
-    const handleMockDataUpdated = () => loadData(hoursAgo);
-    window.addEventListener('mockDataUpdated', handleMockDataUpdated);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      window.removeEventListener('mockDataUpdated', handleMockDataUpdated);
     };
   }, [hoursAgo, selectedCourseId]); // Re-fetch when course or timeframe changes
 
@@ -127,27 +123,12 @@ export default function EducatorDashboard() {
   const fetchMlInsights = async () => {
     setLoadingMl(true);
     try {
-      // Mocking student features for the class to get an early warning risk prediction
-      const features = {
-        prerequisite_avg: 0.7,
-        prerequisite_min: 0.5,
-        previous_accuracy: 0.6,
-        recent_incorrect: 3,
-        learning_velocity: -0.1,
-        recent_confusion_count: 2,
-        time_gap_hours: 24,
-        revision_completion: 0.5,
-        concept_difficulty: 65
-      };
-      const response = await api.post('/ml/early-warning', { features });
+      const response = await api.post('/ml/early-warning', {});
       if (response && response.success) {
         setMlInsights(response);
       }
 
-      const riskResponse = await api.post('/ml/learning-risk', { 
-        history: [], 
-        current_features: { accuracy: 0.6, time_taken: 120, hints_used: 2, confusion_signals: 1 } 
-      });
+      const riskResponse = await api.post('/ml/learning-risk', {});
       if (riskResponse && riskResponse.success) {
         setMlRisk(riskResponse);
       }
@@ -287,7 +268,7 @@ export default function EducatorDashboard() {
         className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
       >
         <motion.div variants={fadeUpChild} className="bg-surface-container rounded-2xl p-6 border border-outline-variant/10 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+
           <div className="relative z-10 flex flex-col h-full justify-between">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -302,7 +283,7 @@ export default function EducatorDashboard() {
         </motion.div>
 
         <motion.div variants={fadeUpChild} className="bg-surface-container rounded-2xl p-6 border border-outline-variant/10 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#3DD68C]/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-[#3DD68C]/10 transition-colors"></div>
+
           <div className="relative z-10 flex flex-col h-full justify-between">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-[#3DD68C]/10 flex items-center justify-center border border-[#3DD68C]/20">
@@ -317,7 +298,7 @@ export default function EducatorDashboard() {
         </motion.div>
 
         <motion.div variants={fadeUpChild} className="bg-surface-container rounded-2xl p-6 border border-outline-variant/10 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-error/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-error/10 transition-colors"></div>
+
           <div className="relative z-10 flex flex-col h-full justify-between">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center border border-error/20">
@@ -474,38 +455,35 @@ export default function EducatorDashboard() {
                   <tr className="border-b border-outline-variant/20">
                     <th className="p-3 font-label-sm text-outline uppercase tracking-wider">Student</th>
                     <th className="p-3 font-label-sm text-outline uppercase tracking-wider">Avg Score</th>
-                    <th className="p-3 font-label-sm text-outline uppercase tracking-wider">ML Risk Profile</th>
+                    <th className="p-3 font-label-sm text-outline uppercase tracking-wider">Risk Level</th>
                     <th className="p-3 font-label-sm text-outline uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
-                  {[
-                    { id: 's1', initials: 'AS', name: 'Alex Smith', score: '62%', risk: 'HIGH', lastActive: '2h ago' },
-                    { id: 's2', initials: 'SJ', name: 'Sam Johnson', score: '58%', risk: 'HIGH', lastActive: '1d ago' },
-                    { id: 's3', initials: 'MK', name: 'Maria Kim', score: '85%', risk: 'LOW', lastActive: '15m ago' },
-                    { id: 's4', initials: 'EJ', name: 'Emma Jones', score: '45%', risk: 'CRITICAL', lastActive: '3d ago' }
-                  ].map((student) => (
+                  {analytics.atRiskStudents && analytics.atRiskStudents.length > 0 ? analytics.atRiskStudents.map((student: any) => {
+                    const initials = student.name ? student.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : '??';
+                    return (
                     <tr key={student.id} className="hover:bg-surface-bright transition-colors group">
                       <td className="p-3">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                            {student.initials}
+                            {initials}
                           </div>
                           <div>
                             <span className="font-body-sm text-on-surface block">{student.name}</span>
-                            <span className="text-[10px] text-outline">Active: {student.lastActive}</span>
+                            <span className="text-[10px] text-outline">Risk Score: {student.riskScore}%</span>
                           </div>
                         </div>
                       </td>
-                      <td className="p-3 font-body-sm text-on-surface font-medium">{student.score}</td>
+                      <td className="p-3 font-body-sm text-on-surface font-medium">{student.score || 'N/A'}</td>
                       <td className="p-3">
                         <span className={`font-label-sm uppercase px-2 py-1 rounded-full text-[10px] ${
-                          student.risk === 'CRITICAL' ? 'bg-error/20 text-error font-bold' :
-                          student.risk === 'HIGH' ? 'bg-error/10 text-error' :
-                          student.risk === 'MEDIUM' ? 'bg-[#E8A634]/10 text-[#E8A634]' :
+                          student.riskLevel === 'CRITICAL' ? 'bg-error/20 text-error font-bold' :
+                          student.riskLevel === 'HIGH' ? 'bg-error/10 text-error' :
+                          student.riskLevel === 'MEDIUM' ? 'bg-[#E8A634]/10 text-[#E8A634]' :
                           'bg-[#3DD68C]/10 text-[#3DD68C]'
                         }`}>
-                          {student.risk}
+                          {student.riskLevel}
                         </span>
                       </td>
                       <td className="p-3 text-right">
@@ -518,7 +496,11 @@ export default function EducatorDashboard() {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  )}) : (
+                    <tr>
+                      <td colSpan={4} className="p-4 text-center font-body-sm text-outline">No at-risk students currently.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -535,7 +517,7 @@ export default function EducatorDashboard() {
             animate="visible"
           >
             <a href="/educator/ml-insights" className="block rounded-2xl overflow-hidden relative group" style={{ background: '#0D1117', border: '1px solid rgba(99,102,241,0.2)' }}>
-              <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-[60px] pointer-events-none" style={{ background: 'rgba(99,102,241,0.1)' }} />
+
               <div className="p-5 relative z-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -564,25 +546,26 @@ export default function EducatorDashboard() {
               <span className="material-symbols-outlined text-[18px]">sensors</span> Live Student Doubts
             </h3>
             <div className="space-y-3">
-              {pulse && pulse.length > 0 ? (
-                pulse.slice(0, 3).map((item, index) => (
+              {analytics.recentSignals && analytics.recentSignals.length > 0 ? (
+                analytics.recentSignals.filter((s: any) => s.signal !== 'Clear').slice(0, 4).map((item: any, index: number) => {
+                  const timeStr = new Date(item.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                  return (
                   <div key={index} className="flex items-center justify-between p-3 bg-surface rounded-xl border border-outline-variant/10">
                     <div>
-                      <h4 className="font-headline-sm text-on-surface">{item.student_name}</h4>
-                      <p className="font-body-sm text-outline">Struggling with: {item.name}</p>
+                      <h4 className="font-headline-sm text-on-surface">{item.students?.name || 'Unknown'}</h4>
+                      <p className="font-body-sm text-outline">Struggling with: {item.concepts?.name || 'Unknown'}</p>
                     </div>
                     <div className="flex flex-col items-end">
                       <span className={`font-label-sm uppercase px-2 py-1 rounded-full text-[10px] ${
-                        item.status === 'HIGH' ? 'bg-error/10 text-error' :
-                        item.status === 'MEDIUM' ? 'bg-[#E8A634]/10 text-[#E8A634]' :
-                        'bg-[#3DD68C]/10 text-[#3DD68C]'
+                        item.signal === 'Confused' ? 'bg-error/10 text-error' :
+                        'bg-[#E8A634]/10 text-[#E8A634]'
                       }`}>
-                        {item.status === 'HIGH' ? 'LOST' : item.status === 'MEDIUM' ? 'CONFUSED' : 'UNCLEAR'}
+                        {item.signal === 'Confused' ? 'LOST' : 'CONFUSED'}
                       </span>
-                      <span className="text-[10px] text-outline mt-1">{item.time}</span>
+                      <span className="text-[10px] text-outline mt-1">{timeStr}</span>
                     </div>
                   </div>
-                ))
+                )})
               ) : (
                 <p className="font-body-sm text-outline">No recent doubts reported.</p>
               )}
@@ -597,7 +580,7 @@ export default function EducatorDashboard() {
               animate="visible"
               className="bg-surface-container rounded-2xl p-6 shadow-lg border border-primary/20 relative overflow-hidden group"
             >
-              <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full -mr-24 -mt-24 blur-3xl transition-opacity duration-500 group-hover:opacity-100 opacity-60"></div>
+
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="material-symbols-outlined text-primary text-[24px]">auto_awesome</span>
@@ -736,13 +719,13 @@ export default function EducatorDashboard() {
 
       {/* Student Portal Modal */}
       {selectedTopic && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-surface-container rounded-2xl border border-outline-variant/10 shadow-2xl p-6 max-w-md w-full relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-error/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+
             
             <button 
               onClick={() => handleSelectTopic(null)}
@@ -785,26 +768,31 @@ export default function EducatorDashboard() {
             )}
             
             <div className="space-y-3 relative z-10">
-              {[
-                { initials: 'AS', name: 'Alex Smith', score: '62%' },
-                { initials: 'SJ', name: 'Sam Johnson', score: '58%' },
-                { initials: 'EJ', name: 'Emma Jones', score: '45%' }
-              ].map((student, idx) => (
+              {analytics.recentSignals && analytics.recentSignals.filter((s: any) => s.concepts?.name === selectedTopic && s.signal !== 'Clear').length > 0 ? (
+                Array.from(new Set(analytics.recentSignals
+                  .filter((s: any) => s.concepts?.name === selectedTopic && s.signal !== 'Clear')
+                  .map((s: any) => s.students?.name)
+                )).map((name: any, idx: number) => {
+                  const initials = name ? name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : '??';
+                  return (
                 <div key={idx} className="flex items-center justify-between p-3 bg-surface rounded-xl border border-outline-variant/5 hover:border-outline-variant/20 transition-colors group">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                      {student.initials}
+                      {initials}
                     </div>
                     <div>
-                      <span className="font-body-sm text-on-surface block">{student.name}</span>
-                      <span className="text-xs text-outline group-hover:text-primary transition-colors">Course Average: {student.score}</span>
+                      <span className="font-body-sm text-on-surface block">{name || 'Unknown'}</span>
+                      <span className="text-xs text-outline group-hover:text-primary transition-colors">Course Average: N/A</span>
                     </div>
                   </div>
                   <button className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                     <span className="material-symbols-outlined text-[20px]">chat</span>
                   </button>
                 </div>
-              ))}
+              )})
+              ) : (
+                <p className="font-body-sm text-outline p-2">No students currently flagged for this topic.</p>
+              )}
             </div>
             
             <button 

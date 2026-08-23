@@ -56,13 +56,6 @@ export default function StudyGroups() {
 
   useEffect(() => {
     loadData();
-
-    // Listen for realtime updates from Supabase channel (mocked in useApi)
-    const handleMockUpdate = () => {
-      loadData();
-    };
-    window.addEventListener('mockDataUpdated', handleMockUpdate);
-    return () => window.removeEventListener('mockDataUpdated', handleMockUpdate);
   }, [loadData]);
 
   const handleConnect = async (peerId: string) => {

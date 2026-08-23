@@ -22,15 +22,7 @@ const MODELS = [
     model_tag: 'K-Means Clustering',
     description: 'This model groups you into a learning archetype by analysing your pace, accuracy patterns and study habits. It uses K-Means clustering on 6 behavioural features to find which cohort you belong to.',
     payload: (userId: string) => ({
-      studentId: userId,
-      features: {
-        avg_session_duration: 45,
-        avg_accuracy: 0.72,
-        confusion_frequency: 3,
-        avg_mastery_progression: 0.7,
-        total_practice_attempts: 12,
-        avg_time_per_question: 35
-      }
+      studentId: userId
     }),
   },
   {
@@ -41,14 +33,7 @@ const MODELS = [
     model_tag: 'Logistic Regression',
     description: 'A logistic-regression classifier that scores your probability of falling behind. It examines prerequisite mastery, learning velocity, confusion signals and engagement frequency to compute a risk score.',
     payload: (userId: string) => ({
-      studentId: userId,
-      features: {
-        prerequisite_mastery: 0.45,
-        learning_velocity: -0.1,
-        confusion_signals: 5,
-        engagement_score: 0.6,
-        days_since_last_activity: 2
-      }
+      studentId: userId
     }),
   },
   {
@@ -60,8 +45,7 @@ const MODELS = [
     description: 'A recommendation engine inspired by collaborative filtering. It analyses your history alongside similar students to suggest the single most impactful concept to study next, along with the reasoning.',
     payload: (userId: string) => ({
       studentId: userId,
-      current_concept: 'c1-con1',
-      history: ['c1-con2', 'c1-con3']
+      current_concept: 'c1-con1'
     }),
   },
   {
@@ -72,8 +56,7 @@ const MODELS = [
     model_tag: 'Item Response Theory',
     description: 'Rooted in Item Response Theory (IRT), this model estimates how hard each concept is specifically for you. It factors in your current mastery, common misconceptions, and how long similar students spent on the same block.',
     payload: () => ({
-      concept_id: 'c1-con1',
-      student_features: { mastery: 0.55, attempts: 4 }
+      concept_id: 'c1-con1'
     }),
   },
   {
@@ -84,9 +67,7 @@ const MODELS = [
     model_tag: 'Exponential Decay Model',
     description: 'Based on Ebbinghaus\' forgetting curve, this model tracks how quickly your retention fades for each topic. It flags concepts where the predicted retention has dropped below the recall threshold so you can revise before you forget.',
     payload: (userId: string) => ({
-      studentId: userId,
-      history: [],
-      current_features: { accuracy: 0.6, time_taken: 120, hints_used: 2, confusion_signals: 1 }
+      studentId: userId
     }),
   },
   {

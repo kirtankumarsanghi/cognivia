@@ -50,31 +50,13 @@ export default function MLInsightsWidget({
 
       // Load early warning if requested
       if (showTypes.includes('early_warning')) {
-        const warningData = await api.post('/api/ml/early-warning', {
-          features: {
-            prerequisite_avg: 0.6,
-            prerequisite_min: 0.4,
-            previous_accuracy: 0.65,
-            recent_incorrect: 2,
-            learning_velocity: 0.05,
-            recent_confusion_count: 1,
-            time_gap_hours: 24,
-            revision_completion: 0.7,
-            concept_difficulty: 60
-          }
-        });
+        const warningData = await api.post('/api/ml/early-warning', {});
         if (warningData) results.early_warning = warningData;
       }
 
       // Load learning risk if requested
       if (showTypes.includes('learning_risk')) {
-        const riskData = await api.post('/api/ml/learning-risk', {
-          model_outputs: {
-            mastery_probability: 0.7,
-            confusion_risk: 0.3,
-            days_since_practice: 3
-          }
-        });
+        const riskData = await api.post('/api/ml/learning-risk', {});
         if (riskData) results.learning_risk = riskData;
       }
 

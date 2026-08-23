@@ -9,6 +9,12 @@ export default function CustomCursor() {
   const [clicked, setClicked] = useState(false);
 
   useEffect(() => {
+    // Disable custom cursor on touch devices
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isTouchDevice) {
+      return; // Don't activate custom cursor on mobile/tablet
+    }
+
     const cursor = cursorRef.current;
     const cursorDot = cursorDotRef.current;
     const cursorGlow = cursorGlowRef.current;
@@ -90,6 +96,13 @@ export default function CustomCursor() {
       cancelAnimationFrame(animationFrame);
     };
   }, []);
+
+  // Don't render custom cursor on touch devices
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  if (isTouchDevice) {
+    return null;
+  }
 
   return (
     <>

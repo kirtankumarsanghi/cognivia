@@ -81,16 +81,17 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
 
   return (
     <>
-      {/* Fixed Button */}
+      {/* Fixed Button - Mobile Responsive */}
       <motion.button
         onClick={handleOpen}
-        className="fixed bottom-8 right-[100px] z-50 flex items-center gap-2 bg-error text-on-error px-6 py-4 rounded-full shadow-2xl hover:scale-105 transition-transform font-label-md uppercase tracking-widest"
+        className="fixed bottom-20 right-4 md:bottom-8 md:right-[100px] z-50 flex items-center gap-2 bg-error text-on-error px-4 py-3 md:px-6 md:py-4 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-transform font-label-sm md:font-label-md uppercase tracking-widest"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.5, type: 'spring', stiffness: 260, damping: 20 }}
       >
-        <span className="material-symbols-outlined">help</span>
-        I'm Confused
+        <span className="material-symbols-outlined text-[20px] md:text-[24px]">help</span>
+        <span className="hidden sm:inline">I'm Confused</span>
+        <span className="sm:hidden">Help</span>
       </motion.button>
 
       {/* Modal */}
@@ -105,12 +106,12 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
               onClick={() => !submitting && setShowModal(false)}
             />
             <motion.div
-              className="fixed inset-0 z-[70] flex items-center justify-center p-4"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              className="fixed inset-0 z-[70] flex items-end md:items-center justify-center p-0 md:p-4"
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
             >
-              <div className="bg-surface-container rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="bg-surface-container rounded-t-3xl md:rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[85vh] md:max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
                 {success ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <motion.div
@@ -129,10 +130,10 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
                 ) : (
                   <>
                     <div className="flex items-center justify-between mb-6">
-                      <h2 className="font-headline-lg text-headline-lg text-on-surface">What are you confused about?</h2>
+                      <h2 className="font-headline-md md:font-headline-lg text-headline-md md:text-headline-lg text-on-surface">What are you confused about?</h2>
                       <button
                         onClick={() => setShowModal(false)}
-                        className="w-10 h-10 rounded-full hover:bg-surface-bright transition-colors flex items-center justify-center"
+                        className="w-10 h-10 rounded-full hover:bg-surface-bright active:bg-surface-bright transition-colors flex items-center justify-center shrink-0"
                       >
                         <span className="material-symbols-outlined text-on-surface-variant">close</span>
                       </button>
@@ -159,7 +160,7 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
                               setActiveSession(null);
                             }
                           }}
-                          className="w-full bg-surface border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary transition-colors"
+                          className="w-full bg-surface border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface text-base focus:outline-none focus:border-primary transition-colors"
                           required
                         >
                           <option value="">Select a course...</option>
@@ -225,42 +226,42 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
                             <label className="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-3 block">
                               How clear is this concept to you?
                             </label>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-3 gap-2 md:gap-3">
                               <button
                                 type="button"
                                 onClick={() => setSignal('Confused')}
-                                className={`p-4 rounded-xl border-2 transition-all ${
+                                className={`p-3 md:p-4 rounded-xl border-2 transition-all ${
                                   signal === 'Confused'
                                     ? 'border-error bg-error/10 text-error'
-                                    : 'border-outline-variant/20 hover:border-error/50'
+                                    : 'border-outline-variant/20 hover:border-error/50 active:border-error/50'
                                 }`}
                               >
-                                <span className="material-symbols-outlined text-[32px] mb-2">sentiment_very_dissatisfied</span>
-                                <p className="font-label-sm uppercase">Confused</p>
+                                <span className="material-symbols-outlined text-[28px] md:text-[32px] mb-1 md:mb-2">sentiment_very_dissatisfied</span>
+                                <p className="font-label-sm uppercase text-xs md:text-sm">Confused</p>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setSignal('Partially Clear')}
-                                className={`p-4 rounded-xl border-2 transition-all ${
+                                className={`p-3 md:p-4 rounded-xl border-2 transition-all ${
                                   signal === 'Partially Clear'
                                     ? 'border-[#E8A634] bg-[#E8A634]/10 text-[#E8A634]'
-                                    : 'border-outline-variant/20 hover:border-[#E8A634]/50'
+                                    : 'border-outline-variant/20 hover:border-[#E8A634]/50 active:border-[#E8A634]/50'
                                 }`}
                               >
-                                <span className="material-symbols-outlined text-[32px] mb-2">sentiment_neutral</span>
-                                <p className="font-label-sm uppercase">Partially Clear</p>
+                                <span className="material-symbols-outlined text-[28px] md:text-[32px] mb-1 md:mb-2">sentiment_neutral</span>
+                                <p className="font-label-sm uppercase text-xs md:text-sm">Partial</p>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setSignal('Clear')}
-                                className={`p-4 rounded-xl border-2 transition-all ${
+                                className={`p-3 md:p-4 rounded-xl border-2 transition-all ${
                                   signal === 'Clear'
                                     ? 'border-[#3DD68C] bg-[#3DD68C]/10 text-[#3DD68C]'
-                                    : 'border-outline-variant/20 hover:border-[#3DD68C]/50'
+                                    : 'border-outline-variant/20 hover:border-[#3DD68C]/50 active:border-[#3DD68C]/50'
                                 }`}
                               >
-                                <span className="material-symbols-outlined text-[32px] mb-2">sentiment_satisfied</span>
-                                <p className="font-label-sm uppercase">Clear</p>
+                                <span className="material-symbols-outlined text-[28px] md:text-[32px] mb-1 md:mb-2">sentiment_satisfied</span>
+                                <p className="font-label-sm uppercase text-xs md:text-sm">Clear</p>
                               </button>
                             </div>
                           </div>

@@ -35,18 +35,20 @@ export default function ClassRoster() {
   const api = useApi();
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchRoster = async () => {
       try {
         const data = await api.get('/analytics/educator/students');
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && isMounted) {
           const formatted = data.map((d: any) => ({
             id: d.student_id,
             name: d.student_name,
             mastery: d.avg_mastery || 0,
             status: d.last_session ? 'Active' : 'Inactive',
-            pulse: d.confusion_count > 5 ? 'High' : d.confusion_count > 2 ? 'Medium' : 'Low',
+            pulse: (d.confusion_count || 0) > 5 ? 'High' : (d.confusion_count || 0) > 2 ? 'Medium' : 'Low',
             lastActive: timeSince(d.last_session?.created_at),
-            strugglingTopic: d.confusion_count > 0 ? `${d.confusion_count} Confusions` : 'None',
+            strugglingTopic: (d.confusion_count || 0) > 0 ? `${d.confusion_count} Confusions` : 'None',
             trend: ((d.practice_accuracy || 0) >= 80 ? 'up' : (d.practice_accuracy || 0) >= 50 ? 'flat' : 'down') as 'up' | 'flat' | 'down'
           }));
           setStudents(formatted);
@@ -54,10 +56,17 @@ export default function ClassRoster() {
       } catch (err) {
         console.error('Failed to load roster', err);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
+    
     fetchRoster();
+    const interval = setInterval(fetchRoster, 15000); // refresh every 15s
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [api]);
 
   const handleExportCSV = () => {
