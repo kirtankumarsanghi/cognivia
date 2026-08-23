@@ -263,8 +263,7 @@ router.post('/api/confusion/signal', requireAuth, antiGamingMiddleware, async (r
       .insert({ 
         student_id: userId, 
         concept_id, 
-        signal,
-        weight // Store diminishing weight for anti-gaming
+        signal
       })
       .select()
       .single();
@@ -418,7 +417,7 @@ router.get('/api/confusion/pulse', requireAuth, async (req, res) => {
     // Select weight column for anti-gaming weighted scoring
     const { data, error } = await supabaseAdmin
       .from('confusion_signals')
-      .select('concept_id, signal, weight, concepts(name)')
+      .select('concept_id, signal, concepts(name)')
       .order('created_at', { ascending: false });
     
     if (error) throw error;
@@ -591,8 +590,7 @@ router.post('/api/practice/attempt', requireAuth, antiGamingMiddleware, applyDim
       .insert({ 
         student_id: userId, 
         concept_id, 
-        correct,
-        weight // Store the diminishing weight
+        correct
       })
       .select()
       .single();
