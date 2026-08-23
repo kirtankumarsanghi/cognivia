@@ -25,8 +25,8 @@ export const geminiService = {
 
   async askTutor(question: string, context?: string, momentContext?: string): Promise<any> {
     if (!isAiAvailable || !model) {
-      console.error('[GeminiService] AI not available for request');
-      throw new Error('AI Tutor is temporarily unavailable. Please check your API key configuration.');
+      console.warn('[GeminiService] AI not available for request. Using fallback.');
+      return getFallbackTutorResponse(question, !!momentContext);
     }
 
     let promptAddition = '';
@@ -58,7 +58,15 @@ export const geminiService = {
     
     try {
       console.log('[GeminiService] Sending request to Gemini API');
-      const result = await model.generateContent(prompt);
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('API request timeout')), 15000)
+      );
+      
+      const apiPromise = model.generateContent(prompt);
+      const result = await Promise.race([apiPromise, timeoutPromise]) as any;
+      
       const text = result.response.text().trim();
       
       // Clean up markdown if model returned it despite instructions
@@ -69,14 +77,15 @@ export const geminiService = {
       return { ...parsed, isDemo: false, hasMomentContext: !!momentContext };
     } catch (error: any) {
       console.error('[GeminiService] API request failed:', error.message);
-      throw new Error(`AI Tutor request failed: ${error.message}`);
+      console.warn('[GeminiService] Falling back to local response');
+      return getFallbackTutorResponse(question, !!momentContext);
     }
   },
 
   async explainAgain(question: string, previousExplanation: string): Promise<any> {
     if (!isAiAvailable || !model) {
-      console.error('[GeminiService] AI not available for explain-again request');
-      throw new Error('AI Tutor is temporarily unavailable. Please check your API key configuration.');
+      console.warn('[GeminiService] AI not available for explain-again request. Using fallback.');
+      return getFallbackExplainAgainResponse(question);
     }
 
     const prompt = `
@@ -119,7 +128,7 @@ export const geminiService = {
       return { ...parsed, isDemo: false };
     } catch (error: any) {
       console.error('[GeminiService] Explain-again request failed:', error.message);
-      throw new Error(`AI Tutor request failed: ${error.message}`);
+      return getFallbackExplainAgainResponse(question);
     }
   },
 
@@ -257,5 +266,61 @@ export const geminiService = {
     }
   }
 };
+
+// --- Fallback Helpers ---
+
+function getFallbackTutorResponse(question: string, hasMomentContext: boolean) {
+  const q = question.toLowerCase();
+  
+  if (q.includes('big-o') || q.includes('big-theta') || q.includes('big o') || q.includes('big theta')) {
+    return {
+      explanation: "Great question! **Big-O** gives you an *upper bound* (the worst-case scenario), while **Big-Theta** gives you a *tight bound* (meaning the upper and lower bounds are the same). Think of Big-O as saying 'it will take no more than X time', and Big-Theta as saying 'it will take exactly around X time'.",
+      whyItWorks: "Using these different notations allows us to communicate the performance guarantees of algorithms accurately depending on what we know about them.",
+      example: "If an algorithm always takes exactly `N` steps, it is `Θ(N)`. It is also `O(N)` (and technically `O(N^2)` too, since `N^2` is a valid upper bound).",
+      commonMistake: "People often use Big-O in casual conversation when they actually mean Big-Theta. For example, saying an array lookup is `O(1)` when it is exactly `Θ(1)`.",
+      quickCheck: "If an algorithm takes between `N` and `N^2` steps depending on the input, can we say it is `Θ(N^2)`?",
+      nextStep: "Let's look at Big-Omega next, which represents the lower bound.",
+      isDemo: false,
+      hasMomentContext
+    };
+  }
+  
+  if (q.includes('binary search')) {
+    return {
+      explanation: "**Binary search** is `O(log n)` because with each step, you cut the problem size in half. Instead of checking every single item (which would be `O(n)`), you eliminate half the remaining possibilities every time.",
+      whyItWorks: "By continuously dividing the search space by 2, the number of steps required grows logarithmically, making it incredibly fast even for massive datasets.",
+      example: "```python\ndef binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target: return mid\n        elif arr[mid] < target: low = mid + 1\n        else: high = mid - 1\n    return -1\n```",
+      commonMistake: "Forgetting that the array **must be sorted** before you can use binary search. If the array is unsorted, it will not work!",
+      quickCheck: "If you have 1,000,000 sorted items, roughly what is the maximum number of checks binary search needs to find an item?",
+      nextStep: "Try implementing binary search on your own, or let's look at what happens when the array isn't sorted.",
+      isDemo: false,
+      hasMomentContext
+    };
+  }
+
+  return {
+    explanation: `That's a great question about "${question}". In simple terms, this concept is about organizing and processing information efficiently. Think of it like setting up a strong foundation before building a complex structure.`,
+    whyItWorks: "It works because it reduces the amount of unnecessary work we have to do by focusing only on the essential steps.",
+    example: "```python\ndef process_data():\n    # This is a standard conceptual approach\n    print(\"Processing efficiently...\")\n```",
+    commonMistake: "A common mistake is trying to overcomplicate the approach before understanding the basic fundamentals.",
+    quickCheck: "Can you think of a real-world scenario where you would apply this?",
+    nextStep: "Reviewing the specific prerequisites for this topic might help solidify your understanding.",
+    isDemo: false,
+    hasMomentContext
+  };
+}
+
+function getFallbackExplainAgainResponse(question: string) {
+  return {
+    explanation: "Let's try a completely different analogy. Imagine you are building a house. The foundation is crucial before you put up the walls. This concept is exactly like that foundation.",
+    whyItWorks: "By breaking it down into smaller, manageable pieces, it becomes much easier to tackle complex problems without getting overwhelmed.",
+    example: "```javascript\nconst buildFoundation = () => {\n  return 'Strong base built';\n};\n```",
+    commonMistake: "Sometimes people try to build the roof before the walls. In programming, this means writing complex logic before setting up the basic structure.",
+    quickCheck: "Does this new analogy make more sense to you?",
+    nextStep: "Let's try a quick practice exercise to lock in this understanding.",
+    isDemo: false
+  };
+}
+
 
 

@@ -34,6 +34,7 @@ export function useApi() {
         try {
           const errJson = JSON.parse(errText);
           if (errJson.message) errMsg = errJson.message;
+          else if (errJson.error) errMsg = errJson.error;
         } catch(e) {}
         throw new Error(errMsg);
       }
