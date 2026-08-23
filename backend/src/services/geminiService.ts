@@ -190,7 +190,11 @@ export const geminiService = {
       return JSON.parse(jsonStr);
     } catch (error) {
       console.error('Gemini API Error:', error);
-      throw new Error('Failed to generate mini-lesson');
+      return {
+        reExplanation: "Demo Re-Explanation: Let's try looking at this from a different angle. Imagine a completely different scenario where the core principle still applies.",
+        workedExample: "Demo Example: Step 1: Do X. Step 2: Do Y. Result: Z.",
+        commonMistake: "Demo Mistake: Watch out for assuming A is B without checking C."
+      };
     }
   }
 };
