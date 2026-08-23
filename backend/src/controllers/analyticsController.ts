@@ -242,7 +242,8 @@ export const analyticsController = {
           students:profiles(name)
         `)
         .in('student_id', studentIds)
-        .gte('created_at', sinceDate.toISOString());
+        .gte('created_at', sinceDate.toISOString())
+        .order('created_at', { ascending: false });
 
       if (signalsError) throw signalsError;
 

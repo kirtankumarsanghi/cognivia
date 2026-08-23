@@ -6,7 +6,7 @@
 import axios from 'axios';
 import { env } from '../config/env';
 
-const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:5001';
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://127.0.0.1:5001';
 const ML_TIMEOUT = 10000; // 10 seconds
 
 interface MLResponse<T> {

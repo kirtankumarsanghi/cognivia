@@ -8,6 +8,7 @@ import SessionManager from './SessionManager';
 import SessionTimeline from './SessionTimeline';
 import EducatorMLTerminal from './EducatorMLTerminal';
 import CreateCourseModal from './CreateCourseModal';
+import { supabase } from '../../lib/supabase';
 
 export default function EducatorDashboard() {
   const api = useApi();
@@ -113,8 +114,22 @@ export default function EducatorDashboard() {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => loadData(hoursAgo), 15000);
 
+    // Setup Supabase Realtime subscription for true live insights mapping
+    const subscription = supabase
+      .channel('confusion_signals_live')
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'confusion_signals' }, 
+        (payload) => {
+          console.log('Live insight received:', payload);
+          // When student clicks "I'm confused", immediately refresh dashboard
+          loadData(hoursAgo);
+        }
+      )
+      .subscribe();
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      supabase.removeChannel(subscription);
     };
   }, [hoursAgo, selectedCourseId]); // Re-fetch when course or timeframe changes
 
