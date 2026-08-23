@@ -427,7 +427,7 @@ router.get('/api/confusion/pulse', requireAuth, async (req, res) => {
     data.forEach(sig => {
       const cid = sig.concept_id;
       const concept = Array.isArray(sig.concepts) ? sig.concepts[0] : sig.concepts;
-      const weight = sig.weight || 1.0; // Get anti-gaming weight (default 1.0 for legacy data)
+      const weight = 1.0; // Anti-gaming disabled, default to 1.0
       
       if (!pulse[cid]) pulse[cid] = { concept_id: cid, name: concept?.name || 'Unknown', score: 0, count: 0 };
       
