@@ -70,7 +70,7 @@
       "n_clusters": 5
     },
     "dataset_type": "SYNTHETIC",
-    "prediction_count": 1
+    "prediction_count": 2
   },
   "anomaly_detector": {
     "model_name": "anomaly_detector",

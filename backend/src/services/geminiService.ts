@@ -61,16 +61,16 @@ export const geminiService = {
     } catch (error: any) {
       console.error('Gemini API Error:', error);
       
-      // Provide more specific error messages
-      if (error.message?.includes('timeout') || error.code === 'ETIMEDOUT') {
-        throw new Error('The AI service timed out. Please try again.');
-      } else if (error.message?.includes('rate limit') || error.status === 429) {
-        throw new Error('Too many requests. Please wait a moment and try again.');
-      } else if (error.message?.includes('quota') || error.status === 429) {
-        throw new Error('API quota exceeded. Using demo mode instead.');
-      } else {
-        throw new Error('Failed to generate AI response. Please try again.');
-      }
+      // Fallback to Demo Mode Response on any API error
+      return {
+        explanation: "**Demo Mode:** Binary search works by repeatedly dividing in half the portion of the list that could contain the item, until you've narrowed down the possible locations to just one. This is much faster than checking every element one by one.",
+        whyItWorks: "It works because in a sorted array, checking the middle element tells you exactly which half of the array your target must be in. You can safely ignore the other half.",
+        example: "```python\n# Binary search example\ndef binary_search(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1\n```\nLike looking up a word in a dictionary - you open the middle, see if your word is earlier or later, and repeat.",
+        commonMistake: "Forgetting that the array **MUST be sorted** before you can use binary search. Also, watch out for integer overflow when calculating `mid = (left + right) / 2` - use `mid = left + (right - left) / 2` instead.",
+        quickCheck: "If you have 100 items, what is the maximum number of checks binary search needs? (Answer: roughly 7, since log₂(100) ≈ 6.64)",
+        nextStep: "Try implementing binary search in your favorite programming language and test it with different array sizes",
+        isDemo: true
+      };
     }
   },
 
@@ -126,13 +126,15 @@ export const geminiService = {
     } catch (error: any) {
       console.error('Gemini API Error:', error);
       
-      if (error.message?.includes('timeout') || error.code === 'ETIMEDOUT') {
-        throw new Error('The AI service timed out. Please try again.');
-      } else if (error.message?.includes('rate limit') || error.status === 429) {
-        throw new Error('Too many requests. Please wait a moment and try again.');
-      } else {
-        throw new Error('Failed to generate alternative explanation. Please try again.');
-      }
+      return {
+        explanation: "**Demo Alternative:** Imagine guessing a number between 1 and 100. If you guess 50 and I say \"higher\", you've instantly eliminated 1-50. That's the power of binary search - each guess eliminates half the possibilities!",
+        whyItWorks: "Every step cuts the problem size in half, making it incredibly fast even for massive datasets. This is why it's O(log n) - the number of steps grows logarithmically.",
+        example: "```javascript\n// Real-world: Finding a book in a library\n// Instead of checking every shelf (linear search)\n// Start in the middle, then eliminate half the shelves\n// Repeat until you find your book\n```\nSearching a phone book with 1 million names takes at most 20 checks!",
+        commonMistake: "Calculating the middle index incorrectly, leading to an infinite loop or out-of-bounds error. For example, `mid = (left + right) / 2` can cause integer overflow in some languages.",
+        quickCheck: "Why is O(log n) better than O(n)? Think about searching 1 million items: log₂(1,000,000) ≈ 20 vs 1,000,000!",
+        nextStep: "Try writing the termination condition for when the search should stop",
+        isDemo: true
+      };
     }
   },
 
