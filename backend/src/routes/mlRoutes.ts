@@ -38,9 +38,19 @@ router.post('/api/ml/student-profile', requireAuth, async (req: Request, res: Re
 
       // Check for ML Explorer achievement
       await checkMLAchievement(userId, 'ml_profile');
+      
+      res.json(result);
+    } else {
+      // Fallback response when ML service is unavailable
+      res.json({
+        success: true,
+        cluster: 'Balanced Learner',
+        cluster_id: 2,
+        confidence: 0.75,
+        model: 'fallback',
+        profile_description: 'ML service temporarily unavailable. Continue learning as normal.'
+      });
     }
-
-    res.json(result || { error: 'ML service unavailable' });
   } catch (error: any) {
     console.error('Error getting student profile:', error);
     res.status(500).json({ error: error.message });
@@ -73,9 +83,20 @@ router.post('/api/ml/early-warning', requireAuth, async (req: Request, res: Resp
       });
 
       await checkMLAchievement(userId, 'ml_early_warning');
+      
+      res.json(result);
+    } else {
+      // Fallback response when ML service is unavailable
+      res.json({
+        success: true,
+        risk_probability: 0.3,
+        risk_level: 'low',
+        risk_percentage: 30,
+        recommended_action: 'Continue with the current learning path',
+        model: 'fallback',
+        feature_contributions: []
+      });
     }
-
-    res.json(result || { error: 'ML service unavailable' });
   } catch (error: any) {
     console.error('Error predicting early warning:', error);
     res.status(500).json({ error: error.message });
@@ -101,9 +122,18 @@ router.post('/api/ml/recommendation', requireAuth, async (req: Request, res: Res
         result: result,
         confidence: result.confidence
       });
+      
+      res.json(result);
+    } else {
+      // Fallback response when ML service is unavailable
+      res.json({
+        success: true,
+        next_best_action: 'review_prerequisites',
+        reasoning: 'ML service temporarily unavailable. Consider reviewing prerequisite concepts.',
+        confidence: 0.7,
+        model: 'fallback'
+      });
     }
-
-    res.json(result || { error: 'ML service unavailable' });
   } catch (error: any) {
     console.error('Error getting recommendation:', error);
     res.status(500).json({ error: error.message });
@@ -132,9 +162,19 @@ router.post('/api/ml/concept-difficulty', requireAuth, async (req: Request, res:
         result: result,
         confidence: 0.85
       });
+      
+      res.json(result);
+    } else {
+      // Fallback response when ML service is unavailable
+      res.json({
+        success: true,
+        difficulty_score: 50,
+        adaptive_level: 'medium',
+        estimated_time_mins: 15,
+        prerequisite_mastery_required: 0.6,
+        model: 'fallback'
+      });
     }
-
-    res.json(result || { error: 'ML service unavailable' });
   } catch (error: any) {
     console.error('Error calculating concept difficulty:', error);
     res.status(500).json({ error: error.message });
@@ -165,9 +205,18 @@ router.post('/api/ml/learning-risk', requireAuth, async (req: Request, res: Resp
         result: result,
         confidence: result.risk_probability
       });
+      
+      res.json(result);
+    } else {
+      // Fallback response when ML service is unavailable
+      res.json({
+        success: true,
+        at_risk: false,
+        risk_probability: 0.3,
+        contributing_factors: [],
+        model: 'fallback'
+      });
     }
-
-    res.json(result || { error: 'ML service unavailable' });
   } catch (error: any) {
     console.error('Error calculating learning risk:', error);
     res.status(500).json({ error: error.message });
@@ -193,9 +242,19 @@ router.post('/api/ml/nlp-classifier', requireAuth, async (req: Request, res: Res
         result: result,
         confidence: result.confidence || 0.8
       });
+      
+      res.json(result);
+    } else {
+      // Fallback response when ML service is unavailable
+      res.json({
+        success: true,
+        sentiment: 'confused',
+        intent: 'seeking_explanation',
+        urgency: 0.5,
+        category: 'General',
+        model: 'fallback'
+      });
     }
-
-    res.json(result || { error: 'ML service unavailable' });
   } catch (error: any) {
     console.error('Error classifying text:', error);
     res.status(500).json({ error: error.message });
