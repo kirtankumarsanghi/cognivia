@@ -31,7 +31,7 @@ export const analyticsController = {
         .select(`
           score,
           concept_id,
-          concepts:concepts(name, course_id)
+          concepts:concepts(name)
         `)
         .eq('student_id', userId);
 
