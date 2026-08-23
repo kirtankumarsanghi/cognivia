@@ -5,6 +5,7 @@ import { requireAuth } from '../middleware/authMiddleware';
 import { masteryService } from '../services/masteryService';
 import { analyticsController } from '../controllers/analyticsController';
 import { antiGamingMiddleware, applyDiminishingWeight } from '../middleware/antiGamingMiddleware';
+import { getRevisionPlan, generateSmartPlan, completeRevision, deleteRevisionPlan } from '../controllers/revisionController';
 import sessionRoutes from './sessionRoutes';
 import mlRoutes from './mlRoutes';
 import achievementRoutes from './achievementRoutes';
@@ -525,204 +526,19 @@ router.get('/api/tutor/history', requireAuth, async (req, res) => {
 });
 
 // ========== REVISION ==========
-router.get('/api/revision/plan', requireAuth, async (req, res) => {
-  const userId = (req as any).user.id;
-  try {
-    // Get explicit revision plans
-    const { data, error } = await supabaseAdmin
-      .from('revision_plans')
-      .select('*, concepts(name, lesson:lessons(course:courses(name)))')
-      .eq('student_id', userId)
-      .eq('completed', false)
-      .order('priority', { ascending: false });
-    
-    if (error) throw error;
-    
-    const priorityOrder: Record<string, number> = { 'High': 0, 'Medium': 1, 'Low': 2 };
-    let plans = data.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+// ========== REVISION ==========
+// Get revision plan (auto-generates if empty)
+router.get('/api/revision/plan', requireAuth, getRevisionPlan);
 
-    // If no explicit plans, generate smart recommendations based on mastery scores
-    if (plans.length === 0) {
-      const { data: lowMasteryData } = await supabaseAdmin
-        .from('mastery_scores')
-        .select('*, concept:concepts(id, name, lesson:lessons(course:courses(name)))')
-        .eq('student_id', userId)
-        .lt('score', 70)
-        .order('score', { ascending: true })
-        .limit(5);
+// Generate smart revision plan using AI-powered recommendations
+router.post('/api/revision/generate-smart-plan', requireAuth, generateSmartPlan);
 
-      if (lowMasteryData && lowMasteryData.length > 0) {
-        // Auto-create revision plans for low mastery concepts
-        const newPlans = lowMasteryData.map(m => ({
-          student_id: userId,
-          concept_id: m.concept.id,
-          priority: m.score < 40 ? 'High' : m.score < 60 ? 'Medium' : 'Low',
-          minutes: m.score < 40 ? 15 : 10,
-          completed: false
-        }));
+// Mark revision as complete
+router.post('/api/revision/:id/complete', requireAuth, completeRevision);
 
-        const { data: insertedPlans, error: insertError } = await supabaseAdmin
-          .from('revision_plans')
-          .insert(newPlans)
-          .select('*, concepts(name, lesson:lessons(course:courses(name)))');
+// Delete revision plan item
+router.delete('/api/revision/:id', requireAuth, deleteRevisionPlan);
 
-        if (!insertError && insertedPlans) {
-          plans = insertedPlans.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-        }
-      }
-    }
-    
-    res.json(plans);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post('/api/revision/:id/complete', requireAuth, async (req, res) => {
-  const userId = (req as any).user.id;
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('revision_plans')
-      .update({ completed: true })
-      .eq('id', req.params.id)
-      .eq('student_id', userId)
-      .select()
-      .single();
-    if (error) throw error;
-
-    await supabaseAdmin.from('learning_sessions').insert({
-      student_id: userId,
-      session_type: 'revision',
-      duration_minutes: data.minutes
-    });
-
-    const { data: currentMastery } = await supabaseAdmin
-      .from('mastery_scores')
-      .select('score')
-      .eq('student_id', userId)
-      .eq('concept_id', data.concept_id)
-      .single();
-
-    const newScore = Math.min(100, (currentMastery?.score || 50) + 5);
-    await supabaseAdmin.from('mastery_scores').upsert({
-      student_id: userId,
-      concept_id: data.concept_id,
-      score: newScore
-    }, { onConflict: 'student_id,concept_id' });
-
-    res.json(data);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Generate AI-powered study recommendations
-router.post('/api/revision/generate-smart-plan', requireAuth, async (req, res) => {
-  const userId = (req as any).user.id;
-  
-  try {
-    // Get student's current mastery scores
-    const { data: masteryData } = await supabaseAdmin
-      .from('mastery_scores')
-      .select('score, concept:concepts(id, name, difficulty, lesson:lessons(course:courses(name)))')
-      .eq('student_id', userId)
-      .order('score', { ascending: true });
-
-    // Get recent confusion signals
-    const { data: confusionData } = await supabaseAdmin
-      .from('confusion_signals')
-      .select('concept_id, signal, concepts(id, name)')
-      .eq('student_id', userId)
-      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
-
-    // Calculate confusion frequency
-    const confusionMap: Record<string, number> = {};
-    confusionData?.forEach(sig => {
-      if (!confusionMap[sig.concept_id]) confusionMap[sig.concept_id] = 0;
-      if (sig.signal === 'Confused') confusionMap[sig.concept_id] += 2;
-      else if (sig.signal === 'Partially Clear') confusionMap[sig.concept_id] += 1;
-    });
-
-    // Smart scoring algorithm
-    let recommendations = masteryData
-      ?.filter(m => m.score < 80) // Only concepts needing improvement
-
-      .map(m => {
-        const concept = Array.isArray(m.concept) ? m.concept[0] : m.concept;
-        const confusionScore = confusionMap[concept.id] || 0;
-        const masteryGap = 100 - m.score;
-        const difficultyWeight = concept.difficulty === 'advanced' ? 1.5 : concept.difficulty === 'intermediate' ? 1.2 : 1;
-        
-        // Combined priority score
-        const priorityScore = (masteryGap * 0.5 + confusionScore * 10) * difficultyWeight;
-        
-        return {
-          concept: concept,
-          score: m.score,
-          confusionCount: confusionScore,
-          priorityScore,
-          priority: priorityScore > 50 ? 'High' : priorityScore > 25 ? 'Medium' : 'Low',
-          estimatedMinutes: priorityScore > 50 ? 20 : priorityScore > 25 ? 15 : 10
-        };
-      })
-      .sort((a, b) => b.priorityScore - a.priorityScore)
-      .slice(0, 8); // Top 8 recommendations
-
-    // Create or update revision plans
-    if (recommendations && recommendations.length > 0) {
-      const plans = recommendations.map(rec => ({
-        student_id: userId,
-        concept_id: rec.concept.id,
-        priority: rec.priority,
-        minutes: rec.estimatedMinutes,
-        completed: false
-      }));
-
-      // Use upsert to avoid duplicates
-      await supabaseAdmin
-        .from('revision_plans')
-        .upsert(plans, { onConflict: 'student_id,concept_id', ignoreDuplicates: false });
-    }
-
-    if (!recommendations || recommendations.length === 0) {
-      // Fallback: Recommend 3 random concepts
-      const { data: randomConcepts } = await supabaseAdmin
-        .from('concepts')
-        .select('id, name, difficulty, lesson:lessons(course:courses(name))')
-        .limit(3);
-        
-      if (randomConcepts && randomConcepts.length > 0) {
-        recommendations = randomConcepts.map(c => ({
-          concept: c,
-          score: 0,
-          confusionCount: 0,
-          priorityScore: 50,
-          priority: 'Medium',
-          estimatedMinutes: 15
-        }));
-
-        const plans = recommendations.map(rec => ({
-          student_id: userId,
-          concept_id: rec.concept.id,
-          priority: rec.priority,
-          minutes: rec.estimatedMinutes,
-          completed: false
-        }));
-
-        await supabaseAdmin.from('revision_plans').upsert(plans, { onConflict: 'student_id,concept_id', ignoreDuplicates: false });
-      }
-    }
-
-    res.json({ 
-      success: true, 
-      recommendations,
-      message: `Generated ${recommendations?.length || 0} personalized revision topics` 
-    });
-  } catch (err: any) {
-    console.error('Error generating smart plan:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // ========== PRACTICE ==========
 router.get('/api/practice', requireAuth, async (req, res) => {
