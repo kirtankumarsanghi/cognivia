@@ -204,7 +204,7 @@ export const analyticsController = {
 
       // 1. Get all students in the course
       const { data: enrollments, error: enrollError } = await supabaseAdmin
-        .from('enrollments')
+        .from('course_enrollments')
         .select('student_id')
         .eq('course_id', courseId || 'cse2101');
 

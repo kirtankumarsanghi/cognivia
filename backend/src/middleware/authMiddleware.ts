@@ -38,6 +38,26 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
   const token = parts[1];
 
   try {
+    // ─── Offline Demo Bypass ────────────────────────────────────────
+    if (token === 'fake_offline_token_student' || token === 'fake_offline_token_12345') {
+      (req as any).user = {
+        id: '00000000-0000-0000-0000-000000000001',
+        name: 'Student Demo (Offline)',
+        email: 'student_offline@cognivia.local',
+        role: 'student',
+      };
+      return next();
+    }
+    if (token === 'fake_offline_token_educator') {
+      (req as any).user = {
+        id: '00000000-0000-0000-0000-000000000002',
+        name: 'Educator Demo (Offline)',
+        email: 'educator_offline@cognivia.local',
+        role: 'educator',
+      };
+      return next();
+    }
+    
     // ─── Verify token with Supabase ─────────────────────────────
     const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
 

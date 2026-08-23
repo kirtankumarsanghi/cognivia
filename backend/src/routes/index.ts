@@ -210,6 +210,36 @@ router.delete('/api/lessons/:id', requireAuth, async (req, res) => {
   }
 });
 
+router.get('/api/concepts/graph', requireAuth, async (req, res) => {
+  const userId = (req as any).user.id;
+  try {
+    const { data: concepts, error } = await supabaseAdmin.from('concepts').select('*');
+    if (error) throw error;
+    
+    const { data: mastery } = await supabaseAdmin.from('mastery_scores').select('concept_id, score').eq('student_id', userId);
+    const { data: deps } = await supabaseAdmin.from('concept_dependencies').select('concept_id, prerequisite_id');
+    
+    const masteryMap = new Map();
+    mastery?.forEach(m => masteryMap.set(m.concept_id, m.score));
+    
+    const depsMap = new Map();
+    deps?.forEach(d => {
+      if (!depsMap.has(d.concept_id)) depsMap.set(d.concept_id, []);
+      depsMap.get(d.concept_id).push({ id: d.prerequisite_id });
+    });
+    
+    const graphData = concepts.map(c => ({
+      ...c,
+      mastery: masteryMap.get(c.id) || 0,
+      prerequisites: depsMap.get(c.id) || []
+    }));
+    
+    res.json(graphData);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/api/concepts/:id', requireAuth, async (req, res) => {
   const userId = (req as any).user.id;
   try {
@@ -1268,6 +1298,32 @@ router.get('/api/study-groups/sessions', requireAuth, async (req, res) => {
       }
     ];
     res.json(sessions);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== EDUCATOR ==========
+router.post('/api/educator/mini-lesson', requireAuth, async (req, res) => {
+  const { conceptName } = req.body;
+  try {
+    const lesson = await geminiService.generateMiniLesson(conceptName);
+    res.json(lesson);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/api/educator/intervene', requireAuth, async (req, res) => {
+  const { studentId, message, type = 'message' } = req.body;
+  try {
+    await supabaseAdmin.from('notifications').insert({
+      user_id: studentId,
+      type: type,
+      message: message,
+      read: false
+    });
+    res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

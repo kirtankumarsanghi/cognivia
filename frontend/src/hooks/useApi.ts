@@ -24,7 +24,13 @@ export function useApi() {
       });
       
       if (!res.ok) {
-        throw new Error(`API Error: ${res.status}`);
+        const errText = await res.text();
+        let errMsg = `API Error: ${res.status}`;
+        try {
+          const errJson = JSON.parse(errText);
+          if (errJson.message) errMsg = errJson.message;
+        } catch(e) {}
+        throw new Error(errMsg);
       }
       
       const text = await res.text();

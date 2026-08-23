@@ -468,9 +468,11 @@ export const authService = {
       created_at: new Date().toISOString()
     };
 
+    const offlineToken = role === 'student' ? 'fake_offline_token_student' : 'fake_offline_token_educator';
+
     const sessionData = {
-      access_token: 'fake_offline_token_12345',
-      refresh_token: 'fake_offline_refresh_token_12345',
+      access_token: offlineToken,
+      refresh_token: offlineToken + '_refresh',
       expires_at: Math.floor(Date.now() / 1000) + 86400, // 24 hours from now
       user: {
         id: fakeId,

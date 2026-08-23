@@ -143,11 +143,11 @@ export default function Dashboard() {
   
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface p-8">
+      <div className="min-h-screen flex items-center justify-center bg-surface p-4 sm:p-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-surface-container rounded-2xl p-8 max-w-md w-full text-center border border-error/20"
+          className="bg-surface-container rounded-2xl p-6 sm:p-8 max-w-md w-full text-center border border-error/20 mx-4 sm:mx-0"
         >
           <span className="material-symbols-outlined text-error text-[48px] mb-4">error</span>
           <h2 className="font-headline-md text-headline-md text-on-surface mb-2">Connection Error</h2>
