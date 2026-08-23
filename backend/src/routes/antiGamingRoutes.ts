@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { supabaseAdmin } from '../config/supabase';
-import { requireAuth } from '../middleware/authMiddleware';
-import { requireRole } from '../middleware/roleMiddleware';
+import { requireAuth, requireRole } from '../middleware/authMiddleware';
 import { 
   getRateLimitStatus, 
   resetRateLimit, 
@@ -32,7 +31,7 @@ router.get('/api/anti-gaming/status/:conceptId', requireAuth, async (req, res) =
 /**
  * Get global anomaly statistics (admin only)
  */
-router.get('/api/anti-gaming/anomaly-stats', requireAuth, requireRole(['admin', 'educator']), async (req, res) => {
+router.get('/api/anti-gaming/anomaly-stats', requireAuth, requireRole('admin', 'educator'), async (req, res) => {
   try {
     const stats = getAnomalyStats();
     
@@ -56,7 +55,7 @@ router.get('/api/anti-gaming/anomaly-stats', requireAuth, requireRole(['admin', 
 /**
  * Get suspicious activity report (admin/educator only)
  */
-router.get('/api/anti-gaming/suspicious-activity', requireAuth, requireRole(['admin', 'educator']), async (req, res) => {
+router.get('/api/anti-gaming/suspicious-activity', requireAuth, requireRole('admin', 'educator'), async (req, res) => {
   try {
     const { data: suspiciousUsers, error } = await supabaseAdmin
       .from('suspicious_activity')
@@ -77,7 +76,7 @@ router.get('/api/anti-gaming/suspicious-activity', requireAuth, requireRole(['ad
 /**
  * Get detailed violations for a student (admin/educator only)
  */
-router.get('/api/anti-gaming/violations/:studentId', requireAuth, requireRole(['admin', 'educator']), async (req, res) => {
+router.get('/api/anti-gaming/violations/:studentId', requireAuth, requireRole('admin', 'educator'), async (req, res) => {
   try {
     const studentId = req.params.studentId;
     const timeWindow = req.query.hours ? `${req.query.hours} hours` : '24 hours';
@@ -112,7 +111,7 @@ router.get('/api/anti-gaming/violations/:studentId', requireAuth, requireRole(['
 /**
  * Reset rate limit for a student (admin only)
  */
-router.post('/api/anti-gaming/reset/:studentId/:conceptId', requireAuth, requireRole(['admin']), async (req, res) => {
+router.post('/api/anti-gaming/reset/:studentId/:conceptId', requireAuth, requireRole('admin'), async (req, res) => {
   try {
     const { studentId, conceptId } = req.params;
     
@@ -130,7 +129,7 @@ router.post('/api/anti-gaming/reset/:studentId/:conceptId', requireAuth, require
 /**
  * Get rate limit configuration (admin only)
  */
-router.get('/api/anti-gaming/config', requireAuth, requireRole(['admin']), async (req, res) => {
+router.get('/api/anti-gaming/config', requireAuth, requireRole('admin'), async (req, res) => {
   try {
     const { data: config, error } = await supabaseAdmin
       .from('rate_limit_config')
@@ -151,7 +150,7 @@ router.get('/api/anti-gaming/config', requireAuth, requireRole(['admin']), async
 /**
  * Update rate limit configuration (admin only)
  */
-router.put('/api/anti-gaming/config/:configKey', requireAuth, requireRole(['admin']), async (req, res) => {
+router.put('/api/anti-gaming/config/:configKey', requireAuth, requireRole('admin'), async (req, res) => {
   try {
     const { configKey } = req.params;
     const { value, description } = req.body;
@@ -181,7 +180,7 @@ router.put('/api/anti-gaming/config/:configKey', requireAuth, requireRole(['admi
 /**
  * Get recent violations timeline (admin/educator only)
  */
-router.get('/api/anti-gaming/violations-timeline', requireAuth, requireRole(['admin', 'educator']), async (req, res) => {
+router.get('/api/anti-gaming/violations-timeline', requireAuth, requireRole('admin', 'educator'), async (req, res) => {
   try {
     const hours = parseInt(req.query.hours as string) || 24;
     const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();

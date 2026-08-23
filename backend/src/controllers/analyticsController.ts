@@ -218,7 +218,7 @@ export const analyticsController = {
         .select(`
           *,
           concepts:concepts(name, id),
-          students:students(name)
+          students:profiles(name)
         `)
         .in('student_id', studentIds)
         .gte('created_at', sinceDate.toISOString());
@@ -262,7 +262,7 @@ export const analyticsController = {
       const atRiskStudents = await Promise.all(
         studentIds.slice(0, 5).map(async (studentId: string) => {
           const { data: student } = await supabaseAdmin
-            .from('students')
+            .from('profiles')
             .select('name, email')
             .eq('id', studentId)
             .single();

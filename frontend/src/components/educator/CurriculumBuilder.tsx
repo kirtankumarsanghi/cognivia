@@ -49,7 +49,7 @@ export default function CurriculumBuilder() {
             title: course.name,
             concepts: course.lessons ? course.lessons.map((lesson: any) => ({
               id: lesson.id,
-              name: lesson.name
+              name: lesson.title || lesson.name
             })) : []
           }));
           setModules(mappedModules);
@@ -125,7 +125,7 @@ export default function CurriculumBuilder() {
         const data = await api.post('/lessons', { course_id: moduleId, name: newConceptName.trim() });
         setModules(modules.map(m => 
           m.id === moduleId 
-            ? { ...m, concepts: [...m.concepts, { id: data.id, name: data.name }] } 
+            ? { ...m, concepts: [...m.concepts, { id: data.id, name: data.title || data.name }] } 
             : m
         ));
       } catch (err) {

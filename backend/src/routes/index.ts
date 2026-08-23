@@ -192,7 +192,7 @@ router.post('/api/lessons', requireAuth, async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('lessons')
-      .insert({ course_id, name, order_num: 0 })
+      .insert({ course_id, title: name, order_number: 0 })
       .select('*')
       .single();
     if (error) throw error;

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "test:anti-gaming": "ts-node test-anti-gaming.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.1.3",
@@ -15,9 +16,11 @@
     "@types/express": "^4.17.21",
     "@types/node": "^20.14.14",
     "axios": "^1.19.0",
+    "chalk": "^4.1.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.5.4",
     "zod": "^3.23.8"

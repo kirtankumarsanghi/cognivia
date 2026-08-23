@@ -60,17 +60,19 @@ async function detectAnomalySpike(): Promise<boolean> {
     // Log the anomaly
     console.warn(`⚠️ ANOMALY DETECTED: ${attemptsPerMinute} attempts/minute (threshold: ${DEFAULT_CONFIG.spikeThreshold})`);
     
-    // Store anomaly in database
-    await supabaseAdmin.from('rate_limit_violations').insert({
-      violation_type: 'coordinated_spike',
-      details: {
-        attempts_per_minute: attemptsPerMinute,
-        threshold: DEFAULT_CONFIG.spikeThreshold,
-        timestamp: new Date().toISOString()
-      }
-    }).catch(err => {
-      console.error('Failed to log anomaly:', err);
-    });
+    try {
+      const { error } = await supabaseAdmin.from('rate_limit_violations').insert({
+        violation_type: 'coordinated_spike',
+        details: {
+          attempts_per_minute: attemptsPerMinute,
+          threshold: DEFAULT_CONFIG.spikeThreshold,
+          timestamp: new Date().toISOString()
+        }
+      });
+      if (error) console.error('Failed to log anomaly:', error);
+    } catch (err: any) {
+      console.error('Exception logging anomaly:', err);
+    }
     
     return true;
   }
@@ -133,18 +135,21 @@ export const antiGamingMiddleware = async (
     userLimitData.violationCount++;
     
     // Store violation in database
-    await supabaseAdmin.from('rate_limit_violations').insert({
-      student_id: userId,
-      concept_id,
-      violation_type: 'cooldown_violation',
-      details: {
-        time_since_last: timeSinceLastAttempt,
-        required_cooldown: DEFAULT_CONFIG.cooldownSeconds,
-        violation_count: userLimitData.violationCount
-      }
-    }).catch(err => {
-      console.error('Failed to log violation:', err);
-    });
+    try {
+      const { error } = await supabaseAdmin.from('rate_limit_violations').insert({
+        student_id: userId,
+        concept_id,
+        violation_type: 'cooldown_violation',
+        details: {
+          time_since_last: timeSinceLastAttempt,
+          required_cooldown: DEFAULT_CONFIG.cooldownSeconds,
+          violation_count: userLimitData.violationCount
+        }
+      });
+      if (error) console.error('Failed to log violation:', error);
+    } catch (err: any) {
+      console.error('Exception logging violation:', err);
+    }
     
     return res.status(429).json({
       error: 'Rate limit exceeded',
@@ -191,19 +196,22 @@ export const antiGamingMiddleware = async (
   if (userLimitData.recentAttempts.length > DEFAULT_CONFIG.maxAttemptsInWindow) {
     userLimitData.violationCount++;
     
-    await supabaseAdmin.from('rate_limit_violations').insert({
-      student_id: userId,
-      concept_id,
-      violation_type: 'spam_detection',
-      details: {
-        attempts_in_window: userLimitData.recentAttempts.length,
-        max_allowed: DEFAULT_CONFIG.maxAttemptsInWindow,
-        window_seconds: DEFAULT_CONFIG.diminishingWindowSeconds,
-        violation_count: userLimitData.violationCount
-      }
-    }).catch(err => {
-      console.error('Failed to log spam violation:', err);
-    });
+    try {
+      const { error } = await supabaseAdmin.from('rate_limit_violations').insert({
+        student_id: userId,
+        concept_id,
+        violation_type: 'spam_detection',
+        details: {
+          attempts_in_window: userLimitData.recentAttempts.length,
+          max_allowed: DEFAULT_CONFIG.maxAttemptsInWindow,
+          window_seconds: DEFAULT_CONFIG.diminishingWindowSeconds,
+          violation_count: userLimitData.violationCount
+        }
+      });
+      if (error) console.error('Failed to log spam violation:', error);
+    } catch (err: any) {
+      console.error('Exception logging spam violation:', err);
+    }
     
     return res.status(429).json({
       error: 'Too many attempts',
