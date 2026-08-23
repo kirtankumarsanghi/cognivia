@@ -5,11 +5,11 @@ import { requireAuth } from '../middleware/authMiddleware';
 import { masteryService } from '../services/masteryService';
 import { analyticsController } from '../controllers/analyticsController';
 import { antiGamingMiddleware, applyDiminishingWeight } from '../middleware/antiGamingMiddleware';
-import { getRevisionPlan, generateSmartPlan, completeRevision, deleteRevisionPlan } from '../controllers/revisionController';
 import sessionRoutes from './sessionRoutes';
 import mlRoutes from './mlRoutes';
 import achievementRoutes from './achievementRoutes';
 import antiGamingRoutes from './antiGamingRoutes';
+import revisionRoutes from './revisionRoutes';
 
 const router = Router();
 
@@ -24,6 +24,9 @@ router.use(achievementRoutes);
 
 // Mount anti-gaming routes
 router.use(antiGamingRoutes);
+
+// Mount revision routes
+router.use(revisionRoutes);
 
 // ML & Analytics Status
 router.get('/api/analytics/ml-status', requireAuth, analyticsController.getMLStatus);
@@ -303,7 +306,15 @@ router.get('/api/concepts/:id', requireAuth, async (req, res) => {
 // ========== CONFUSION SIGNALS ==========
 router.post('/api/confusion/signal', requireAuth, async (req, res) => {
   const { concept_id, signal, session_id } = req.body;
-  const userId = (req as any).user.id;
+  const userId = (req as any).user?.id || req.headers['x-user-id'];
+
+  if (!userId) {
+    return res.status(401).json({ error: 'User ID missing in request headers or auth token' });
+  }
+
+  if (!concept_id) {
+    return res.status(400).json({ error: 'concept_id is required to send a confusion signal' });
+  }
 
   try {
     const { data, error } = await supabaseAdmin
@@ -316,16 +327,20 @@ router.post('/api/confusion/signal', requireAuth, async (req, res) => {
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('[Confusion Signal] Insert error:', error);
+      throw error;
+    }
 
     if (signal === 'Confused') {
-      await supabaseAdmin.from('revision_plans').upsert({
+      const { error: revError } = await supabaseAdmin.from('revision_plans').upsert({
         student_id: userId,
         concept_id,
         priority: 'High',
         minutes: 10,
         completed: false
       }, { onConflict: 'student_id,concept_id' });
+      if (revError) console.error('[Confusion Signal] Revision plans upsert error:', revError);
 
       const { data: currentMastery } = await supabaseAdmin
         .from('mastery_scores')
@@ -377,6 +392,7 @@ router.post('/api/confusion/signal', requireAuth, async (req, res) => {
 
     res.json(data);
   } catch (err: any) {
+    console.error('[Confusion Signal] Catch block error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -524,21 +540,6 @@ router.get('/api/tutor/history', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-// ========== REVISION ==========
-// ========== REVISION ==========
-// Get revision plan (auto-generates if empty)
-router.get('/api/revision/plan', requireAuth, getRevisionPlan);
-
-// Generate smart revision plan using AI-powered recommendations
-router.post('/api/revision/generate-smart-plan', requireAuth, generateSmartPlan);
-
-// Mark revision as complete
-router.post('/api/revision/:id/complete', requireAuth, completeRevision);
-
-// Delete revision plan item
-router.delete('/api/revision/:id', requireAuth, deleteRevisionPlan);
-
 
 // ========== PRACTICE ==========
 router.get('/api/practice', requireAuth, async (req, res) => {

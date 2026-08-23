@@ -7,7 +7,8 @@
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
-    "test:anti-gaming": "ts-node test-anti-gaming.ts"
+    "test:anti-gaming": "ts-node test-anti-gaming.ts",
+    "test:revision": "ts-node test-revision-plan.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.1.3",

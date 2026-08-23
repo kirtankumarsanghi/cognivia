@@ -41,7 +41,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
     // ─── Offline Demo Bypass ────────────────────────────────────────
     if (token === 'fake_offline_token_student' || token === 'fake_offline_token_12345') {
       (req as any).user = {
-        id: '00000000-0000-0000-0000-000000000001',
+        id: '0db0de92-86b4-4c9f-ade8-a219020cbe58',
         name: 'Student Demo (Offline)',
         email: 'student_offline@cognivia.local',
         role: 'student',
