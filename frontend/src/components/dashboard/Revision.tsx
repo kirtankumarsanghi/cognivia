@@ -34,30 +34,55 @@ export default function Revision() {
     try {
       const revisionData = await api.get('/revision/plan');
       console.log('[Revision] Loaded plan:', revisionData);
-      setRevisionPlan(revisionData || []);
+      
+      if (!revisionData) {
+        console.warn('[Revision] No data returned from API');
+        setRevisionPlan([]);
+      } else if (Array.isArray(revisionData)) {
+        setRevisionPlan(revisionData);
+      } else {
+        console.warn('[Revision] Unexpected data format:', typeof revisionData);
+        setRevisionPlan([]);
+      }
     } catch (err: any) {
       console.error('[Revision] Failed to load revision data', err);
       showToast('Failed to load revision plan', 'error');
+      setRevisionPlan([]);
     } finally {
       setLoading(false);
     }
   };
 
   const generateSmartPlan = async () => {
-    console.log('[Revision] Generating smart plan...');
+    console.log('[Revision] Generate button clicked');
     setGenerating(true);
     try {
+      console.log('[Revision] Calling API: POST /revision/generate');
       const result = await api.post('/revision/generate', {});
       console.log('[Revision] Generation result:', result);
-      showToast(result.message || 'Smart revision plan generated!', 'success');
-      if (result.plans && result.plans.length > 0) {
+      
+      if (!result) {
+        throw new Error('No response from server');
+      }
+      
+      showToast(result.message || 'Smart revision plan generated!', result.success !== false ? 'success' : 'info');
+      
+      if (result.plans && Array.isArray(result.plans) && result.plans.length > 0) {
+        console.log('[Revision] Setting plans from response:', result.plans.length);
         setRevisionPlan(result.plans);
       } else {
+        console.log('[Revision] No plans in response, reloading...');
         await loadData(); // Fallback to reloading the plan
       }
     } catch (err: any) {
-      console.error('[Revision] Failed to generate smart plan', err);
-      showToast('Failed to generate plan. Try marking some concepts as confused first.', 'error');
+      console.error('[Revision] Failed to generate smart plan:', err);
+      const errorMessage = err.message || 'Failed to generate plan';
+      showToast(
+        errorMessage.includes('no data') || errorMessage.includes('all caught up')
+          ? 'You\'re doing great! No concepts need immediate attention.'
+          : 'Failed to generate plan. Try marking some concepts as confused first.',
+        'error'
+      );
     } finally {
       setGenerating(false);
     }
@@ -68,11 +93,21 @@ export default function Revision() {
   }, []);
 
   const startPractice = async (concept: any) => {
+    console.log('[Revision] Starting practice for:', concept);
     setCurrentConcept(concept);
     setPracticeMode(true);
     try {
-      const questions = await api.get(`/practice?concept_id=${concept.concept_id}`);
-      if (questions && questions.length > 0) {
+      const conceptId = concept.concept_id || concept.concepts?.id;
+      console.log('[Revision] Extracted concept ID:', conceptId);
+      
+      if (!conceptId) {
+        throw new Error('Invalid concept ID');
+      }
+      
+      const questions = await api.get(`/practice?concept_id=${conceptId}`);
+      console.log('[Revision] Loaded questions:', questions?.length);
+      
+      if (questions && Array.isArray(questions) && questions.length > 0) {
         setPracticeQuestions(questions);
         setCurrentQuestionIndex(0);
         setPracticeResults({correct: 0, total: 0});
@@ -82,8 +117,8 @@ export default function Revision() {
         setPracticeMode(false);
       }
     } catch (err: any) {
-      console.error('Failed to load practice questions', err);
-      showToast('Failed to load practice questions', 'error');
+      console.error('[Revision] Failed to load practice questions:', err);
+      showToast(err.message || 'Failed to load practice questions', 'error');
       setPracticeMode(false);
     }
   };
@@ -95,8 +130,13 @@ export default function Revision() {
     const isCorrect = selectedAnswer === currentQuestion.correct_answer;
 
     try {
+      const conceptId = currentConcept.concept_id || currentConcept.concepts?.id;
+      if (!conceptId) {
+        throw new Error('Invalid concept ID');
+      }
+      
       await api.post('/practice/attempt', {
-        concept_id: currentConcept.concept_id,
+        concept_id: conceptId,
         correct: isCorrect
       });
     } catch (err) {
@@ -123,13 +163,15 @@ export default function Revision() {
   };
 
   const handleCompleteRevision = async (planId: string) => {
+    console.log('[Revision] Attempting to complete revision:', planId);
     try {
-      await api.post(`/revision/${planId}/complete`, {});
+      const response = await api.post(`/revision/${planId}/complete`, {});
+      console.log('[Revision] Complete response:', response);
       showToast('Revision completed! 🎉', 'success');
       await loadData();
-    } catch (err) {
-      console.error('Failed to complete revision', err);
-      showToast('Failed to mark as complete', 'error');
+    } catch (err: any) {
+      console.error('[Revision] Failed to complete revision:', err);
+      showToast(err.message || 'Failed to mark as complete', 'error');
     }
   };
 
@@ -147,6 +189,7 @@ export default function Revision() {
   if (practiceMode && currentConcept) {
     const currentQuestion = practiceQuestions[currentQuestionIndex];
     const accuracy = practiceResults.total > 0 ? (practiceResults.correct / practiceResults.total) * 100 : 0;
+    const conceptName = currentConcept.concepts?.name || currentConcept.name || 'Unknown Concept';
 
     return (
       <div className="page-shell min-h-screen">
@@ -162,7 +205,7 @@ export default function Revision() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-headline-xl text-3xl text-on-background">
-                {currentConcept.concepts.name}
+                {conceptName}
               </h1>
               <p className="text-on-surface-variant mt-2">Practice Mode</p>
             </div>
@@ -356,70 +399,85 @@ export default function Revision() {
               animate={{ opacity: 1 }}
               className="space-y-4"
             >
-              {revisionPlan.map((plan, index) => (
-                <motion.div
-                  key={plan.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-6 rounded-xl bg-surface-bright hover:bg-surface-container-high transition-colors border border-outline-variant/10"
-                >
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-primary text-[28px]">menu_book</span>
-                    </div>
-                    
-                    <div className="flex-1">
-                      <h3 className="text-xl text-on-surface font-semibold mb-1">
-                        {plan.concepts.name}
-                      </h3>
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                          plan.priority === 'High' 
-                            ? 'bg-error/20 text-error' 
-                            : plan.priority === 'Medium'
-                            ? 'bg-[#E8A634]/20 text-[#E8A634]'
-                            : 'bg-surface-container text-on-surface-variant'
-                        }`}>
-                          {plan.priority} Priority
-                        </span>
-                        <span className="text-sm text-on-surface-variant flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">schedule</span>
-                          {plan.minutes} min
-                        </span>
+              {revisionPlan.map((plan, index) => {
+                // Safely extract concept data
+                const concept = plan.concepts;
+                const conceptName = concept?.name || 'Unknown Concept';
+                const conceptId = plan.concept_id || concept?.id;
+                const lesson = Array.isArray(concept?.lesson) ? concept.lesson[0] : concept?.lesson;
+                const course = Array.isArray(lesson?.course) ? lesson.course[0] : lesson?.course;
+                const courseName = course?.name || 'N/A';
+                
+                if (!conceptId) {
+                  console.warn('[Revision] Skipping plan with missing concept_id:', plan);
+                  return null;
+                }
+                
+                return (
+                  <motion.div
+                    key={plan.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center justify-between p-6 rounded-xl bg-surface-bright hover:bg-surface-container-high transition-colors border border-outline-variant/10"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-primary text-[28px]">menu_book</span>
+                      </div>
+                      
+                      <div className="flex-1">
+                        <h3 className="text-xl text-on-surface font-semibold mb-1">
+                          {conceptName}
+                        </h3>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                            plan.priority === 'High' 
+                              ? 'bg-error/20 text-error' 
+                              : plan.priority === 'Medium'
+                              ? 'bg-[#E8A634]/20 text-[#E8A634]'
+                              : 'bg-surface-container text-on-surface-variant'
+                          }`}>
+                            {plan.priority} Priority
+                          </span>
+                          <span className="text-sm text-on-surface-variant flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[16px]">schedule</span>
+                            {plan.minutes || 10} min
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => startPractice(plan)}
-                      className="bg-[#3DD68C] text-white px-6 py-3 rounded-xl font-medium hover:opacity-90 flex items-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">quiz</span>
-                      Practice
-                    </button>
                     
-                    <Link 
-                      to={`/tutor?concept=${plan.concept_id}`} 
-                      className="bg-primary text-on-primary px-6 py-3 rounded-xl font-medium hover:opacity-90 flex items-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">psychology</span>
-                      Tutor
-                    </Link>
-                    
-                    <button
-                      onClick={() => handleCompleteRevision(plan.id)}
-                      className="p-3 hover:bg-surface-container rounded-xl transition-colors"
-                      title="Mark as complete"
-                    >
-                      <span className="material-symbols-outlined text-[24px] text-on-surface-variant hover:text-[#3DD68C]">
-                        check_circle
-                      </span>
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => startPractice(plan)}
+                        className="bg-[#3DD68C] text-white px-6 py-3 rounded-xl font-medium hover:opacity-90 flex items-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">quiz</span>
+                        Practice
+                      </button>
+                      
+                      <Link 
+                        to={`/tutor?concept=${conceptId}`} 
+                        className="bg-primary text-on-primary px-6 py-3 rounded-xl font-medium hover:opacity-90 flex items-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">psychology</span>
+                        Tutor
+                      </Link>
+                      
+                      <button
+                        onClick={() => handleCompleteRevision(plan.id)}
+                        className="p-3 hover:bg-surface-container rounded-xl transition-colors"
+                        title="Mark as complete"
+                      >
+                        <span className="material-symbols-outlined text-[24px] text-on-surface-variant hover:text-[#3DD68C]">
+                          check_circle
+                        </span>
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              }).filter(Boolean)}
             </motion.div>
           ) : (
             <motion.div

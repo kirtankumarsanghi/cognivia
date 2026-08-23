@@ -83,7 +83,7 @@ async function generateSmartPlan() {
   
   try {
     const response = await axios.post(
-      `${API_URL}/revision/generate-smart-plan`,
+      `${API_URL}/revision/generate`,
       {},
       {
         headers: { Authorization: `Bearer ${authToken}` }

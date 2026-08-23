@@ -237,13 +237,13 @@ function MessageCard({
         <p className="font-body-md text-on-surface flex-1">{message.question}</p>
       </div>
 
-      {/* Demo Mode Badge */}
-      {message.response.isDemo && (
+      {/* Demo Mode Badge - Hidden for production */}
+      {/* {message.response.isDemo && (
         <div className="bg-error-container text-on-error-container px-3 py-1.5 rounded-lg text-xs border border-error/20 inline-flex items-center gap-2 font-label-sm">
           <span className="material-symbols-outlined text-[16px]">warning</span>
           Demo Mode Active - Using fallback responses
         </div>
-      )}
+      )} */}
 
       {/* Response */}
       <div className="pl-8 space-y-4">

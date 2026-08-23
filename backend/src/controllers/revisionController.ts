@@ -101,44 +101,55 @@ export const getRevisionPlan = async (req: Request, res: Response) => {
 
       if (lowMasteryData && lowMasteryData.length > 0) {
         // Auto-create revision plans for low mastery concepts
-        const newPlans = lowMasteryData.map(m => {
-          const concept = Array.isArray(m.concept) ? m.concept[0] : m.concept;
-          return {
-            student_id: userId,
-            concept_id: concept.id,
-            priority: m.score < 40 ? 'High' : m.score < 60 ? 'Medium' : 'Low',
-            minutes: m.score < 40 ? 15 : 10,
-            completed: false
-          };
-        });
+        const newPlans = lowMasteryData
+          .filter(m => m.concept && (Array.isArray(m.concept) ? m.concept.length > 0 : true))
+          .map(m => {
+            const concept = Array.isArray(m.concept) ? m.concept[0] : m.concept;
+            if (!concept || !concept.id) {
+              console.warn('[RevisionController] Skipping invalid concept:', m);
+              return null;
+            }
+            return {
+              student_id: userId,
+              concept_id: concept.id,
+              priority: m.score < 40 ? 'High' : m.score < 60 ? 'Medium' : 'Low',
+              minutes: m.score < 40 ? 15 : 10,
+              completed: false
+            };
+          })
+          .filter(Boolean) as any[];
 
         console.log('[RevisionController] Creating', newPlans.length, 'new revision plans');
 
-        const { data: insertedPlans, error: insertError } = await supabaseAdmin
-          .from('revision_plans')
-          .insert(newPlans)
-          .select(`
-            *,
-            concepts (
-              id,
-              name,
-              difficulty,
-              lesson:lessons (
+        if (newPlans.length === 0) {
+          console.log('[RevisionController] No valid concepts to create plans for');
+        } else {
+          const { data: insertedPlans, error: insertError } = await supabaseAdmin
+            .from('revision_plans')
+            .insert(newPlans)
+            .select(`
+              *,
+              concepts (
                 id,
-                title,
-                course:courses (
+                name,
+                difficulty,
+                lesson:lessons (
                   id,
-                  name
+                  title,
+                  course:courses (
+                    id,
+                    name
+                  )
                 )
               )
-            )
-          `);
+            `);
 
-        if (insertError) {
-          console.error('[RevisionController] Error creating plans:', insertError);
-        } else if (insertedPlans) {
-          console.log('[RevisionController] Successfully created', insertedPlans.length, 'plans');
-          plans = insertedPlans.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+          if (insertError) {
+            console.error('[RevisionController] Error creating plans:', insertError);
+          } else if (insertedPlans) {
+            console.log('[RevisionController] Successfully created', insertedPlans.length, 'plans');
+            plans = insertedPlans.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+          }
         }
       } else {
         console.log('[RevisionController] No low mastery concepts found, student is doing well!');
@@ -230,7 +241,12 @@ export const generateSmartPlan = async (req: Request, res: Response) => {
     
     if (masteryData && masteryData.length > 0) {
       recommendations = masteryData
-        .filter(m => m.score < 80) // Only concepts needing improvement
+        .filter(m => {
+          // Filter out invalid data
+          if (m.score >= 80) return false;
+          const concept = Array.isArray(m.concept) ? m.concept[0] : m.concept;
+          return concept && concept.id && concept.name;
+        })
         .map(m => {
           const concept = Array.isArray(m.concept) ? m.concept[0] : m.concept;
           const confusionScore = confusionMap[concept.id] || 0;
@@ -376,9 +392,33 @@ export const generateSmartPlan = async (req: Request, res: Response) => {
 
     console.log('[RevisionController]', message);
 
+    // Fetch the updated plans to return to the frontend
+    const { data: returnedPlans } = await supabaseAdmin
+      .from('revision_plans')
+      .select(`
+        *,
+        concepts (
+          id,
+          name,
+          difficulty,
+          lesson:lessons (
+            id,
+            title,
+            course:courses (
+              id,
+              name
+            )
+          )
+        )
+      `)
+      .eq('student_id', userId)
+      .eq('completed', false)
+      .order('priority', { ascending: false });
+
     res.json({ 
       success: true, 
       recommendations,
+      plans: returnedPlans || [],
       message
     });
 
