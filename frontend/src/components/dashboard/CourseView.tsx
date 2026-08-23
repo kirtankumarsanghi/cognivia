@@ -70,6 +70,7 @@ export default function CourseView() {
 
   const handleConceptClick = (concept: any) => {
     setSelectedConcept(concept);
+    localStorage.setItem('cognivia_current_concept_id', concept.id);
     loadConceptDetails(concept.id);
   };
 

@@ -664,4 +664,5 @@ BEGIN
     (student_id, c_ml)
   ON CONFLICT DO NOTHING;
 
+  END;
 END $$;

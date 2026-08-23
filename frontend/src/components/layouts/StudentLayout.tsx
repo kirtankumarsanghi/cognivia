@@ -1,6 +1,7 @@
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useApi } from '../../hooks/useApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { premiumEase } from '../../utils/animation';
 
@@ -17,10 +18,37 @@ const studentLinks = [
 
 export default function StudentLayout() {
   const { user, logout } = useAuth();
+  const api = useApi();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 768px)').matches);
+  const [isSubmittingSignal, setIsSubmittingSignal] = useState(false);
   const location = useLocation();
   const close = () => setMenuOpen(false);
+
+  const handleConfusedClick = async () => {
+    const conceptId = localStorage.getItem('cognivia_current_concept_id');
+    if (!conceptId) {
+      // No concept active, route to tutor to let them pick
+      close();
+      navigate('/tutor');
+      return;
+    }
+
+    setIsSubmittingSignal(true);
+    try {
+      await api.post('/confusion/signal', {
+        concept_id: conceptId,
+        signal: 'Confused'
+      });
+    } catch (err) {
+      console.error('Failed to post confusion signal', err);
+    } finally {
+      setIsSubmittingSignal(false);
+      close();
+      navigate(`/tutor?concept=${conceptId}`);
+    }
+  };
 
   useEffect(() => {
     const query = window.matchMedia('(min-width: 768px)');
@@ -80,7 +108,18 @@ export default function StudentLayout() {
         })}
       </nav>
       <div className="p-4 border-t border-outline-variant/10 space-y-2">
-        <Link to="/tutor" onClick={close} className="confused-button"><span className="material-symbols-outlined text-[18px]">emergency</span>I'm Confused</Link>
+        <button 
+          onClick={handleConfusedClick} 
+          disabled={isSubmittingSignal}
+          className={`confused-button w-full flex items-center gap-2 ${isSubmittingSignal ? 'opacity-70 cursor-not-allowed' : ''}`}
+        >
+          {isSubmittingSignal ? (
+            <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+          ) : (
+            <span className="material-symbols-outlined text-[18px]">emergency</span>
+          )}
+          {isSubmittingSignal ? 'Sending...' : "I'm Confused"}
+        </button>
         <button onClick={() => logout()} className="nav-item w-full"><span className="material-symbols-outlined">logout</span>Sign out</button>
       </div>
     </motion.aside>

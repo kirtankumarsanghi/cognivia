@@ -7,6 +7,7 @@ import Loading from '../ui/Loading';
 import SessionManager from './SessionManager';
 import SessionTimeline from './SessionTimeline';
 import EducatorMLTerminal from './EducatorMLTerminal';
+import CreateCourseModal from './CreateCourseModal';
 
 export default function EducatorDashboard() {
   const api = useApi();
@@ -22,6 +23,7 @@ export default function EducatorDashboard() {
   const [studyGuide, setStudyGuide] = useState<any>(null);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [showFullGuide, setShowFullGuide] = useState(false);
+  const [isCreateCourseModalOpen, setIsCreateCourseModalOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<any>(null);
   const [sessionDetails, setSessionDetails] = useState<any>(null);
   const [mlInsights, setMlInsights] = useState<any>(null);
@@ -244,6 +246,16 @@ export default function EducatorDashboard() {
 
   return (
     <div className="page-shell">
+      {isCreateCourseModalOpen && (
+        <CreateCourseModal 
+          onClose={() => setIsCreateCourseModalOpen(false)}
+          onSuccess={() => {
+            setIsCreateCourseModalOpen(false);
+            loadData(hoursAgo); // reload courses and analytics
+          }}
+        />
+      )}
+
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-y-stack-sm relative mb-8">
         <motion.div variants={fadeUp(0)} initial="hidden" animate="visible" className="flex flex-col">
           <span className="font-label-md text-label-md text-primary uppercase tracking-widest opacity-80 mb-stack-xs">
@@ -257,21 +269,34 @@ export default function EducatorDashboard() {
           </p>
         </motion.div>
         
-        {/* Course Selector */}
-        <motion.div variants={fadeUp(0.1)} initial="hidden" animate="visible" className="flex items-center gap-3 bg-surface-container border border-outline-variant/20 rounded-xl p-2 px-4 shadow-sm">
-          <span className="material-symbols-outlined text-primary text-[20px]">school</span>
-          <select 
-            value={selectedCourseId}
-            onChange={(e) => setSelectedCourseId(e.target.value)}
-            className="bg-transparent border-none outline-none font-label-md text-on-surface cursor-pointer py-2 pr-4 custom-select appearance-none focus:ring-0"
-            style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
+        {/* Course Selector & Actions */}
+        <div className="flex items-center gap-4">
+          <motion.div variants={fadeUp(0.1)} initial="hidden" animate="visible" className="flex items-center gap-3 bg-surface-container border border-outline-variant/20 rounded-xl p-2 px-4 shadow-sm">
+            <span className="material-symbols-outlined text-primary text-[20px]">school</span>
+            <select 
+              value={selectedCourseId}
+              onChange={(e) => setSelectedCourseId(e.target.value)}
+              className="bg-transparent border-none outline-none font-label-md text-on-surface cursor-pointer py-2 pr-4 custom-select appearance-none focus:ring-0"
+              style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
+            >
+              {courses.map((c: any) => (
+                <option key={c.id} value={c.id} className="bg-surface text-on-surface">{c.code} - {c.name}</option>
+              ))}
+            </select>
+            <span className="material-symbols-outlined text-outline text-[18px] pointer-events-none">expand_more</span>
+          </motion.div>
+          
+          <motion.button
+            variants={fadeUp(0.2)}
+            initial="hidden"
+            animate="visible"
+            onClick={() => setIsCreateCourseModalOpen(true)}
+            className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary-variant hover:opacity-90 text-on-primary px-4 py-2.5 rounded-xl font-label-md transition-all shadow-md"
           >
-            {courses.map((c: any) => (
-              <option key={c.id} value={c.id} className="bg-surface text-on-surface">{c.code} - {c.name}</option>
-            ))}
-          </select>
-          <span className="material-symbols-outlined text-outline text-[18px] pointer-events-none">expand_more</span>
-        </motion.div>
+            <span className="material-symbols-outlined text-[20px]">add_circle</span>
+            <span className="hidden sm:inline">Create Course</span>
+          </motion.button>
+        </div>
       </header>
 
       {/* Summary Cards */}

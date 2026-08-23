@@ -5,11 +5,13 @@ import { requireAuth } from '../middleware/authMiddleware';
 import { masteryService } from '../services/masteryService';
 import { analyticsController } from '../controllers/analyticsController';
 import { antiGamingMiddleware, applyDiminishingWeight } from '../middleware/antiGamingMiddleware';
+import { mlService } from '../services/mlService';
 import sessionRoutes from './sessionRoutes';
 import mlRoutes from './mlRoutes';
 import achievementRoutes from './achievementRoutes';
 import antiGamingRoutes from './antiGamingRoutes';
 import revisionRoutes from './revisionRoutes';
+import courseRoutes from './courseRoutes';
 
 const router = Router();
 
@@ -27,6 +29,9 @@ router.use(antiGamingRoutes);
 
 // Mount revision routes
 router.use(revisionRoutes);
+
+// Mount course routes
+router.use(courseRoutes);
 
 // ML & Analytics Status
 router.get('/api/analytics/ml-status', requireAuth, analyticsController.getMLStatus);
@@ -110,74 +115,7 @@ router.get('/api/me', requireAuth, async (req, res) => {
   }
 });
 
-// ========== COURSES & LESSONS & CONCEPTS ==========
-router.get('/api/courses', requireAuth, async (req, res) => {
-  try {
-    const { data, error } = await supabaseAdmin.from('courses').select('*, lessons(*, concepts(*))');
-    if (error) throw error;
-    res.json(data);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.get('/api/courses/:id', requireAuth, async (req, res) => {
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('courses')
-      .select('*, lessons(*, concepts(*))')
-      .eq('id', req.params.id)
-      .single();
-    if (error) throw error;
-    res.json(data);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post('/api/courses', requireAuth, async (req, res) => {
-  const { name, description } = req.body;
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('courses')
-      .insert({ name, description: description || '' })
-      .select('*, lessons(*, concepts(*))')
-      .single();
-    if (error) throw error;
-    res.json(data);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.put('/api/courses/:id', requireAuth, async (req, res) => {
-  const { name } = req.body;
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('courses')
-      .update({ name })
-      .eq('id', req.params.id)
-      .select('*, lessons(*, concepts(*))')
-      .single();
-    if (error) throw error;
-    res.json(data);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.delete('/api/courses/:id', requireAuth, async (req, res) => {
-  try {
-    const { error } = await supabaseAdmin
-      .from('courses')
-      .delete()
-      .eq('id', req.params.id);
-    if (error) throw error;
-    res.json({ success: true });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// Courses are now handled in courseRoutes.ts
 
 router.get('/api/lessons/:id', requireAuth, async (req, res) => {
   try {
@@ -304,9 +242,11 @@ router.get('/api/concepts/:id', requireAuth, async (req, res) => {
 });
 
 // ========== CONFUSION SIGNALS ==========
-router.post('/api/confusion/signal', requireAuth, async (req, res) => {
+router.post('/api/confusion/signal', requireAuth, antiGamingMiddleware, async (req, res) => {
   const { concept_id, signal, session_id } = req.body;
   const userId = (req as any).user?.id || req.headers['x-user-id'];
+  const antiGamingMetadata = (req as any).antiGamingMetadata || {};
+  const weight = antiGamingMetadata.weight || 1.0;
 
   if (!userId) {
     return res.status(401).json({ error: 'User ID missing in request headers or auth token' });
@@ -317,12 +257,14 @@ router.post('/api/confusion/signal', requireAuth, async (req, res) => {
   }
 
   try {
+    // Insert confusion signal with anti-gaming weight
     const { data, error } = await supabaseAdmin
       .from('confusion_signals')
       .insert({ 
         student_id: userId, 
         concept_id, 
-        signal
+        signal,
+        weight // Store diminishing weight for anti-gaming
       })
       .select()
       .single();
@@ -330,6 +272,69 @@ router.post('/api/confusion/signal', requireAuth, async (req, res) => {
     if (error) {
       console.error('[Confusion Signal] Insert error:', error);
       throw error;
+    }
+
+    // Log anti-gaming metadata if weight is reduced
+    if (weight < 1.0) {
+      console.warn(`[Confusion Signal] Diminished weight applied: ${weight.toFixed(2)} for user ${userId}, concept ${concept_id}`);
+    }
+
+    // ML Anomaly Detection - detect unusual spikes in confusion signals
+    try {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const { data: recentSignals } = await supabaseAdmin
+        .from('confusion_signals')
+        .select('created_at')
+        .eq('concept_id', concept_id)
+        .gte('created_at', twentyFourHoursAgo.toISOString());
+      
+      if (recentSignals && recentSignals.length >= 10) {
+        // Group signals by hour and count them
+        const hourCounts = new Array(24).fill(0);
+        recentSignals.forEach(s => {
+          const hoursAgo = Math.floor((Date.now() - new Date(s.created_at).getTime()) / (1000 * 60 * 60));
+          if (hoursAgo >= 0 && hoursAgo < 24) {
+            hourCounts[23 - hoursAgo]++;
+          }
+        });
+        
+        const currentHourCount = hourCounts[23];
+        
+        // Call ML anomaly detection service
+        const anomalyResult = await mlService.detectAnomaly(hourCounts, currentHourCount);
+        
+        if (anomalyResult?.anomaly) {
+          console.warn(`🚨 ML Anomaly Detection: ${anomalyResult.message} (severity: ${anomalyResult.severity})`);
+          
+          // Log ML insight to database
+          await supabaseAdmin.from('ml_insights').insert({
+            student_id: userId,
+            insight_type: 'anomaly_detection',
+            model_name: anomalyResult.model || 'isolation_forest',
+            result: anomalyResult,
+            confidence: anomalyResult.statistics?.z_score || 0
+          });
+          
+          // For critical anomalies, create educator notification
+          if (anomalyResult.severity === 'critical') {
+            const { data: conceptData } = await supabaseAdmin
+              .from('concepts')
+              .select('name')
+              .eq('id', concept_id)
+              .single();
+            
+            await supabaseAdmin.from('notifications').insert({
+              user_id: null, // System-wide notification for educators
+              type: 'anomaly',
+              message: `⚠️ Unusual confusion spike detected for "${conceptData?.name || 'concept'}": ${anomalyResult.message}`,
+              read: false
+            });
+          }
+        }
+      }
+    } catch (mlErr: any) {
+      // Don't fail the request if ML service is unavailable
+      console.error('[Confusion Signal] ML anomaly detection failed:', mlErr.message);
     }
 
     if (signal === 'Confused') {
@@ -390,7 +395,18 @@ router.post('/api/confusion/signal', requireAuth, async (req, res) => {
       });
     }
 
-    res.json(data);
+    // Include anti-gaming metadata in response
+    res.json({
+      ...data,
+      antiGaming: {
+        weight: weight.toFixed(2),
+        recentAttempts: antiGamingMetadata.recentAttempts || 0,
+        anomalyDetected: antiGamingMetadata.anomalyDetected || false,
+        message: weight < 1.0 
+          ? `This signal has ${(weight * 100).toFixed(0)}% weight due to recent activity.`
+          : undefined
+      }
+    });
   } catch (err: any) {
     console.error('[Confusion Signal] Catch block error:', err);
     res.status(500).json({ error: err.message });
@@ -399,9 +415,10 @@ router.post('/api/confusion/signal', requireAuth, async (req, res) => {
 
 router.get('/api/confusion/pulse', requireAuth, async (req, res) => {
   try {
+    // Select weight column for anti-gaming weighted scoring
     const { data, error } = await supabaseAdmin
       .from('confusion_signals')
-      .select('concept_id, signal, concepts(name)')
+      .select('concept_id, signal, weight, concepts(name)')
       .order('created_at', { ascending: false });
     
     if (error) throw error;
@@ -411,11 +428,16 @@ router.get('/api/confusion/pulse', requireAuth, async (req, res) => {
     data.forEach(sig => {
       const cid = sig.concept_id;
       const concept = Array.isArray(sig.concepts) ? sig.concepts[0] : sig.concepts;
+      const weight = sig.weight || 1.0; // Get anti-gaming weight (default 1.0 for legacy data)
+      
       if (!pulse[cid]) pulse[cid] = { concept_id: cid, name: concept?.name || 'Unknown', score: 0, count: 0 };
       
-      pulse[cid].count += 1;
-      if (sig.signal === 'Confused') pulse[cid].score += 1.0;
-      else if (sig.signal === 'Partially Clear') pulse[cid].score += 0.5;
+      // Apply weighted counting - spammed signals have less impact
+      pulse[cid].count += weight;
+      
+      // Apply weighted scoring based on signal type
+      if (sig.signal === 'Confused') pulse[cid].score += 1.0 * weight;
+      else if (sig.signal === 'Partially Clear') pulse[cid].score += 0.5 * weight;
       else if (sig.signal === 'Clear') pulse[cid].score += 0.0;
     });
 

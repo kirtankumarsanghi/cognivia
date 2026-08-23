@@ -15,6 +15,11 @@ export function useApi() {
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
     }
+    
+    if (user) {
+      headers.set('x-user-id', user.id);
+      if (user.role) headers.set('x-user-role', user.role);
+    }
 
     try {
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {

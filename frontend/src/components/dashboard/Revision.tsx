@@ -47,10 +47,14 @@ export default function Revision() {
     console.log('[Revision] Generating smart plan...');
     setGenerating(true);
     try {
-      const result = await api.post('/revision/generate-smart-plan', {});
+      const result = await api.post('/revision/generate', {});
       console.log('[Revision] Generation result:', result);
       showToast(result.message || 'Smart revision plan generated!', 'success');
-      await loadData(); // Reload the plan
+      if (result.plans && result.plans.length > 0) {
+        setRevisionPlan(result.plans);
+      } else {
+        await loadData(); // Fallback to reloading the plan
+      }
     } catch (err: any) {
       console.error('[Revision] Failed to generate smart plan', err);
       showToast('Failed to generate plan. Try marking some concepts as confused first.', 'error');
