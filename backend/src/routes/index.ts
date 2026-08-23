@@ -26,6 +26,8 @@ router.use(antiGamingRoutes);
 
 // ML & Analytics Status
 router.get('/api/analytics/ml-status', requireAuth, analyticsController.getMLStatus);
+router.get('/api/analytics/student', requireAuth, analyticsController.getStudentAnalytics);
+router.get('/api/analytics/educator', requireAuth, analyticsController.getEducatorAnalytics);
 
 const weeklyBuckets = () => Array.from({ length: 7 }, (_, offset) => {
   const date = new Date();
@@ -303,31 +305,12 @@ router.post('/api/confusion/signal', requireAuth, async (req, res) => {
   const userId = (req as any).user.id;
 
   try {
-    let lecture_timestamp_seconds = null;
-
-    // If session_id is provided, calculate timestamp
-    if (session_id) {
-      const { data: session } = await supabaseAdmin
-        .from('class_sessions')
-        .select('started_at, ended_at')
-        .eq('id', session_id)
-        .single();
-
-      if (session && !session.ended_at) {
-        const startedAt = new Date(session.started_at);
-        const now = new Date();
-        lecture_timestamp_seconds = Math.floor((now.getTime() - startedAt.getTime()) / 1000);
-      }
-    }
-
     const { data, error } = await supabaseAdmin
       .from('confusion_signals')
       .insert({ 
         student_id: userId, 
         concept_id, 
-        signal,
-        session_id: session_id || null,
-        lecture_timestamp_seconds 
+        signal
       })
       .select()
       .single();
@@ -439,38 +422,12 @@ router.get('/api/confusion/pulse', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/api/confusion/signal', requireAuth, async (req, res) => {
-  const userId = (req as any).user.id;
-  const { concept_id, signal } = req.body;
-  
-  if (!concept_id || !signal) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('confusion_signals')
-      .insert({
-        student_id: userId,
-        concept_id,
-        signal
-      })
-      .select('*')
-      .single();
-      
-    if (error) throw error;
-    res.json(data);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 router.get('/api/confusion/history', requireAuth, async (req, res) => {
   const userId = (req as any).user.id;
   try {
     const { data, error } = await supabaseAdmin
       .from('confusion_signals')
-      .select('id, signal, lecture_timestamp_seconds, session_id, created_at, concepts(id, name, lesson:lessons(course:courses(name)))')
+      .select('id, signal, created_at, concepts(id, name, lesson:lessons(course:courses(name)))')
       .eq('student_id', userId)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -687,8 +644,9 @@ router.post('/api/revision/generate-smart-plan', requireAuth, async (req, res) =
     });
 
     // Smart scoring algorithm
-    const recommendations = masteryData
+    let recommendations = masteryData
       ?.filter(m => m.score < 80) // Only concepts needing improvement
+
       .map(m => {
         const concept = Array.isArray(m.concept) ? m.concept[0] : m.concept;
         const confusionScore = confusionMap[concept.id] || 0;
@@ -724,6 +682,35 @@ router.post('/api/revision/generate-smart-plan', requireAuth, async (req, res) =
       await supabaseAdmin
         .from('revision_plans')
         .upsert(plans, { onConflict: 'student_id,concept_id', ignoreDuplicates: false });
+    }
+
+    if (!recommendations || recommendations.length === 0) {
+      // Fallback: Recommend 3 random concepts
+      const { data: randomConcepts } = await supabaseAdmin
+        .from('concepts')
+        .select('id, name, difficulty, lesson:lessons(course:courses(name))')
+        .limit(3);
+        
+      if (randomConcepts && randomConcepts.length > 0) {
+        recommendations = randomConcepts.map(c => ({
+          concept: c,
+          score: 0,
+          confusionCount: 0,
+          priorityScore: 50,
+          priority: 'Medium',
+          estimatedMinutes: 15
+        }));
+
+        const plans = recommendations.map(rec => ({
+          student_id: userId,
+          concept_id: rec.concept.id,
+          priority: rec.priority,
+          minutes: rec.estimatedMinutes,
+          completed: false
+        }));
+
+        await supabaseAdmin.from('revision_plans').upsert(plans, { onConflict: 'student_id,concept_id', ignoreDuplicates: false });
+      }
     }
 
     res.json({ 
