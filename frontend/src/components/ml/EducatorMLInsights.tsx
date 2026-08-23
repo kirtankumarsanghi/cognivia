@@ -384,8 +384,8 @@ export default function EducatorMLInsights() {
         if (analyticsData && Array.isArray(analyticsData.confusionMetrics)) {
           setConcepts(analyticsData.confusionMetrics.map((c: any, i: number) => ({
             id: `c${i}`,
-            name: c.topic,
-            difficulty: c.percentage,
+            name: c.name,
+            difficulty: c.confusion_percentage,
             misconception: 'Needs review based on high confusion signals',
             avgTime: 300
           })));

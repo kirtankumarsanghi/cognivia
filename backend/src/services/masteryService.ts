@@ -18,8 +18,8 @@ export const masteryService = {
 
       if (error) throw error;
 
-      // Extract just the boolean values (1 for true, 0 for false)
-      const attemptHistory = attempts?.map(a => a.correct ? 1 : 0) || [];
+      // Extract just the boolean values
+      const attemptHistory = attempts?.map(a => Boolean(a.correct)) || [];
 
       // 2. Call Python ML Service (BKT)
       const mlData = await mlService.calculateMastery(attemptHistory);
