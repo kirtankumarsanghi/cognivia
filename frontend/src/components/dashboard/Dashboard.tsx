@@ -152,16 +152,27 @@ export default function Dashboard() {
           <span className="material-symbols-outlined text-error text-[48px] mb-4">error</span>
           <h2 className="font-headline-md text-headline-md text-on-surface mb-2">Connection Error</h2>
           <p className="font-body-md text-on-surface-variant mb-6">{error}</p>
-          <button
-            onClick={() => {
-              setLoading(true);
-              setError(null);
-              loadData();
-            }}
-            className="bg-primary text-on-primary px-6 py-3 rounded-xl font-label-md uppercase tracking-widest hover:opacity-90 transition-opacity"
-          >
-            Try Again
-          </button>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => {
+                setLoading(true);
+                setError(null);
+                loadData();
+              }}
+              className="bg-primary text-on-primary px-6 py-3 rounded-xl font-label-md uppercase tracking-widest hover:opacity-90 transition-opacity"
+            >
+              Try Again
+            </button>
+            <Link
+              to="/"
+              onClick={() => {
+                localStorage.removeItem('cogniva-session');
+              }}
+              className="bg-surface-variant text-on-surface-variant px-6 py-3 rounded-xl font-label-md uppercase tracking-widest hover:opacity-90 transition-opacity"
+            >
+              Return to Login
+            </Link>
+          </div>
         </motion.div>
       </div>
     );

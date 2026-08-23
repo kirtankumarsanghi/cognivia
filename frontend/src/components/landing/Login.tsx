@@ -288,16 +288,40 @@ export default function Login() {
                 )}
               </button>
             </motion.div>
+
+            {/* Real Demo Credentials */}
+            <motion.div custom={3.2} variants={fadeUp} className="mt-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2 font-bold flex items-center justify-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">cloud</span>
+                Live Demo Credentials
+              </p>
+              <div className="space-y-2 text-xs font-mono">
+                <div className="bg-black/20 rounded px-3 py-2">
+                  <div className="text-white/50">Email:</div>
+                  <div className="text-white">student@cognivia.dev</div>
+                </div>
+                <div className="bg-black/20 rounded px-3 py-2">
+                  <div className="text-white/50">Password:</div>
+                  <div className="text-white">demo123</div>
+                </div>
+              </div>
+              <p className="text-[10px] text-white/40 mt-2 text-center">
+                ✓ Full backend connection • Real data
+              </p>
+            </motion.div>
           </form>
 
           {/* Demo Accounts - Instant Access */}
           <motion.div custom={3.5} variants={fadeUp} className="mt-6 pt-6 border-t border-[rgba(255,255,255,0.05)]">
-            <p className="text-sm uppercase tracking-widest text-emerald-400/90 mb-4 font-bold text-center flex items-center justify-center gap-2">
+            <p className="text-sm uppercase tracking-widest text-emerald-400/90 mb-2 font-bold text-center flex items-center justify-center gap-2">
               <span className="material-symbols-outlined text-[18px]">bolt</span>
-              Quick Access Demo
+              UI Preview (Offline Mode)
+            </p>
+            <p className="text-[11px] text-white/40 mb-4 text-center">
+              For testing UI only - No backend connection
             </p>
             
-            <div className="flex gap-3 justify-center mb-6">
+            <div className="flex gap-3 justify-center mb-4">
               <button
                 type="button"
                 onClick={() => {
@@ -326,7 +350,7 @@ export default function Login() {
               </button>
             </div>
 
-            <p className="text-[10px] uppercase tracking-widest text-white/20 mb-2 font-mono text-center">No login required • Instant access</p>
+            <p className="text-[10px] uppercase tracking-widest text-white/20 mb-2 font-mono text-center">⚠️ Offline mode - Connection errors expected</p>
           </motion.div>
 
           {/* Footer */}

@@ -2,7 +2,7 @@
   "confusion_risk": {
     "model_name": "confusion_risk",
     "version": "v1.0",
-    "training_date": "2026-08-22T14:26:11.620399",
+    "training_date": "2026-08-23T08:30:14.324063",
     "features": [
       "current_mastery",
       "prerequisite_avg",
@@ -30,7 +30,7 @@
   "early_warning": {
     "model_name": "early_warning",
     "version": "v1.0",
-    "training_date": "2026-08-22T14:26:13.558879",
+    "training_date": "2026-08-23T08:29:52.808813",
     "features": [
       "prerequisite_avg",
       "prerequisite_min",
@@ -50,12 +50,12 @@
       "roc_auc": 0.5403
     },
     "dataset_type": "SYNTHETIC",
-    "prediction_count": 1
+    "prediction_count": 2
   },
   "student_clusters": {
     "model_name": "student_clusters",
     "version": "v1.0",
-    "training_date": "2026-08-22T14:26:19.452482",
+    "training_date": "2026-08-23T08:30:22.243232",
     "features": [
       "avg_practice_accuracy",
       "avg_confusion_frequency",
@@ -70,12 +70,12 @@
       "n_clusters": 5
     },
     "dataset_type": "SYNTHETIC",
-    "prediction_count": 3
+    "prediction_count": 6
   },
   "anomaly_detector": {
     "model_name": "anomaly_detector",
     "version": "v1.0",
-    "training_date": "2026-08-22T14:26:20.735399",
+    "training_date": "2026-08-23T08:30:21.601742",
     "features": [
       "signal_count"
     ],
@@ -89,7 +89,7 @@
   "confusion_classifier": {
     "model_name": "confusion_classifier",
     "version": "v1.0",
-    "training_date": "2026-08-22T14:26:21.555754",
+    "training_date": "2026-08-23T08:30:21.911204",
     "features": [
       "text_tfidf"
     ],
@@ -98,6 +98,6 @@
       "vocab_size": 117
     },
     "dataset_type": "SYNTHETIC",
-    "prediction_count": 1
+    "prediction_count": 2
   }
 }
