@@ -5,24 +5,26 @@ export const masteryService = {
   /**
    * Recalculates mastery score using the Python BKT model
    * and updates the database.
+   * Now supports weighted attempts for anti-gaming.
    */
   async updateMastery(studentId: string, conceptId: string) {
     try {
       // 1. Fetch all practice attempts for this student & concept
       const { data: attempts, error } = await supabaseAdmin
         .from('practice_attempts')
-        .select('correct')
+        .select('correct, weight')
         .eq('student_id', studentId)
         .eq('concept_id', conceptId)
         .order('created_at', { ascending: true }); // chronological order
 
       if (error) throw error;
 
-      // Extract just the boolean values
+      // Extract boolean values and weights
       const attemptHistory = attempts?.map(a => Boolean(a.correct)) || [];
+      const weights = attempts?.map(a => Number(a.weight || 1.0)) || [];
 
-      // 2. Call Python ML Service (BKT)
-      const mlData = await mlService.calculateMastery(attemptHistory);
+      // 2. Call Python ML Service (BKT) with weighted attempts
+      const mlData = await mlService.calculateMastery(attemptHistory, weights);
 
       if (!mlData || !mlData.success) {
         throw new Error(`ML Service Error: Failed to calculate mastery`);

@@ -50,7 +50,7 @@ export default function ConceptGraph({ concepts = [], selectedConceptId, onConce
           y: Math.random() * 500 + 50,
           vx: (Math.random() - 0.5) * 0.5,
           vy: (Math.random() - 0.5) * 0.5,
-          mastery: concept.mastery || Math.random() * 100,
+          mastery: concept.mastery ?? Math.random() * 100,
           connections: concept.prerequisites?.map((p: any) => p.id) || [],
           difficulty: concept.difficulty || 'intermediate',
           description: concept.description

@@ -4,9 +4,11 @@ import { geminiService } from '../services/geminiService';
 import { requireAuth } from '../middleware/authMiddleware';
 import { masteryService } from '../services/masteryService';
 import { analyticsController } from '../controllers/analyticsController';
+import { antiGamingMiddleware, applyDiminishingWeight } from '../middleware/antiGamingMiddleware';
 import sessionRoutes from './sessionRoutes';
 import mlRoutes from './mlRoutes';
 import achievementRoutes from './achievementRoutes';
+import antiGamingRoutes from './antiGamingRoutes';
 
 const router = Router();
 
@@ -18,6 +20,9 @@ router.use(mlRoutes);
 
 // Mount achievement routes
 router.use(achievementRoutes);
+
+// Mount anti-gaming routes
+router.use(antiGamingRoutes);
 
 // ML & Analytics Status
 router.get('/api/analytics/ml-status', requireAuth, analyticsController.getMLStatus);
@@ -721,19 +726,28 @@ router.get('/api/practice', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/api/practice/attempt', requireAuth, async (req, res) => {
+router.post('/api/practice/attempt', requireAuth, antiGamingMiddleware, applyDiminishingWeight, async (req, res) => {
   const { concept_id, correct } = req.body;
   const userId = (req as any).user.id;
+  const antiGamingMetadata = (req as any).antiGamingMetadata || {};
+  const weight = antiGamingMetadata.weight || 1.0;
 
   try {
+    // Insert practice attempt with weight
     const { data, error } = await supabaseAdmin
       .from('practice_attempts')
-      .insert({ student_id: userId, concept_id, correct })
+      .insert({ 
+        student_id: userId, 
+        concept_id, 
+        correct,
+        weight // Store the diminishing weight
+      })
       .select()
       .single();
     
     if (error) throw error;
 
+    // Update mastery with weighted attempt
     await masteryService.updateMastery(userId, concept_id);
 
     await supabaseAdmin.from('learning_sessions').insert({
@@ -742,7 +756,18 @@ router.post('/api/practice/attempt', requireAuth, async (req, res) => {
       duration_minutes: 2
     });
 
-    res.json(data);
+    // Include anti-gaming metadata in response
+    res.json({
+      ...data,
+      antiGaming: {
+        weight: weight.toFixed(2),
+        recentAttempts: antiGamingMetadata.recentAttempts || 0,
+        anomalyDetected: antiGamingMetadata.anomalyDetected || false,
+        message: weight < 1.0 
+          ? `This attempt has ${(weight * 100).toFixed(0)}% weight due to recent activity.`
+          : undefined
+      }
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

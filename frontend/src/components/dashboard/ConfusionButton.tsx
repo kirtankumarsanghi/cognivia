@@ -205,17 +205,24 @@ export default function ConfusionButton({ onSignalCreated }: ConfusionButtonProp
                           <label className="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-2 block">
                             Current Concept
                           </label>
-                          <select
-                            value={selectedConcept}
-                            onChange={(e) => setSelectedConcept(e.target.value)}
-                            className="w-full bg-surface border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary transition-colors"
-                            required
-                          >
-                            <option value="">Select a concept...</option>
-                            {concepts.map((concept: any) => (
-                              <option key={concept.id} value={concept.id}>{concept.name}</option>
-                            ))}
-                          </select>
+                          {concepts.length > 0 ? (
+                            <select
+                              value={selectedConcept}
+                              onChange={(e) => setSelectedConcept(e.target.value)}
+                              className="w-full bg-surface border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface focus:outline-none focus:border-primary transition-colors"
+                              required
+                            >
+                              <option value="">Select a concept...</option>
+                              {concepts.map((concept: any) => (
+                                <option key={concept.id} value={concept.id}>{concept.name}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <div className="w-full bg-surface-variant/50 border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface-variant text-sm flex items-center gap-2">
+                              <span className="material-symbols-outlined text-sm">info</span>
+                              No concepts available for this lesson.
+                            </div>
+                          )}
                         </div>
                       )}
 

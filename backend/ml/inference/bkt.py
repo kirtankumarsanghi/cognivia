@@ -21,17 +21,18 @@ DEFAULT_PARAMS = {
 }
 
 
-def update_mastery(prior, is_correct, params=None):
+def update_mastery(prior, is_correct, weight=1.0, params=None):
     """
-    Single BKT update step.
+    Single BKT update step with weight support for anti-gaming.
 
     Given a prior mastery probability and an observation (correct/incorrect),
     compute the posterior mastery using Bayes' rule, then apply the
-    learning transition.
+    learning transition weighted by the attempt's weight.
 
     Args:
         prior: Current mastery probability P(L_n) in [0, 1]
         is_correct: Boolean — was the attempt correct?
+        weight: Float [0.1, 1.0] — weight of this attempt (1.0 = full weight)
         params: Optional dict of BKT parameters
 
     Returns:
@@ -39,6 +40,9 @@ def update_mastery(prior, is_correct, params=None):
     """
     if params is None:
         params = DEFAULT_PARAMS
+
+    # Clamp weight to valid range
+    weight = max(0.1, min(1.0, weight))
 
     p_t = params['p_transit']
     p_s = params['p_slip']
@@ -55,8 +59,9 @@ def update_mastery(prior, is_correct, params=None):
         # P(L | incorrect) = P(L) * P(S) / P(incorrect)
         posterior = (prior * p_s) / p_obs if p_obs > 0 else prior
 
-    # Apply learning transition: P(L_{n+1}) = P(L_n|obs) + (1 - P(L_n|obs)) * P(T)
-    new_mastery = posterior + (1.0 - posterior) * p_t
+    # Apply weighted learning transition: reduce learning rate by weight
+    weighted_p_t = p_t * weight
+    new_mastery = posterior + (1.0 - posterior) * weighted_p_t
 
     # Clamp to valid probability range
     return max(0.0, min(1.0, new_mastery))
@@ -65,9 +70,10 @@ def update_mastery(prior, is_correct, params=None):
 def calculate_mastery(attempts, params=None):
     """
     Calculate mastery from a full sequence of attempts.
+    Now supports weighted attempts for anti-gaming rate limits.
 
     Args:
-        attempts: List of dicts with 'correct' key, or list of booleans
+        attempts: List of dicts with 'correct' and optional 'weight' keys, or list of booleans
         params: Optional BKT parameters
 
     Returns:
@@ -78,14 +84,21 @@ def calculate_mastery(attempts, params=None):
 
     mastery = params['p_init']
     trace = [mastery]  # Track mastery evolution
+    total_weight = 0.0
+    weighted_attempts = 0
 
     for attempt in attempts:
         if isinstance(attempt, dict):
             is_correct = bool(attempt.get('correct', False))
+            weight = float(attempt.get('weight', 1.0))
         else:
             is_correct = bool(attempt)
-        mastery = update_mastery(mastery, is_correct, params)
+            weight = 1.0
+        
+        mastery = update_mastery(mastery, is_correct, weight, params)
         trace.append(mastery)
+        total_weight += weight
+        weighted_attempts += 1
 
     # Determine status label
     if mastery >= 0.85:
@@ -99,6 +112,8 @@ def calculate_mastery(attempts, params=None):
     else:
         status = 'novice'
 
+    avg_weight = total_weight / weighted_attempts if weighted_attempts > 0 else 1.0
+
     return {
         'mastery_probability': round(mastery, 4),
         'mastery_score': round(mastery * 100, 2),
@@ -107,6 +122,7 @@ def calculate_mastery(attempts, params=None):
         'parameters': params,
         'trace': [round(t, 4) for t in trace],
         'total_attempts': len(attempts),
+        'avg_weight': round(avg_weight, 4),
     }
 
 

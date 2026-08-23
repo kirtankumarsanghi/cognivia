@@ -48,11 +48,15 @@ export const mlService = {
 
   /**
    * Calculate mastery using Bayesian Knowledge Tracing (BKT)
+   * Now supports weighted attempts for anti-gaming rate limits
    */
-  async calculateMastery(attempts: boolean[], params?: any): Promise<any> {
+  async calculateMastery(attempts: boolean[], weights?: number[], params?: any): Promise<any> {
     try {
       const response = await axios.post(`${ML_SERVICE_URL}/ml/mastery`, {
-        attempts: attempts.map(correct => ({ correct })),
+        attempts: attempts.map((correct, idx) => ({ 
+          correct,
+          weight: weights ? weights[idx] : 1.0
+        })),
         params
       }, { timeout: ML_TIMEOUT });
       
