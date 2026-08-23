@@ -202,14 +202,18 @@ export const analyticsController = {
       const { since, courseId } = req.query;
       const sinceDate = since ? new Date(since as string) : new Date(Date.now() - 24 * 60 * 60 * 1000);
 
+      console.log('[AnalyticsController] Getting educator analytics for courseId:', courseId, 'since:', sinceDate);
+
       let activeCourseId = courseId;
       
-      // If no courseId provided or it's 'cse2101' (legacy hardcoded default), look up the first course
-      if (!activeCourseId || activeCourseId === 'cse2101') {
+      // If no courseId provided, look up the first course
+      if (!activeCourseId) {
         const { data: firstCourse } = await supabaseAdmin.from('courses').select('id').limit(1).single();
         if (firstCourse) {
           activeCourseId = firstCourse.id;
+          console.log('[AnalyticsController] Using first course:', activeCourseId);
         } else {
+          console.log('[AnalyticsController] No courses found');
           return res.json({
             totalStudents: 0,
             avgClassScore: 0,
@@ -232,6 +236,7 @@ export const analyticsController = {
       if (enrollError) throw enrollError;
 
       const studentIds = enrollments?.map(e => e.student_id) || [];
+      console.log('[AnalyticsController] Found', studentIds.length, 'students enrolled');
 
       // 2. Get recent confusion signals
       const { data: signals, error: signalsError } = await supabaseAdmin
@@ -246,6 +251,8 @@ export const analyticsController = {
         .order('created_at', { ascending: false });
 
       if (signalsError) throw signalsError;
+
+      console.log('[AnalyticsController] Found', signals?.length || 0, 'confusion signals');
 
       // 3. Aggregate confusion by concept
       const confusionByTopic: Record<string, { count: number; name: string; id: string }> = {};

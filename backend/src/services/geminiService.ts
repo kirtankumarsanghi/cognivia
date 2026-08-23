@@ -1,16 +1,32 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { env } from '../config/env';
 
-const isAiAvailable = !!env.geminiApiKey;
-const genAI = isAiAvailable ? new GoogleGenerativeAI(env.geminiApiKey) : null;
-const model = isAiAvailable ? genAI!.getGenerativeModel({ model: 'gemini-1.5-flash' }) : null;
+let isAiAvailable = false;
+let genAI: GoogleGenerativeAI | null = null;
+let model: any = null;
+
+// Initialize with error handling
+try {
+  if (env.geminiApiKey && env.geminiApiKey.length > 20) {
+    genAI = new GoogleGenerativeAI(env.geminiApiKey);
+    model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    isAiAvailable = true;
+    console.log('[GeminiService] Initialized successfully');
+  } else {
+    console.warn('[GeminiService] No valid API key found');
+  }
+} catch (error) {
+  console.error('[GeminiService] Initialization failed:', error);
+  isAiAvailable = false;
+}
 
 export const geminiService = {
   isAvailable: () => isAiAvailable,
 
   async askTutor(question: string, context?: string, momentContext?: string): Promise<any> {
     if (!isAiAvailable || !model) {
-      throw new Error('AI Tutor is temporarily unavailable. Please check your configuration and try again.');
+      console.error('[GeminiService] AI not available for request');
+      throw new Error('AI Tutor is temporarily unavailable. Please check your API key configuration.');
     }
 
     let promptAddition = '';
@@ -40,19 +56,27 @@ export const geminiService = {
       - Return ONLY valid JSON. No markdown code fences around the JSON itself.
     `;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().trim();
-    
-    // Clean up markdown if model returned it despite instructions
-    const jsonStr = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
-    const parsed = JSON.parse(jsonStr);
-    
-    return { ...parsed, isDemo: false, hasMomentContext: !!momentContext };
+    try {
+      console.log('[GeminiService] Sending request to Gemini API');
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      
+      // Clean up markdown if model returned it despite instructions
+      const jsonStr = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
+      const parsed = JSON.parse(jsonStr);
+      
+      console.log('[GeminiService] Successfully received and parsed response');
+      return { ...parsed, isDemo: false, hasMomentContext: !!momentContext };
+    } catch (error: any) {
+      console.error('[GeminiService] API request failed:', error.message);
+      throw new Error(`AI Tutor request failed: ${error.message}`);
+    }
   },
 
   async explainAgain(question: string, previousExplanation: string): Promise<any> {
     if (!isAiAvailable || !model) {
-      throw new Error('AI Tutor is temporarily unavailable. Please check your configuration and try again.');
+      console.error('[GeminiService] AI not available for explain-again request');
+      throw new Error('AI Tutor is temporarily unavailable. Please check your API key configuration.');
     }
 
     const prompt = `
@@ -83,13 +107,20 @@ export const geminiService = {
       Return ONLY valid JSON. No markdown code fences around the JSON itself.
     `;
     
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().trim();
-    
-    const jsonStr = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
-    const parsed = JSON.parse(jsonStr);
-    
-    return { ...parsed, isDemo: false };
+    try {
+      console.log('[GeminiService] Sending explain-again request to Gemini API');
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      
+      const jsonStr = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
+      const parsed = JSON.parse(jsonStr);
+      
+      console.log('[GeminiService] Successfully received alternative explanation');
+      return { ...parsed, isDemo: false };
+    } catch (error: any) {
+      console.error('[GeminiService] Explain-again request failed:', error.message);
+      throw new Error(`AI Tutor request failed: ${error.message}`);
+    }
   },
 
   async generateEducatorRecommendation(metrics: any): Promise<string> {

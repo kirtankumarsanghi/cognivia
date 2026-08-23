@@ -63,10 +63,15 @@ export default function EducatorDashboard() {
         return;
       }
 
+      console.log('[EducatorDashboard] Loading analytics for course:', effectiveCourseId);
+
       const [analyticsData, pulseData] = await Promise.all([
         api.get(`/analytics/educator?since=${sinceDate}&courseId=${effectiveCourseId}`),
         api.get(`/confusion/pulse?courseId=${effectiveCourseId}`)
       ]);
+
+      console.log('[EducatorDashboard] Analytics loaded:', analyticsData);
+      console.log('[EducatorDashboard] Pulse loaded:', pulseData);
 
       setAnalytics(analyticsData);
       setPulse(pulseData);
@@ -76,7 +81,7 @@ export default function EducatorDashboard() {
         fetchMlInsights();
       }
     } catch (err) {
-      console.error('Failed to load educator analytics', err);
+      console.error('[EducatorDashboard] Failed to load educator analytics:', err);
     } finally {
       setLoading(false);
     }
@@ -108,11 +113,15 @@ export default function EducatorDashboard() {
   }, [activeSession]);
 
   useEffect(() => {
+    console.log('[EducatorDashboard] Effect triggered - hours:', hoursAgo, 'courseId:', selectedCourseId);
     setLoading(true);
     loadData(hoursAgo);
     
     if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => loadData(hoursAgo), 15000);
+    intervalRef.current = setInterval(() => {
+      console.log('[EducatorDashboard] Polling interval - reloading data');
+      loadData(hoursAgo);
+    }, 15000);
 
     // Setup Supabase Realtime subscription for true live insights mapping
     const subscription = supabase
@@ -120,7 +129,7 @@ export default function EducatorDashboard() {
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'confusion_signals' }, 
         (payload) => {
-          console.log('Live insight received:', payload);
+          console.log('[EducatorDashboard] Live insight received:', payload);
           // When student clicks "I'm confused", immediately refresh dashboard
           loadData(hoursAgo);
         }

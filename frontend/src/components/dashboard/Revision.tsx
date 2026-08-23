@@ -400,8 +400,9 @@ export default function Revision() {
               className="space-y-4"
             >
               {revisionPlan.map((plan, index) => {
-                // Safely extract concept data
-                const concept = plan.concepts;
+                // Safely extract concept data - handle both array and object formats
+                const conceptsRaw = plan.concepts;
+                const concept = Array.isArray(conceptsRaw) ? conceptsRaw[0] : conceptsRaw;
                 const conceptName = concept?.name || 'Unknown Concept';
                 const conceptId = plan.concept_id || concept?.id;
                 const lesson = Array.isArray(concept?.lesson) ? concept.lesson[0] : concept?.lesson;
@@ -412,6 +413,13 @@ export default function Revision() {
                   console.warn('[Revision] Skipping plan with missing concept_id:', plan);
                   return null;
                 }
+                
+                console.log('[Revision] Rendering plan:', { 
+                  id: plan.id, 
+                  conceptName, 
+                  conceptId, 
+                  priority: plan.priority 
+                });
                 
                 return (
                   <motion.div
