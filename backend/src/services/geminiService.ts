@@ -151,6 +151,80 @@ export const geminiService = {
         commonMistake: `A frequent pitfall with ${conceptName} is jumping to implementation without fully understanding the underlying concept. Make sure the fundamentals are solid first.`
       };
     }
+  },
+
+  async generatePracticeQuestions(conceptName: string, conceptDescription?: string): Promise<any[]> {
+    if (!isAiAvailable || !model) {
+      return [
+        {
+          question_type: 'mcq',
+          question_text: `What is the primary purpose or characteristic of ${conceptName}?`,
+          options: [
+            `To optimize system resource allocation for ${conceptName}`,
+            `To store and manage dynamic state variables`,
+            `To provide a structured mechanism to execute operations on ${conceptName}`,
+            `To isolate logical operations from execution contexts`
+          ],
+          correct_answer: `To optimize system resource allocation for ${conceptName}`,
+          explanation: `This option represents a standard conceptual use case of ${conceptName}.`
+        },
+        {
+          question_type: 'mcq',
+          question_text: `Which of the following is a common mistake when implementing ${conceptName}?`,
+          options: [
+            `Ignoring boundary constraints and data validation`,
+            `Using redundant data structures for storage`,
+            `Failing to update tracking metrics periodically`,
+            `All of the above`
+          ],
+          correct_answer: `All of the above`,
+          explanation: `Each of these options constitutes a typical gotcha when dealing with ${conceptName}.`
+        }
+      ];
+    }
+
+    try {
+      const prompt = `
+        You are an expert computer science professor.
+        Generate 5 multiple-choice questions (MCQs) to test a student's understanding of the concept: "${conceptName}" (${conceptDescription || 'general concept'}).
+        
+        Respond with a JSON array where each object strictly follows this structure:
+        {
+          "question_type": "mcq",
+          "question_text": "A clear, conceptual question about the topic",
+          "options": ["Option A", "Option B", "Option C", "Option D"],
+          "correct_answer": "The exact string from the options array that is correct",
+          "explanation": "Detailed explanation of why the correct answer is right and why others are wrong."
+        }
+        
+        Ensure options are distinct, plausible, and the correct_answer is exactly character-matching one of the options.
+        Return ONLY valid JSON. No markdown code fences around the JSON itself.
+      `;
+      
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      const jsonStr = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
+      const parsed = JSON.parse(jsonStr);
+      
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch (error) {
+      console.error('Error generating questions:', error);
+      return [
+        {
+          question_type: 'mcq',
+          question_text: `What is the primary purpose or characteristic of ${conceptName}?`,
+          options: [
+            `To optimize system resource allocation for ${conceptName}`,
+            `To store and manage dynamic state variables`,
+            `To provide a structured mechanism to execute operations on ${conceptName}`,
+            `To isolate logical operations from execution contexts`
+          ],
+          correct_answer: `To optimize system resource allocation for ${conceptName}`,
+          explanation: `This option represents a standard conceptual use case of ${conceptName}.`
+        }
+      ];
+    }
   }
 };
+
 

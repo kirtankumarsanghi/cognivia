@@ -569,9 +569,50 @@ router.get('/api/practice', requireAuth, async (req, res) => {
     let query = supabaseAdmin.from('practice_questions').select('*');
     if (concept_id) query = query.eq('concept_id', concept_id);
     
-    const { data, error } = await query.limit(10);
+    let { data, error } = await query.limit(10);
     if (error) throw error;
-    res.json(data);
+    
+    // If no questions exist for this concept, generate them on the fly via Gemini
+    if ((!data || data.length === 0) && concept_id) {
+      console.log(`[Practice] No questions found for concept ${concept_id}. Generating on-the-fly via Gemini...`);
+      
+      // Fetch concept details
+      const { data: concept, error: conceptError } = await supabaseAdmin
+        .from('concepts')
+        .select('name, description')
+        .eq('id', concept_id)
+        .single();
+        
+      if (conceptError) {
+        console.error('[Practice] Failed to find concept:', conceptError);
+      } else if (concept) {
+        // Generate practice questions
+        const generated = await geminiService.generatePracticeQuestions(concept.name, concept.description);
+        
+        // Map to DB structure and insert
+        const toInsert = generated.map(q => ({
+          concept_id,
+          question_type: q.question_type || 'mcq',
+          question_text: q.question_text,
+          options: q.options || [],
+          correct_answer: q.correct_answer,
+          explanation: q.explanation || ''
+        }));
+        
+        const { data: inserted, error: insertError } = await supabaseAdmin
+          .from('practice_questions')
+          .insert(toInsert)
+          .select();
+          
+        if (insertError) {
+          console.error('[Practice] Failed to insert generated questions:', insertError);
+        } else if (inserted) {
+          data = inserted;
+        }
+      }
+    }
+    
+    res.json(data || []);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
