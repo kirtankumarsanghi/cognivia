@@ -277,7 +277,7 @@ export default function EducatorDashboard() {
               <p className="font-label-sm text-outline uppercase tracking-wider">Total Students</p>
             </div>
             <div>
-              <p className="font-headline-lg text-4xl text-on-surface">{analytics.studentCount}</p>
+              <p className="font-headline-lg text-4xl text-on-surface">{analytics.totalStudents}</p>
             </div>
           </div>
         </motion.div>
@@ -292,7 +292,7 @@ export default function EducatorDashboard() {
               <p className="font-label-sm text-outline uppercase tracking-wider">Avg Class Score</p>
             </div>
             <div>
-              <p className="font-headline-lg text-4xl text-on-surface">{analytics.averageClassScore}%</p>
+              <p className="font-headline-lg text-4xl text-on-surface">{analytics.avgClassScore}%</p>
             </div>
           </div>
         </motion.div>

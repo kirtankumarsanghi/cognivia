@@ -241,7 +241,7 @@ export const analyticsController = {
           name: topic.name,
           concept_id: topic.id,
           confusion_count: topic.count,
-          confusion_percentage: Math.min(100, Math.round((topic.count / studentIds.length) * 100))
+          confusion_percentage: studentIds.length > 0 ? Math.min(100, Math.round((topic.count / studentIds.length) * 100)) : 0
         }))
         .sort((a, b) => b.confusion_count - a.confusion_count);
 

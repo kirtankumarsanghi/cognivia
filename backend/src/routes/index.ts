@@ -439,6 +439,32 @@ router.get('/api/confusion/pulse', requireAuth, async (req, res) => {
   }
 });
 
+router.post('/api/confusion/signal', requireAuth, async (req, res) => {
+  const userId = (req as any).user.id;
+  const { concept_id, signal } = req.body;
+  
+  if (!concept_id || !signal) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('confusion_signals')
+      .insert({
+        student_id: userId,
+        concept_id,
+        signal
+      })
+      .select('*')
+      .single();
+      
+    if (error) throw error;
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/api/confusion/history', requireAuth, async (req, res) => {
   const userId = (req as any).user.id;
   try {
