@@ -202,11 +202,32 @@ export const analyticsController = {
       const { since, courseId } = req.query;
       const sinceDate = since ? new Date(since as string) : new Date(Date.now() - 24 * 60 * 60 * 1000);
 
+      let activeCourseId = courseId;
+      
+      // If no courseId provided or it's 'cse2101' (legacy hardcoded default), look up the first course
+      if (!activeCourseId || activeCourseId === 'cse2101') {
+        const { data: firstCourse } = await supabaseAdmin.from('courses').select('id').limit(1).single();
+        if (firstCourse) {
+          activeCourseId = firstCourse.id;
+        } else {
+          return res.json({
+            totalStudents: 0,
+            avgClassScore: 0,
+            confusionMetrics: [],
+            mostConfusing: null,
+            atRiskStudents: [],
+            recentSignals: [],
+            aiRecommendation: 'No courses available.',
+            mlEnabled: false
+          });
+        }
+      }
+
       // 1. Get all students in the course
       const { data: enrollments, error: enrollError } = await supabaseAdmin
         .from('course_enrollments')
         .select('student_id')
-        .eq('course_id', courseId || 'cse2101');
+        .eq('course_id', activeCourseId);
 
       if (enrollError) throw enrollError;
 

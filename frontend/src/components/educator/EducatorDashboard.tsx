@@ -13,7 +13,7 @@ export default function EducatorDashboard() {
   const [analytics, setAnalytics] = useState<any>(null);
   const [pulse, setPulse] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
-  const [selectedCourseId, setSelectedCourseId] = useState<string>('cse2101');
+  const [selectedCourseId, setSelectedCourseId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [hoursAgo, setHoursAgo] = useState<number>(24);
   const [miniLesson, setMiniLesson] = useState<any>(null);
@@ -45,14 +45,28 @@ export default function EducatorDashboard() {
   const loadData = async (hours: number) => {
     try {
       const sinceDate = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
-      const [analyticsData, pulseData, coursesData] = await Promise.all([
-        api.get(`/analytics/educator?since=${sinceDate}&courseId=${selectedCourseId}`),
-        api.get(`/confusion/pulse?courseId=${selectedCourseId}`),
-        api.get('/courses')
+      
+      const coursesData = await api.get('/courses');
+      setCourses(coursesData);
+      
+      let effectiveCourseId = selectedCourseId;
+      if (!effectiveCourseId && coursesData.length > 0) {
+        effectiveCourseId = coursesData[0].id;
+        setSelectedCourseId(effectiveCourseId);
+      }
+
+      if (!effectiveCourseId) {
+        setLoading(false);
+        return;
+      }
+
+      const [analyticsData, pulseData] = await Promise.all([
+        api.get(`/analytics/educator?since=${sinceDate}&courseId=${effectiveCourseId}`),
+        api.get(`/confusion/pulse?courseId=${effectiveCourseId}`)
       ]);
+
       setAnalytics(analyticsData);
       setPulse(pulseData);
-      setCourses(coursesData);
       
       // Auto-fetch ML insights for the demo
       if (!mlInsights) {
