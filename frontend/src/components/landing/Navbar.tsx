@@ -1,27 +1,463 @@
-import { User } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { Logo } from '../common/Logo';
+import { Search, Bell, Settings, ChevronDown, User, Sliders, Moon, LogOut } from 'lucide-react';
+
+const navLinks = [
+  { label: 'Product', href: '#product' },
+  { label: 'How It Works', href: '#methodology' },
+  { label: 'Students', href: '#students' },
+  { label: 'Educators', href: '#educators' },
+];
+
+const features = [
+  { icon: 'psychology', label: 'AI Tutoring', description: 'Personalized learning', path: '/tutor' },
+  { icon: 'analytics', label: 'Analytics', description: 'Real-time insights', path: '/ml-insights' },
+  { icon: 'groups', label: 'Collaboration', description: 'Team learning', path: '/study-groups' },
+];
 
 export default function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { scrollY } = useScroll();
+  const bgOpacity = useTransform(scrollY, [0, 180], [0, 0.92]);
+  const borderOpacity = useTransform(scrollY, [0, 180], [0, 0.1]);
+  const logoScale = useTransform(scrollY, [0, 180], [1, 0.85]);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const handler = () => { if (mq.matches) setMenuOpen(false); };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   return (
-    <header className="fixed top-stack-md left-0 right-0 z-50 px-container-margin md:px-stack-lg">
-      <nav className="max-w-7xl mx-auto flex items-center justify-between h-14">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-tertiary flex items-center justify-center">
-            <User className="text-on-tertiary w-[18px] h-[18px]" />
+    <>
+      <motion.header
+        className="fixed top-0 left-0 right-0 z-[60] shadow-lg"
+        style={{
+          backgroundColor: useTransform(bgOpacity, v => `rgba(0,0,0,${v})`),
+          backdropFilter: useTransform(scrollY, [0, 180], ['blur(0px)', 'blur(20px)']),
+          borderBottom: useTransform(borderOpacity, v => `1px solid rgba(232,64,64,${v})`),
+        }}
+      >
+        <nav className="flex items-center justify-between h-[72px] px-5 lg:px-12 max-w-[1600px] mx-auto">
+          {/* Logo with animation */}
+          <motion.div style={{ scale: logoScale }}>
+            <Link to="/" className="flex items-center gap-3 no-underline shrink-0 group"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, letterSpacing: '0.04em', color: 'var(--text)' }}
+            >
+              <Logo className="w-10 h-10 group-hover:scale-110 transition-transform duration-300" />
+              <span className="bg-gradient-to-r from-white via-red-100 to-red-200 bg-clip-text text-transparent">
+                COGNIVA
+              </span>
+            </Link>
+          </motion.div>
+
+          {/* Desktop center nav with dropdown */}
+          <div className="hidden lg:flex items-center gap-10">
+            {navLinks.map(link => (
+              <div
+                key={link.href}
+                className="relative"
+                onMouseEnter={() => link.label === 'Product' && setActiveDropdown('product')}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <a
+                  href={link.href}
+                  className="flex items-center gap-1 transition-all duration-300 hover:text-white group relative py-2"
+                  style={{ 
+                    fontFamily: 'var(--font-mono)', 
+                    fontSize: 11, 
+                    fontWeight: 500, 
+                    letterSpacing: '0.14em', 
+                    textTransform: 'uppercase', 
+                    color: 'var(--text-dimmer)', 
+                    textDecoration: 'none' 
+                  }}
+                >
+                  {link.label}
+                  {link.label === 'Product' && (
+                    <ChevronDown className="w-3 h-3 transition-transform group-hover:rotate-180" />
+                  )}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-red-500 to-red-300 group-hover:w-full transition-all duration-300" />
+                </a>
+
+                {/* Product Dropdown */}
+                {link.label === 'Product' && (
+                  <AnimatePresence>
+                    {activeDropdown === 'product' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute top-full left-0 mt-2 w-72 bg-black/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-red-500/20 overflow-hidden"
+                      >
+                        <div className="p-4 space-y-2">
+                          {features.map((feature, i) => (
+                            <motion.div
+                              key={feature.label}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.05 }}
+                            >
+                              <Link
+                                to={feature.path}
+                                className="flex items-start gap-3 p-3 rounded-xl hover:bg-red-500/10 transition-colors group/item"
+                              >
+                                <span className="material-symbols-outlined text-red-400 text-[24px] group-hover/item:scale-110 transition-transform">
+                                  {feature.icon}
+                                </span>
+                                <div>
+                                  <div className="text-white font-medium text-sm">{feature.label}</div>
+                                  <div className="text-gray-400 text-xs">{feature.description}</div>
+                                </div>
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                )}
+              </div>
+            ))}
           </div>
-          <span className="font-headline-md text-headline-md tracking-tighter text-on-surface">Cogniva</span>
-        </div>
-        <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center bg-surface-container/60 backdrop-blur-xl border border-outline-variant/30 rounded-full px-stack-md py-unit gap-stack-md shadow-2xl">
-          <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Product</a>
-          <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Methodology</a>
-          <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">For Students</a>
-          <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">For Educators</a>
-          <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Pricing</a>
-        </div>
-        <div className="flex items-center bg-surface-container/60 backdrop-blur-xl border border-outline-variant/30 rounded-full p-1 gap-unit">
-          <a className="font-label-sm text-label-sm px-stack-md py-unit text-on-surface hover:text-primary transition-colors" href="/login">Login</a>
-          <a className="font-label-sm text-label-sm px-stack-md py-unit bg-primary text-on-primary rounded-full hover:bg-primary-fixed-dim transition-all" href="/signup">Get Started</a>
-        </div>
-      </nav>
-    </header>
+
+          {/* Desktop right with enhanced features */}
+          <div className="hidden lg:flex items-center gap-6">
+            {/* Search Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setSearchOpen(!searchOpen);
+                setNotificationsOpen(false);
+                setSettingsOpen(false);
+              }}
+              className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+            </motion.button>
+
+            {/* Notifications */}
+            <div className="relative">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setNotificationsOpen(!notificationsOpen);
+                  setSettingsOpen(false);
+                  setSearchOpen(false);
+                }}
+                className="p-2 rounded-lg hover:bg-white/5 transition-colors relative"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              </motion.button>
+              
+              <AnimatePresence>
+                {notificationsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full right-0 mt-4 w-80 bg-black/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-red-500/20 overflow-hidden"
+                  >
+                    <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                      <h3 className="text-white font-medium text-sm">Notifications</h3>
+                      <button className="text-xs text-red-400 hover:text-red-300">Mark all as read</button>
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto">
+                      <div className="p-2 flex flex-col gap-1">
+                        {[
+                          { title: 'New Course Available: Advanced Algorithms', time: '5m ago', read: false },
+                          { title: 'AI Tutor generated a new summary for you', time: '1h ago', read: false },
+                          { title: 'Study Group "CS101" is now active', time: '3h ago', read: true },
+                          { title: 'Welcome to Cogniva!', time: '1d ago', read: true }
+                        ].map((n, i) => (
+                          <div key={i} className={`p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer flex gap-3 ${!n.read ? 'bg-red-500/5' : ''}`}>
+                            <div className={`w-2 h-2 mt-1.5 rounded-full shrink-0 ${!n.read ? 'bg-red-500' : 'bg-transparent'}`} />
+                            <div>
+                              <div className="text-sm text-white/90">{n.title}</div>
+                              <div className="text-xs text-gray-400 mt-1">{n.time}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Settings */}
+            <div className="relative">
+              <motion.button
+                whileHover={{ scale: 1.05, rotate: 90 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setSettingsOpen(!settingsOpen);
+                  setNotificationsOpen(false);
+                  setSearchOpen(false);
+                }}
+                className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+              </motion.button>
+              
+              <AnimatePresence>
+                {settingsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full right-0 mt-4 w-56 bg-black/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-red-500/20 overflow-hidden"
+                  >
+                    <div className="p-2 flex flex-col">
+                      <button className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left text-sm text-white/90">
+                        <User className="w-4 h-4 text-gray-400" />
+                        Profile Settings
+                      </button>
+                      <button className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left text-sm text-white/90">
+                        <Sliders className="w-4 h-4 text-gray-400" />
+                        Preferences
+                      </button>
+                      <button className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left text-sm text-white/90">
+                        <Moon className="w-4 h-4 text-gray-400" />
+                        Dark Mode
+                      </button>
+                      <div className="h-px bg-white/10 my-1 mx-2" />
+                      <button className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 transition-colors text-left text-sm text-red-400">
+                        <LogOut className="w-4 h-4" />
+                        Log out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="w-px h-6 bg-white/10" />
+
+
+            <Link 
+              to="/login" 
+              className="transition-all duration-200 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5"
+              style={{ 
+                fontFamily: 'var(--font-mono)', 
+                fontSize: 11, 
+                fontWeight: 500, 
+                letterSpacing: '0.14em', 
+                textTransform: 'uppercase', 
+                color: 'var(--text-dim)', 
+                textDecoration: 'none' 
+              }}
+            >
+              LOG IN
+            </Link>
+            <Link 
+              to="/login" 
+              className="btn-primary relative overflow-hidden group" 
+              style={{ padding: '12px 28px', letterSpacing: '0.1em' }}
+            >
+              <span className="relative z-10">GET STARTED</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </Link>
+          </div>
+
+          {/* Mobile hamburger with enhanced animation */}
+          <button 
+            className="lg:hidden relative w-10 h-10 flex items-center justify-center" 
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-expanded={menuOpen} 
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            <motion.span 
+              animate={{ 
+                rotate: menuOpen ? 45 : 0,
+                y: menuOpen ? 0 : -6
+              }}
+              className="absolute w-6 h-0.5 bg-white"
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            />
+            <motion.span 
+              animate={{ 
+                opacity: menuOpen ? 0 : 1,
+                x: menuOpen ? -20 : 0
+              }}
+              className="absolute w-6 h-0.5 bg-white"
+              transition={{ duration: 0.2 }}
+            />
+            <motion.span 
+              animate={{ 
+                rotate: menuOpen ? -45 : 0,
+                y: menuOpen ? 0 : 6
+              }}
+              className="absolute w-6 h-0.5 bg-white"
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            />
+          </button>
+        </nav>
+
+        {/* Enhanced Search Bar */}
+        <AnimatePresence>
+          {searchOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="border-t border-white/10 overflow-hidden"
+            >
+              <div className="max-w-[1600px] mx-auto px-5 lg:px-12 py-6">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search features, docs, or resources..."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 transition-colors"
+                    autoFocus
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
+
+      {/* Mobile overlay with enhanced animations */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div 
+            role="dialog" 
+            aria-modal={menuOpen} 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{
+              position: 'fixed', 
+              inset: 0, 
+              zIndex: 55,
+              background: 'rgba(0,0,0,0.98)',
+              backdropFilter: 'blur(20px)',
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: 16,
+              padding: 32,
+            }}
+            onClick={e => { if (e.target === e.currentTarget) setMenuOpen(false); }}
+          >
+            {/* Animated background particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {[...Array(20)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-1 h-1 bg-red-500/30 rounded-full"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                  }}
+                  animate={{
+                    y: [0, -30, 0],
+                    opacity: [0.3, 0.6, 0.3],
+                  }}
+                  transition={{
+                    duration: 3 + Math.random() * 2,
+                    repeat: Infinity,
+                    delay: Math.random() * 2,
+                  }}
+                />
+              ))}
+            </div>
+
+            {navLinks.map((link, i) => (
+              <motion.a 
+                key={link.href} 
+                href={link.href} 
+                onClick={() => setMenuOpen(false)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ 
+                  delay: i * 0.08, 
+                  duration: 0.5, 
+                  ease: [0.16, 1, 0.3, 1] 
+                }}
+                whileHover={{ scale: 1.05, x: 10 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative group"
+                style={{
+                  fontFamily: 'var(--font-mono)', 
+                  fontSize: 24, 
+                  letterSpacing: '0.12em', 
+                  textTransform: 'uppercase',
+                  color: 'var(--text)', 
+                  textDecoration: 'none',
+                }}
+              >
+                <span className="relative z-10">{link.label}</span>
+                <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all duration-300" />
+              </motion.a>
+            ))}
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ delay: 0.4, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col gap-4 mt-8 w-full max-w-xs"
+            >
+              <Link 
+                to="/login" 
+                onClick={() => setMenuOpen(false)}
+                className="text-center py-3 rounded-xl border border-white/20 hover:border-red-500/50 transition-colors"
+                style={{
+                  fontFamily: 'var(--font-mono)', 
+                  fontSize: 14, 
+                  letterSpacing: '0.12em', 
+                  textTransform: 'uppercase',
+                  color: 'var(--text)', 
+                  textDecoration: 'none',
+                }}
+              >
+                LOG IN
+              </Link>
+              <Link 
+                to="/login" 
+                onClick={() => setMenuOpen(false)}
+                className="text-center py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-400 hover:from-red-500 hover:to-red-300 transition-all"
+                style={{
+                  fontFamily: 'var(--font-mono)', 
+                  fontSize: 14, 
+                  letterSpacing: '0.18em', 
+                  textTransform: 'uppercase',
+                  color: '#000', 
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                }}
+              >
+                GET STARTED
+              </Link>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

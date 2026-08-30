@@ -98,6 +98,56 @@ CREATE TABLE public.practice_attempts (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 11. Learning Sessions (track engagement)
+CREATE TABLE public.learning_sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  session_type TEXT NOT NULL CHECK (session_type IN ('lesson', 'practice', 'revision', 'tutor')),
+  duration_minutes INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 12. Saved Explanations
+CREATE TABLE public.saved_explanations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  concept_id UUID REFERENCES public.concepts(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  content JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 13. Notifications
+CREATE TABLE public.notifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  message TEXT NOT NULL,
+  read BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 14. Course Enrollments
+CREATE TABLE public.course_enrollments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  student_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
+  enrolled_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(student_id, course_id)
+);
+
+-- 15. Practice Questions (seeded content)
+CREATE TABLE public.practice_questions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  concept_id UUID NOT NULL REFERENCES public.concepts(id) ON DELETE CASCADE,
+  question_type TEXT NOT NULL CHECK (question_type IN ('mcq', 'true_false', 'short_answer')),
+  question_text TEXT NOT NULL,
+  options JSONB, -- for MCQ: ["option1", "option2", ...]
+  correct_answer TEXT NOT NULL,
+  explanation TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- RLS setup (simple permissive for MVP, real implementation would restrict by student_id)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
@@ -109,6 +159,11 @@ ALTER TABLE public.mastery_scores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ai_conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.revision_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.practice_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.learning_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.saved_explanations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.course_enrollments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.practice_questions ENABLE ROW LEVEL SECURITY;
 
 -- Allow all authenticated users to read everything (for MVP demo simplicity)
 CREATE POLICY "Allow all authenticated read" ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
@@ -121,11 +176,19 @@ CREATE POLICY "Allow all authenticated read" ON public.mastery_scores FOR SELECT
 CREATE POLICY "Allow all authenticated read" ON public.ai_conversations FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow all authenticated read" ON public.revision_plans FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow all authenticated read" ON public.practice_attempts FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow all authenticated read" ON public.learning_sessions FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow all authenticated read" ON public.saved_explanations FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow all authenticated read" ON public.notifications FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow all authenticated read" ON public.course_enrollments FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow all authenticated read" ON public.practice_questions FOR SELECT USING (auth.role() = 'authenticated');
 
 -- Allow students to insert/update their own records
 CREATE POLICY "Allow user insert own" ON public.confusion_signals FOR INSERT WITH CHECK (auth.uid() = student_id);
 CREATE POLICY "Allow user insert own" ON public.ai_conversations FOR INSERT WITH CHECK (auth.uid() = student_id);
 CREATE POLICY "Allow user insert own" ON public.practice_attempts FOR INSERT WITH CHECK (auth.uid() = student_id);
+CREATE POLICY "Allow user insert own" ON public.learning_sessions FOR INSERT WITH CHECK (auth.uid() = student_id);
+CREATE POLICY "Allow user insert own" ON public.saved_explanations FOR INSERT WITH CHECK (auth.uid() = student_id);
+CREATE POLICY "Allow user delete own" ON public.saved_explanations FOR DELETE USING (auth.uid() = student_id);
 
 CREATE POLICY "Allow user update own" ON public.mastery_scores FOR UPDATE USING (auth.uid() = student_id);
 CREATE POLICY "Allow user insert own" ON public.mastery_scores FOR INSERT WITH CHECK (auth.uid() = student_id);
@@ -134,3 +197,28 @@ CREATE POLICY "Allow user update own" ON public.revision_plans FOR UPDATE USING 
 CREATE POLICY "Allow user insert own" ON public.revision_plans FOR INSERT WITH CHECK (auth.uid() = student_id);
 
 CREATE POLICY "Allow user update own" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Allow user insert own" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Allow user update own" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Allow user insert own" ON public.course_enrollments FOR INSERT WITH CHECK (auth.uid() = student_id);
+
+-- Trigger to automatically create a profile when a new user signs up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$$
+BEGIN
+  INSERT INTO public.profiles (id, name, email, role)
+  VALUES (
+    new.id,
+    new.raw_user_meta_data->>'name',
+    new.email,
+    new.raw_user_meta_data->>'role'
+  );
+  RETURN new;
+END;
+$$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Drop if exists and recreate trigger
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
