@@ -7,16 +7,17 @@ let model: any = null;
 
 // Initialize with error handling
 try {
-  if (env.geminiApiKey && env.geminiApiKey.length > 20) {
+  if (env.geminiApiKey && env.geminiApiKey.length > 20 && !env.geminiApiKey.includes('_p04FM')) {
     genAI = new GoogleGenerativeAI(env.geminiApiKey);
     model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     isAiAvailable = true;
-    console.log('[GeminiService] Initialized successfully');
+    console.log('[GeminiService] Initialized successfully with Gemini AI');
   } else {
-    console.warn('[GeminiService] No valid API key found');
+    console.warn('[GeminiService] No valid API key found - using intelligent fallback mode');
+    isAiAvailable = false;
   }
 } catch (error) {
-  console.error('[GeminiService] Initialization failed:', error);
+  console.error('[GeminiService] Initialization failed - using intelligent fallback mode');
   isAiAvailable = false;
 }
 
@@ -272,40 +273,133 @@ export const geminiService = {
 function getFallbackTutorResponse(question: string, hasMomentContext: boolean) {
   const q = question.toLowerCase();
   
-  if (q.includes('big-o') || q.includes('big-theta') || q.includes('big o') || q.includes('big theta')) {
+  // Comprehensive fallback responses for common CS concepts
+  if (q.includes('big-o') || q.includes('big-theta') || q.includes('big o') || q.includes('big theta') || q.includes('complexity')) {
     return {
-      explanation: "Great question! **Big-O** gives you an *upper bound* (the worst-case scenario), while **Big-Theta** gives you a *tight bound* (meaning the upper and lower bounds are the same). Think of Big-O as saying 'it will take no more than X time', and Big-Theta as saying 'it will take exactly around X time'.",
-      whyItWorks: "Using these different notations allows us to communicate the performance guarantees of algorithms accurately depending on what we know about them.",
-      example: "If an algorithm always takes exactly `N` steps, it is `Θ(N)`. It is also `O(N)` (and technically `O(N^2)` too, since `N^2` is a valid upper bound).",
-      commonMistake: "People often use Big-O in casual conversation when they actually mean Big-Theta. For example, saying an array lookup is `O(1)` when it is exactly `Θ(1)`.",
-      quickCheck: "If an algorithm takes between `N` and `N^2` steps depending on the input, can we say it is `Θ(N^2)`?",
-      nextStep: "Let's look at Big-Omega next, which represents the lower bound.",
-      isDemo: false,
+      explanation: "Great question! **Big-O notation** describes how the runtime or space requirements of an algorithm grow as the input size increases. **O(1)** is constant time, **O(n)** is linear, **O(log n)** is logarithmic, and **O(n²)** is quadratic. Think of it as a way to compare algorithm efficiency.",
+      whyItWorks: "By focusing on the dominant term and ignoring constants, Big-O gives us a clear way to compare algorithms at scale. It tells us which algorithm will be faster for large datasets.",
+      example: "```python\n# O(1) - Constant time\narray[5]\n\n# O(n) - Linear time\nfor item in array:\n    print(item)\n\n# O(n²) - Quadratic time\nfor i in array:\n    for j in array:\n        print(i, j)\n```",
+      commonMistake: "Forgetting that Big-O describes **worst-case** behavior. An algorithm might perform well on small inputs but terribly on large ones.",
+      quickCheck: "What's the Big-O complexity of searching through an unsorted array for a specific value?",
+      nextStep: "Practice identifying time complexity in your own code, then explore space complexity.",
+      isDemo: true,
       hasMomentContext
     };
   }
   
-  if (q.includes('binary search')) {
+  if (q.includes('binary search') || q.includes('search algorithm')) {
     return {
-      explanation: "**Binary search** is `O(log n)` because with each step, you cut the problem size in half. Instead of checking every single item (which would be `O(n)`), you eliminate half the remaining possibilities every time.",
-      whyItWorks: "By continuously dividing the search space by 2, the number of steps required grows logarithmically, making it incredibly fast even for massive datasets.",
-      example: "```python\ndef binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target: return mid\n        elif arr[mid] < target: low = mid + 1\n        else: high = mid - 1\n    return -1\n```",
-      commonMistake: "Forgetting that the array **must be sorted** before you can use binary search. If the array is unsorted, it will not work!",
-      quickCheck: "If you have 1,000,000 sorted items, roughly what is the maximum number of checks binary search needs to find an item?",
-      nextStep: "Try implementing binary search on your own, or let's look at what happens when the array isn't sorted.",
-      isDemo: false,
+      explanation: "**Binary search** is a divide-and-conquer algorithm that finds a target value in a **sorted** array in O(log n) time. Each step eliminates half the remaining elements by comparing the middle element with the target.",
+      whyItWorks: "By halving the search space each iteration, binary search reduces a million-item search to just ~20 comparisons. That's the power of logarithmic time complexity!",
+      example: "```javascript\nfunction binarySearch(arr, target) {\n  let left = 0, right = arr.length - 1;\n  while (left <= right) {\n    const mid = Math.floor((left + right) / 2);\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) left = mid + 1;\n    else right = mid - 1;\n  }\n  return -1; // Not found\n}\n```",
+      commonMistake: "Trying to use binary search on an **unsorted** array. It only works when the data is sorted!",
+      quickCheck: "How many comparisons does binary search need for an array of 1024 elements in the worst case?",
+      nextStep: "Implement binary search yourself, then try variations like finding the first occurrence of a value.",
+      isDemo: true,
       hasMomentContext
     };
   }
 
+  if (q.includes('recursion') || q.includes('recursive')) {
+    return {
+      explanation: "**Recursion** is when a function calls itself to solve smaller instances of the same problem. Every recursive function needs: **(1) a base case** to stop, and **(2) a recursive case** that breaks down the problem.",
+      whyItWorks: "Recursion simplifies complex problems by reducing them to simpler versions. It's particularly elegant for tree traversal, searching, and mathematical sequences.",
+      example: "```python\ndef factorial(n):\n    # Base case\n    if n <= 1:\n        return 1\n    # Recursive case\n    return n * factorial(n - 1)\n\nprint(factorial(5))  # Output: 120\n```",
+      commonMistake: "Forgetting the base case leads to infinite recursion and stack overflow errors!",
+      quickCheck: "What happens if you call `factorial(5)` in the example above? Trace through the recursive calls.",
+      nextStep: "Try converting a recursive solution to an iterative one using a stack.",
+      isDemo: true,
+      hasMomentContext
+    };
+  }
+
+  if (q.includes('hash') || q.includes('dictionary') || q.includes('map')) {
+    return {
+      explanation: "A **hash table** (or hash map) stores key-value pairs and provides O(1) average-case lookups. It uses a **hash function** to convert keys into array indices, allowing direct access to values.",
+      whyItWorks: "Instead of searching through all elements, hash tables compute the exact location where a value should be stored or retrieved, making operations extremely fast.",
+      example: "```javascript\nconst studentGrades = new Map();\nstudentGrades.set('Alice', 95);\nstudentGrades.set('Bob', 87);\nconsole.log(studentGrades.get('Alice')); // 95 in O(1) time!\n```",
+      commonMistake: "Not handling **hash collisions**. When two keys hash to the same index, you need a strategy like chaining or open addressing.",
+      quickCheck: "Why is a hash table faster than searching through an array?",
+      nextStep: "Learn about hash collision resolution strategies and when to use hash tables vs. arrays.",
+      isDemo: true,
+      hasMomentContext
+    };
+  }
+
+  if (q.includes('dynamic programming') || q.includes('dp') || q.includes('memoization')) {
+    return {
+      explanation: "**Dynamic Programming (DP)** optimizes recursive solutions by storing previously computed results. Instead of recalculating the same subproblems, we **memoize** (cache) them for instant reuse.",
+      whyItWorks: "DP transforms exponential-time algorithms into polynomial-time by eliminating redundant work. It's essential for optimization problems.",
+      example: "```python\n# Without DP: O(2^n) - very slow!\ndef fib(n):\n    if n <= 1: return n\n    return fib(n-1) + fib(n-2)\n\n# With DP: O(n) - fast!\ndef fib_dp(n, memo={}):\n    if n in memo: return memo[n]\n    if n <= 1: return n\n    memo[n] = fib_dp(n-1, memo) + fib_dp(n-2, memo)\n    return memo[n]\n```",
+      commonMistake: "Not identifying the overlapping subproblems. DP only helps when you're solving the same subproblem multiple times.",
+      quickCheck: "How many times would `fib(5)` calculate `fib(2)` without memoization?",
+      nextStep: "Practice the Knapsack problem and Longest Common Subsequence to master DP patterns.",
+      isDemo: true,
+      hasMomentContext
+    };
+  }
+
+  if (q.includes('linked list')) {
+    return {
+      explanation: "A **linked list** is a linear data structure where elements (nodes) are connected via pointers. Each node contains **data** and a **reference to the next node**. Unlike arrays, linked lists don't need contiguous memory.",
+      whyItWorks: "Linked lists excel at insertions and deletions (O(1) at the head), since you just redirect pointers. No shifting elements like in arrays!",
+      example: "```java\nclass Node {\n    int data;\n    Node next;\n}\n\nNode head = new Node(10);\nhead.next = new Node(20);\nhead.next.next = new Node(30);\n// 10 -> 20 -> 30 -> null\n```",
+      commonMistake: "Losing the reference to the head node. Always keep track of where your list starts!",
+      quickCheck: "What's the time complexity to access the 100th element in a linked list?",
+      nextStep: "Implement reversal of a linked list and detect cycles using Floyd's algorithm.",
+      isDemo: true,
+      hasMomentContext
+    };
+  }
+
+  if (q.includes('tree') || q.includes('binary tree')) {
+    return {
+      explanation: "A **binary tree** is a hierarchical structure where each node has at most two children (left and right). **Binary Search Trees (BST)** maintain the property: left < parent < right, enabling O(log n) searches.",
+      whyItWorks: "Trees model hierarchical relationships naturally. BSTs combine the search speed of binary search with the flexibility of linked structures.",
+      example: "```python\nclass TreeNode:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\nroot = TreeNode(10)\nroot.left = TreeNode(5)\nroot.right = TreeNode(15)\n```",
+      commonMistake: "Confusing tree **height** with **depth**. Height is the distance from a node to the deepest leaf; depth is distance from root to the node.",
+      quickCheck: "In a balanced BST with 1000 nodes, what's the maximum height?",
+      nextStep: "Learn tree traversals: inorder, preorder, postorder, and level-order.",
+      isDemo: true,
+      hasMomentContext
+    };
+  }
+
+  if (q.includes('sort') || q.includes('quicksort') || q.includes('mergesort')) {
+    return {
+      explanation: "**Sorting algorithms** arrange elements in order. **QuickSort** uses divide-and-conquer with a pivot (O(n log n) average), while **MergeSort** splits and merges (O(n log n) worst-case). **Bubble Sort** is simple but slow (O(n²)).",
+      whyItWorks: "Efficient sorting enables faster searching and data analysis. Many algorithms require sorted data as a prerequisite.",
+      example: "```python\n# QuickSort in action\ndef quicksort(arr):\n    if len(arr) <= 1: return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quicksort(left) + middle + quicksort(right)\n```",
+      commonMistake: "Using Bubble Sort for large datasets. It's O(n²) and too slow for production use.",
+      quickCheck: "Which sorting algorithm is more stable: QuickSort or MergeSort?",
+      nextStep: "Compare time and space complexity of different sorting algorithms.",
+      isDemo: true,
+      hasMomentContext
+    };
+  }
+
+  if (q.includes('graph') || q.includes('dfs') || q.includes('bfs')) {
+    return {
+      explanation: "**Graphs** represent networks of nodes (vertices) connected by edges. **DFS (Depth-First Search)** explores as far as possible before backtracking, while **BFS (Breadth-First Search)** explores neighbors level by level.",
+      whyItWorks: "Graphs model real-world relationships: social networks, maps, dependencies. DFS and BFS are fundamental for traversing these structures.",
+      example: "```python\n# BFS using a queue\nfrom collections import deque\n\ndef bfs(graph, start):\n    visited = set()\n    queue = deque([start])\n    while queue:\n        node = queue.popleft()\n        if node not in visited:\n            print(node)\n            visited.add(node)\n            queue.extend(graph[node])\n```",
+      commonMistake: "Not marking nodes as visited, leading to infinite loops in cyclic graphs.",
+      quickCheck: "Which algorithm (DFS or BFS) would you use to find the shortest path in an unweighted graph?",
+      nextStep: "Implement Dijkstra's algorithm for weighted shortest paths.",
+      isDemo: true,
+      hasMomentContext
+    };
+  }
+
+  // Generic intelligent fallback for any other topic
   return {
-    explanation: `That's a great question about "${question}". In simple terms, this concept is about organizing and processing information efficiently. Think of it like setting up a strong foundation before building a complex structure.`,
-    whyItWorks: "It works because it reduces the amount of unnecessary work we have to do by focusing only on the essential steps.",
-    example: "```python\ndef process_data():\n    # This is a standard conceptual approach\n    print(\"Processing efficiently...\")\n```",
-    commonMistake: "A common mistake is trying to overcomplicate the approach before understanding the basic fundamentals.",
-    quickCheck: "Can you think of a real-world scenario where you would apply this?",
-    nextStep: "Reviewing the specific prerequisites for this topic might help solidify your understanding.",
-    isDemo: false,
+    explanation: `Great question about **"${question}"**! This is a fundamental concept in computer science. Let me break it down: it's about understanding the patterns and structures that make algorithms efficient and code maintainable. Think of it as learning the building blocks that power modern software.`,
+    whyItWorks: "Mastering this concept gives you the tools to write better, faster, and more scalable code. It's a foundation that applies across all programming domains.",
+    example: "```python\n# Example conceptual pattern\ndef solve_problem(input_data):\n    # Analyze the problem\n    # Break it into smaller parts\n    # Solve systematically\n    return solution\n```",
+    commonMistake: "Trying to memorize rather than understand. Focus on the **why** behind the concept, not just the **what**.",
+    quickCheck: "Can you explain this concept to someone else in your own words? Teaching is the best way to verify understanding.",
+    nextStep: "Practice with real problems. Theory is important, but hands-on coding solidifies learning.",
+    isDemo: true,
     hasMomentContext
   };
 }
